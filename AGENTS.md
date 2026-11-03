@@ -12,7 +12,7 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 ## File map
 | File | What it is |
 |---|---|
-| `p01-templates.html` | Choose a template. Card grid, details drawer. |
+| `p01-templates.html` | Choose a template. Card grid with an always-visible details panel. |
 | `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). |
 | `p03-live-call.html` | Live test call: transcript, call state, latency, guardrails. |
 | `p03-alt-wrong-person.html` | Test call where a guardrail held (wrong person answered). |
@@ -74,7 +74,6 @@ Exposed as `window.NS`.
 - `NS.reviewCount()`, `NS.isResolved(id)`, `NS.resolve(id)`: demo queue state. The seeded count is 6 and the resolvable call is `call_3c71d0`.
 - `NS.reset()`: clears resolved calls, `deployed`, `ack` and saved resolutions. The nav's Reset Demo link calls it.
 - Query params: `?fi=low|high` sets fidelity, `?ann=on|off` shows or hides the brief annotations.
-- `p01-templates.html#open=reminders` opens a template's details drawer.
 
 Each page declares `<body data-product="play|cons|ref" data-nav="p01">` and an empty `<aside class="side" id="side">`. `shell.js` fills the nav.
 

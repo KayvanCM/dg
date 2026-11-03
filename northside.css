@@ -81,8 +81,9 @@ svg{display:block}
 .switcher a[aria-current="true"]{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
 .navgrp{display:flex;flex-direction:column;gap:2px}
 .navgrp>.t-eyebrow{padding:0 12px 4px}
-.nav-item{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:var(--r-btn);color:var(--muted);text-decoration:none;font-size:14px}
+.nav-item{display:flex;align-items:center;gap:13px;height:33px;padding:0 12px;border-radius:var(--r-btn);color:var(--muted);text-decoration:none;font-size:14px}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-item svg.kit-ico{width:12.667px;height:12.667px} /* kit Nav Item: 12.67px rounded-square outline, 2px stroke */
 .nav-item:hover{background:var(--fill);color:var(--ink)}
 .nav-item[aria-current="page"]{background:var(--fill);color:var(--ink);font-weight:500}
 .nav-item .cnt{margin-left:auto;min-width:20px;height:20px;border-radius:10px;padding:0 6px;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--alert);color:#fff}
@@ -120,10 +121,10 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 
 /* ============ KIT: BUTTONS ============ */
 .btn{height:38px;padding:0 16px;border-radius:var(--r-btn);font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none}
-/* Neutral (rest), hover and pressed states. */
+/* Neutral (rest), hover and pressed states. Hover lightens the primary because darkening ink is imperceptible. */
 .btn{transition:background-color .12s,border-color .12s,color .12s}
 .btn-primary{background:var(--ink);color:#fff}
-.btn-primary:hover{background:#4A4A4A}   /* darkening #1A1A1A to black is imperceptible, so hover lightens */
+.btn-primary:hover{background:#4A4A4A}
 .btn-primary:active{background:#000}
 /* Outlined primary: heavy ink border at rest, fills solid ink on hover. Used where the primary should not shout until intent is clear. */
 .btn-outline{background:#fff;color:var(--ink);border:2px solid var(--ink)}
@@ -319,9 +320,8 @@ details.disc .in{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px
 @media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
 .ico16{width:16px;height:16px}
 .tag{height:24px;padding:0 8px;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;background:#fff}
-.wr,.ro{display:inline-flex;align-items:center;justify-content:center;width:56px;height:22px;border-radius:var(--r-badge);font-size:12px;line-height:16px;font-weight:500;flex-shrink:0}
-.wr{background:#fff;border:1px solid var(--ink);color:var(--ink)}  /* kit outline badge: writes to a system */
-.ro{background:var(--fill);color:var(--muted)}                       /* kit muted badge: read-only */
+.wr{font-size:12px;font-weight:600;border:1px solid var(--ink);border-radius:var(--r-badge);padding:0 6px;line-height:18px;display:inline-block}
+.ro{font-size:12px;color:var(--muted);border:1px dashed var(--dash);border-radius:var(--r-badge);padding:0 6px;line-height:18px;display:inline-block}
 .okck{width:16px;height:16px;border-radius:50%;background:var(--ok);display:inline-grid;place-items:center;flex-shrink:0}
 .okck svg{width:10px;height:10px;color:#fff}
 

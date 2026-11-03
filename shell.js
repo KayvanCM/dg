@@ -17,6 +17,7 @@
   NS.check = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>';
   NS.play = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2.5 1.5v9l8-4.5z"/></svg>';
 
+NS.navIco = '<svg class="kit-ico" viewBox="11.667 10.167 12.667 12.667" fill="none" aria-hidden="true"><path d="M14.6667 11.1666H21.3333C22.4379 11.1666 23.3333 12.0621 23.3333 13.1666V19.8333C23.3333 20.9379 22.4379 21.8333 21.3333 21.8333H14.6667C13.5621 21.8333 12.6667 20.9379 12.6667 19.8333V13.1666C12.6667 12.0621 13.5621 11.1666 14.6667 11.1666Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   /* ---------- waveform in kit proportions: 2px bars, 5px pitch, played = ink, rest = #A6A6A6 ---------- */
   NS.wave = (n, played) => Array.from({ length: n }, (_, i) => {
     const h = 6 + Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.45)) * 30 + (i % 5) * 1.2;
@@ -74,7 +75,7 @@
     const items = NAV[product].map(([n, href, ic, id]) => {
       const cur = id === page ? ' aria-current="page"' : '';
       const cnt = id === 'c03' ? '<span class="cnt" id="navcnt" aria-label="' + NS.reviewCount() + ' calls need review">' + NS.reviewCount() + '</span>' : '';
-      return '<a class="nav-item" href="' + href + '"' + cur + '>' + NS.ico(ic) + '<span>' + n + '</span>' + cnt + '</a>';
+      return '<a class="nav-item" href="' + href + '"' + cur + '>' + NS.navIco + '<span>' + n + '</span>' + cnt + '</a>';
     }).join('');
     const refCur = body.getAttribute('data-product') === 'ref' ? ' aria-current="page"' : '';
     const sam = product === 'play';
@@ -87,7 +88,7 @@
       '</div>' +
       '<nav class="navgrp" aria-label="' + (sam ? 'Playground' : 'Console') + '"><span class="t-eyebrow">' + (sam ? 'Playground' : 'Console') + '</span>' + items + '</nav>' +
       '<nav class="navgrp" aria-label="Reference"><span class="t-eyebrow">Reference</span>' +
-        '<a class="nav-item" href="notes.html"' + refCur + '>' + NS.ico('info.circle') + '<span>Design Notes</span></a></nav>' +
+        '<a class="nav-item" href="notes.html"' + refCur + '>' + NS.navIco + '<span>Design Notes</span></a></nav>' +
       '<div class="side-foot">' +
         '<div class="pref"><span id="fi-l">Fidelity</span><span class="seg2" role="group" aria-labelledby="fi-l"><button type="button" data-fi-set="low">Low</button><button type="button" data-fi-set="high">High</button></span></div>' +
         '<div class="pref"><span id="an-l">Brief Annotations</span><button type="button" class="toggle" role="switch" id="annsw" aria-labelledby="an-l" aria-checked="false"><span class="trk"></span></button></div>' +
