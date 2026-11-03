@@ -27,7 +27,7 @@
 
 /* Player (visual mock) */
 .player{padding:12px 16px;margin-bottom:24px}
-.player .wave{flex:1;justify-content:space-between;gap:0;height:32px;cursor:pointer;border-radius:4px}
+.player .wave{flex:1;min-width:0;overflow:hidden;height:48px;cursor:pointer;border-radius:4px} /* kit waveform: 2px bars on a 5px pitch, 48px tall */
 .player .wave i{pointer-events:none}
 .player .time{white-space:nowrap}
 .player .seg button{height:26px}
@@ -249,12 +249,11 @@ document.getElementById('cf-ok').addEventListener('click', () => {
 
 /* ---------- player (visual mock) ---------- */
 (function () {
-  const DUR = 107, N = 96, wave = document.getElementById('scrub'), pbtn = document.getElementById('pbtn'), ptime = document.getElementById('ptime');
+  let N = 96; const DUR = 107, wave = document.getElementById('scrub'), pbtn = document.getElementById('pbtn'), ptime = document.getElementById('ptime');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let pos = 41, speed = 1, timer = null;
   const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  wave.innerHTML = NS.wave(N, 0);
-  const bars = wave.children;
+  let bars = wave.children;
   const icon = playing => playing
     ? '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>' : NS.play;
   const draw = () => {
@@ -264,6 +263,9 @@ document.getElementById('cf-ok').addEventListener('click', () => {
     wave.setAttribute('aria-valuenow', Math.floor(pos));
     wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(DUR));
   };
+  /* as many bars as fit at the kit's 5px pitch (2px bar + 3px gap); rebuilt when the player resizes */
+  const build = () => { N = Math.max(10, Math.floor((wave.clientWidth + 3) / 5)); wave.innerHTML = NS.wave(N, 0); bars = wave.children; draw(); };
+  build(); window.addEventListener('resize', build);
   const stop = () => { clearInterval(timer); timer = null; pbtn.setAttribute('aria-pressed', 'false'); pbtn.setAttribute('aria-label', 'Play call recording'); pbtn.innerHTML = icon(false); };
   const start = () => {
     pbtn.setAttribute('aria-pressed', 'true'); pbtn.setAttribute('aria-label', 'Pause call recording'); pbtn.innerHTML = icon(true);

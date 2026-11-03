@@ -8,21 +8,34 @@
 <script src="icons.js"></script>
 <script src="shell.js"></script>
 <style>
-.tpl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.tpl{border:1px solid var(--line);border-radius:var(--r-card);padding:20px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:12px;min-height:176px;width:100%;color:inherit}
+.tpl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.tpl{border:1px solid var(--line);border-radius:var(--r-card);padding:20px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:12px;min-height:200px;width:100%;color:inherit}
 .tpl:hover{background:var(--surface)}
-.tpl[aria-checked="true"]{border:2px solid var(--ink);padding:19px;background:#fff}
+.tpl[aria-pressed="true"]{border:2px solid var(--ink);padding:19px;background:#fff}
+.tpl[aria-pressed="true"]{position:relative;z-index:65} /* stays bright above the dim layer while its drawer is open */
 .tpl .top{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:24px}
 .tpl .sel{display:none;align-items:center;gap:8px;font-size:12px;font-weight:600}
-.tpl[aria-checked="true"] .sel{display:inline-flex}
-.tpl[aria-checked="true"] .dir{display:none}
+.tpl[aria-pressed="true"] .sel{display:inline-flex}
+.tpl[aria-pressed="true"] .dir{display:none}
 .tpl p{color:var(--muted)}
-.tpl .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
+.tpl .tags{display:flex;gap:4px;flex-wrap:wrap}
+.tpl .more{margin-top:auto;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink)}
+.tpl .more svg{width:12px;height:12px}
 .dir{font-size:12px;line-height:16px;color:var(--muted)}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.det{padding:0}
-.det .sec{padding:20px 24px;border-bottom:1px solid var(--line)}
-.det .sec:last-of-type{border-bottom:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}
+.scrim{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;background:#fff;border-left:1px solid var(--line);z-index:70;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s .32s}
+.drawer.open{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.drawer-h{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px 24px 16px}
+.drawer-body{overflow-y:auto;flex:1}
+.drawer-f{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:8px}
+.x{width:32px;height:32px;border-radius:var(--r-btn);display:grid;place-items:center;flex-shrink:0}
+.x:hover{background:var(--fill)}
+.x svg{width:14px;height:14px}
+@media (prefers-reduced-motion:reduce){.drawer,.drawer.open,.scrim{transition:none}}
+.drawer .sec{padding:20px 24px;border-bottom:1px solid var(--line)}
+.drawer .sec:last-of-type{border-bottom:0}
 .stats4{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
 .stats4>div{padding:16px 0;text-align:center;border-right:1px solid var(--line)}
 .stats4>div:last-child{border-right:0}
@@ -62,117 +75,108 @@
   </header>
   <hr class="div">
 
-  <div class="cols main-rail-lg">
-    <section aria-labelledby="tpl-h">
-      <div class="chips" role="group" aria-label="Category" id="chips"></div>
-      <h2 class="t-eyebrow" id="tpl-h" style="margin-bottom:12px"><span id="tplcount">Template Cards, 6</span></h2>
-      <div id="empty" class="empty" hidden></div>
-      <div class="tpl-grid" role="radiogroup" aria-labelledby="tpl-h" id="grid"></div>
-    </section>
-
-    <aside class="card det sticky" aria-labelledby="det-h" id="det"></aside>
-  </div>
+  <section aria-labelledby="tpl-h">
+    <div class="chips" role="group" aria-label="Category" id="chips"></div>
+    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="tpl-h"><span id="tplcount">6 Templates</span></h2></div>
+    <div id="empty" class="empty" hidden></div>
+    <div class="tpl-grid" id="grid"></div>
+  </section>
 
 </div>
 </main>
 </div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="det" role="dialog" aria-modal="true" aria-labelledby="det-h" aria-hidden="true"></aside>
 
 <script>
 const ro = (n) => [n, 0], wr = (n) => [n, 1];
 const T = [
   { id: 'reminders', name: 'Appointment Reminders', dir: 'Outbound', cat: 'Healthcare',
     desc: 'Confirms, reschedules or cancels upcoming visits and updates the calendar.',
-    tags: ['Outbound', 'Function calling', 'PHI-aware'],
+    tags: ['Function calling', 'PHI-aware'],
     fns: [ro('verify_identity'), ro('get_appointment'), ro('check_availability'), wr('reschedule_appointment'), wr('transfer_to_staff')],
     vars: ['patient_first_name', 'appointment_time', 'provider', 'location', 'clinic_phone', 'dob'],
     scen: ['Confirm', 'Reschedule', 'Slot conflict', 'Wrong person', 'Voicemail', 'Medical question', 'Spanish speaker'],
     guards: ['Verify identity before details', 'No medical advice', 'No PHI in voicemail', 'Transfer on request'] },
   { id: 'intake', name: 'Front Desk Intake', dir: 'Inbound', cat: 'Healthcare',
     desc: 'Answers the clinic line, collects visit details and routes urgent calls.',
-    tags: ['Inbound', 'Function calling', 'PHI-aware'],
+    tags: ['Function calling', 'PHI-aware'],
     fns: [ro('lookup_patient'), ro('get_provider_hours'), ro('check_availability'), wr('create_appointment'), wr('transfer_to_staff')],
     vars: ['clinic_name', 'clinic_phone', 'after_hours_number', 'location'],
     scen: ['New patient', 'Existing patient', 'Urgent symptoms', 'After hours', 'Wrong number'],
     guards: ['Route urgent symptoms to staff', 'No medical advice', 'Verify identity before details'] },
   { id: 'refill', name: 'Prescription Refill Status', dir: 'Outbound', cat: 'Healthcare',
     desc: 'Tells patients whether a refill is ready and where to pick it up.',
-    tags: ['Outbound', 'Function calling', 'PHI-aware'],
+    tags: ['Function calling', 'PHI-aware'],
     fns: [ro('verify_identity'), ro('get_refill_status'), ro('get_pharmacy_hours'), wr('transfer_to_staff')],
     vars: ['patient_first_name', 'medication_name', 'pharmacy_name', 'pharmacy_phone', 'dob'],
     scen: ['Refill ready', 'Refill pending', 'Out of refills', 'Voicemail', 'Wrong person'],
     guards: ['Verify identity before details', 'No medical advice', 'No PHI in voicemail'] },
   { id: 'followup', name: 'Post-Visit Follow-Up', dir: 'Outbound', cat: 'Healthcare',
     desc: 'Checks in after a visit and flags patients who need a nurse call.',
-    tags: ['Outbound', 'Scheduling', 'PHI-aware'],
+    tags: ['Scheduling', 'PHI-aware'],
     fns: [ro('verify_identity'), ro('get_visit_summary'), wr('flag_for_nurse'), wr('schedule_follow_up')],
     vars: ['patient_first_name', 'visit_date', 'provider', 'clinic_phone'],
     scen: ['Feeling better', 'Symptoms worse', 'Needs follow-up', 'Voicemail', 'No answer'],
     guards: ['Route worsening symptoms to a nurse', 'No medical advice', 'No PHI in voicemail'] },
   { id: 'insurance', name: 'Insurance Verification', dir: 'Outbound', cat: 'Healthcare',
     desc: 'Confirms coverage details with patients before a scheduled procedure.',
-    tags: ['Outbound', 'Function calling', 'PHI-aware'],
+    tags: ['Function calling', 'PHI-aware'],
     fns: [ro('verify_identity'), ro('get_coverage'), wr('update_insurance_record'), wr('transfer_to_staff')],
     vars: ['patient_first_name', 'procedure_name', 'appointment_time', 'insurer_name', 'member_id'],
     scen: ['Coverage confirmed', 'Coverage changed', 'Missing card', 'Voicemail', 'Wrong person'],
     guards: ['Verify identity before details', 'Never read a full member ID aloud', 'No PHI in voicemail', 'Transfer on request'] },
   { id: 'blank', name: 'Blank Agent', dir: 'Either', cat: '*',
     desc: 'An empty agent with a greeting, one prompt and no functions.',
-    tags: ['Inbound or outbound', 'No functions'],
+    tags: ['No functions'],
     fns: [], vars: ['patient_first_name'], scen: [], guards: [] }
 ];
 const CATS = ['All', 'Healthcare', 'Customer Service', 'Sales', 'Logistics'];
-let cat = 'Healthcare', sel = 'reminders';
+let cat = 'Healthcare', sel = null, opener = null;
 
 const $ = (id) => document.getElementById(id);
 const visible = () => T.filter(t => cat === 'All' || t.cat === '*' || t.cat === cat);
+const X = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>';
 
 function renderChips() {
   $('chips').innerHTML = CATS.map(c => `<button type="button" class="chip" aria-pressed="${c === cat}" data-c="${c}">${c}</button>`).join('');
   $('chips').querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
-    cat = b.dataset.c;
-    const v = visible();
-    if (!v.some(t => t.id === sel)) sel = v[0].id;
-    renderChips(); renderGrid(); renderDetail();
+    cat = b.dataset.c; closeDrawer(true);
+    if (!visible().some(t => t.id === sel)) sel = null;
+    renderChips(); renderGrid();
   }));
 }
 
 function renderGrid() {
   const v = visible();
-  $('tplcount').textContent = 'Template Cards, ' + v.length;
+  $('tplcount').textContent = v.length + (v.length === 1 ? ' Template' : ' Templates');
   const real = v.filter(t => t.cat !== '*').length;
   const e = $('empty');
   e.hidden = real > 0;
   if (!real) e.textContent = 'No ' + cat + ' templates yet. Start from a blank agent.';
   $('grid').innerHTML = v.map(t => `
-    <button type="button" class="tpl" role="radio" aria-checked="${t.id === sel}" tabindex="${t.id === sel ? 0 : -1}" data-id="${t.id}">
+    <button type="button" class="tpl" aria-pressed="${t.id === sel}" aria-haspopup="dialog" data-id="${t.id}">
       <span class="top"><span class="t-heading">${t.name}</span>
         <span class="dir">${t.dir}</span>
         <span class="sel"><span class="okck" aria-hidden="true">${NS.check}</span>Selected</span></span>
       <p>${t.desc}</p>
       <span class="tags">${t.tags.map(x => `<span class="tag">${x}</span>`).join('')}</span>
+      <span class="more">View Details ${NS.chev('')}</span>
     </button>`).join('');
-  const cards = Array.from($('grid').querySelectorAll('.tpl'));
-  cards.forEach((c, i) => {
-    c.addEventListener('click', () => { sel = c.dataset.id; renderGrid(); renderDetail(); $('grid').querySelector('[aria-checked="true"]').focus(); });
-    c.addEventListener('keydown', ev => {
-      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[ev.key];
-      if (!step) return;
-      ev.preventDefault();
-      const n = cards[(i + step + cards.length) % cards.length];
-      sel = n.dataset.id; renderGrid(); renderDetail(); $('grid').querySelector('[aria-checked="true"]').focus();
-    });
-  });
+  $('grid').querySelectorAll('.tpl').forEach(c => c.addEventListener('click', () => openDrawer(c.dataset.id, c)));
 }
 
 function renderDetail() {
   const t = T.find(x => x.id === sel);
-  const list = (arr, empty) => arr.length ? arr : null;
   $('det').innerHTML = `
-    <div class="sec" style="border-bottom:0;padding-bottom:16px">
-      <div class="t-eyebrow" style="margin-bottom:4px">${t.name}</div>
-      <h2 class="t-headline" id="det-h">What's Included In ${t.name}</h2>
+    <div class="drawer-h">
+      <div><div class="t-eyebrow" style="margin-bottom:4px">${t.name}</div>
+        <h2 class="t-headline" id="det-h">What's Included In ${t.name}</h2></div>
+      <button type="button" class="x" id="dclose" aria-label="Close details">${X}</button>
     </div>
-    <div class="stats4" role="group" aria-label="Summary">
+    <div class="drawer-body">
+    <div class="stats4" role="group" aria-label="Summary" style="border-top:1px solid var(--line)">
       <div><b>${t.fns.length}</b><span class="t-caption">functions</span></div>
       <div><b>${t.vars.length}</b><span class="t-caption">variables</span></div>
       <div><b>${t.scen.length}</b><span class="t-caption">scenarios</span></div>
@@ -186,17 +190,52 @@ function renderDetail() {
       ${t.scen.length ? `<ul class="pills">${t.scen.map(s => `<li><span class="tag">${s}</span></li>`).join('')}</ul>` : '<p class="none">None included. Add your own in Test Scenarios.</p>'}</div>
     <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.guards.length} ${t.guards.length === 1 ? 'Guardrail' : 'Guardrails'}</h3>
       ${t.guards.length ? `<ul class="lst">${t.guards.map(g => `<li class="ck"><span class="okck" aria-hidden="true">${NS.check}</span><span>${g}</span></li>`).join('')}</ul>` : '<p class="none">None included</p>'}</div>
-    <div class="sec"><button type="button" class="btn btn-primary btn-block" id="use">Use This Template</button></div>`;
+    </div>
+    <div class="drawer-f"><button type="button" class="btn btn-primary" id="use" style="flex:1">Use This Template</button><button type="button" class="btn btn-secondary" id="dcancel">Cancel</button></div>`;
+  $('dclose').addEventListener('click', () => closeDrawer());
+  $('dcancel').addEventListener('click', () => closeDrawer());
   $('use').addEventListener('click', () => {
     NS.toast('Draft v1 created from ' + t.name + '.');
     setTimeout(() => { location.href = 'p02-configure.html'; }, 800);
   });
 }
 
+function openDrawer(id, from) {
+  sel = id; opener = from; renderGrid(); renderDetail();
+  const d = $('det');
+  d.setAttribute('aria-hidden', 'false'); d.classList.add('open'); $('scrim').classList.add('open');
+  document.querySelector('.main').setAttribute('inert', '');
+  document.querySelector('.side').setAttribute('inert', '');
+  $('dclose').focus();
+}
+
+function closeDrawer(skipFocus) {
+  if (!$('det').classList.contains('open')) return;
+  const id = sel; sel = null;
+  $('det').classList.remove('open'); $('det').setAttribute('aria-hidden', 'true'); $('scrim').classList.remove('open');
+  document.querySelector('.main').removeAttribute('inert');
+  document.querySelector('.side').removeAttribute('inert');
+  renderGrid();
+  if (!skipFocus) { const b = $('grid').querySelector('[data-id="' + id + '"]'); if (b) b.focus(); }
+}
+
+$('scrim').addEventListener('click', () => closeDrawer());
+document.addEventListener('keydown', e => {
+  if (!$('det').classList.contains('open')) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeDrawer(); return; }
+  if (e.key === 'Tab') {
+    const f = Array.from($('det').querySelectorAll('button')).filter(b => !b.disabled);
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
 $('import').addEventListener('click', () => NS.toast('Import JSON is not part of this prototype.'));
 $('blank').addEventListener('click', () => NS.toast('Blank agent draft created.'));
 
-renderChips(); renderGrid(); renderDetail();
+renderChips(); renderGrid();
+const deep = location.hash.match(/open=(\w+)/); if (deep && T.some(t => t.id === deep[1])) openDrawer(deep[1]);
 </script>
 </body>
 </html>

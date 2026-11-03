@@ -21,12 +21,16 @@
   --control:#8C8C8C;    /* edge of interactive controls, 3.4:1 (kit #D1D1D1 is 1.6:1) */
 
   /* Color layer (high fidelity). Low fidelity maps all of these back to neutrals. */
-  --ok:#137333;     --ok-bg:#E6F4EA;
-  --info:#0B57D0;   --info-bg:#E8F0FE;
-  --alert:#C5221F;  --alert-bg:#FCE8E6;  --alert-line:#E8A5A3;
-  --warn:#8A4B00;   --warn-bg:#FEF1DC;
-  --link:#0B57D0;
-  --focus:#0B57D0;
+  /* Northstar palette: go / soon / stop status trio, link teal, forest */
+  --ok:#1D6A4E;     --ok-bg:#E2F1EA;      /* go */
+  --info:#2E5873;   --info-bg:#E1E9F0;    /* soon */
+  --alert:#8A3A22;  --alert-bg:#F6E7E0;  --alert-line:#B78A72;  /* stop, with mauve for dividers */
+  --warn:#173F43;   --warn-bg:#E6F2EF;    /* forest on keylime: emphasis for slow, not an error */
+  --link:#146F6A;
+  --focus:#146F6A;
+  --field-focus:#4A4A4A;  /* edge of a text field you are typing in: dark gray, not the teal used for keyboard focus */
+  --sel:#146F6A;       /* selected option: Northstar link teal */
+  --sel-bg:#E6F2EF;    /* Northstar keylime tint */
 
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
   --mono:"Roboto Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -41,6 +45,7 @@
   --alert:#1A1A1A; --alert-bg:#FFFFFF; --alert-line:#1A1A1A;
   --warn:#1A1A1A; --warn-bg:#F7F7F7;
   --link:#1A1A1A; --focus:#1A1A1A;
+  --sel:#1A1A1A; --sel-bg:#FFFFFF;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -81,9 +86,8 @@ svg{display:block}
 .switcher a[aria-current="true"]{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
 .navgrp{display:flex;flex-direction:column;gap:2px}
 .navgrp>.t-eyebrow{padding:0 12px 4px}
-.nav-item{display:flex;align-items:center;gap:13px;height:33px;padding:0 12px;border-radius:var(--r-btn);color:var(--muted);text-decoration:none;font-size:14px}
+.nav-item{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:var(--r-btn);color:var(--muted);text-decoration:none;font-size:14px}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
-.nav-item svg.kit-ico{width:12.667px;height:12.667px} /* kit Nav Item: 12.67px rounded-square outline, 2px stroke */
 .nav-item:hover{background:var(--fill);color:var(--ink)}
 .nav-item[aria-current="page"]{background:var(--fill);color:var(--ink);font-weight:500}
 .nav-item .cnt{margin-left:auto;min-width:20px;height:20px;border-radius:10px;padding:0 6px;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--alert);color:#fff}
@@ -121,10 +125,10 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 
 /* ============ KIT: BUTTONS ============ */
 .btn{height:38px;padding:0 16px;border-radius:var(--r-btn);font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none}
-/* Neutral (rest), hover and pressed states. Hover lightens the primary because darkening ink is imperceptible. */
+/* Neutral (rest), hover and pressed states. */
 .btn{transition:background-color .12s,border-color .12s,color .12s}
 .btn-primary{background:var(--ink);color:#fff}
-.btn-primary:hover{background:#4A4A4A}
+.btn-primary:hover{background:#4A4A4A}   /* darkening #1A1A1A to black is imperceptible, so hover lightens */
 .btn-primary:active{background:#000}
 /* Outlined primary: heavy ink border at rest, fills solid ink on hover. Used where the primary should not shout until intent is clear. */
 .btn-outline{background:#fff;color:var(--ink);border:2px solid var(--ink)}
@@ -166,13 +170,13 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .field{display:flex;flex-direction:column;gap:4px}
 .field>label,.field>.lbl{font-size:12px;line-height:16px;color:var(--muted)}
 .input{height:36px;border:1px solid var(--control);border-radius:var(--r-field);padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;font-size:14px;width:100%}
-.input:focus-within{border-color:var(--focus);outline:2px solid var(--focus);outline-offset:0}
+.input:focus-within{border-color:var(--field-focus);outline:1px solid var(--field-focus);outline-offset:0}
 .input input{border:0;outline:0;background:none;width:100%;height:100%}
 .input select{appearance:none;-webkit-appearance:none;border:0;outline:0;background:none;width:100%;height:100%;cursor:pointer}
 .input .chev{width:14px;height:14px;flex-shrink:0;pointer-events:none}
 .input.mono-v,.input.mono-v input{font-family:var(--mono);font-size:12px}
 .textarea{min-height:41px;border:1px solid var(--control);border-radius:var(--r-field);padding:12px;background:#fff;font-family:var(--mono);font-size:12px;line-height:16px;width:100%;resize:vertical}
-.textarea:focus{outline:2px solid var(--focus);outline-offset:0;border-color:var(--focus)}
+.textarea:focus{outline:1px solid var(--field-focus);outline-offset:0;border-color:var(--field-focus)}
 
 /* ============ KIT: TOGGLE ============ */
 .toggle{display:inline-flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;text-align:left}
@@ -268,7 +272,7 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .dur{height:4px;background:var(--fill);border-radius:2px;width:120px;position:relative;display:inline-block}
 .dur i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:2px}
 .wave{display:flex;align-items:center;gap:3px;height:40px}
-.wave i{display:block;width:2px;border-radius:1px;background:var(--ink)}
+.wave i{display:block;width:2px;flex-shrink:0;border-radius:1px;background:var(--ink)}
 .wave i.off{background:var(--wave-off)}
 .playbtn{width:32px;height:32px;border-radius:16px;background:var(--ink);color:#fff;display:grid;place-items:center;flex-shrink:0}
 .playbtn svg{width:12px;height:12px}
@@ -298,9 +302,13 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 /* ============ DERIVED: OPTION CARD (radio) ============ */
 .opt{display:grid;grid-template-columns:18px 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r-card);cursor:pointer;background:#fff;text-align:left;width:100%}
 .opt:hover{background:var(--surface)}
-.opt[aria-checked="true"]{border:2px solid var(--ink);padding:15px}
-.opt[aria-checked="true"] .radio{border-color:var(--ink)}
-.opt[aria-checked="true"] .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--ink)}
+.opt[aria-checked="true"]{border:2px solid var(--sel);padding:15px;background:var(--sel-bg)}
+.opt[aria-checked="true"]:hover{background:var(--sel-bg)}
+.opt[aria-checked="true"] .radio{border-color:var(--sel)}
+.opt[aria-checked="true"] .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--sel)}
+.opt[aria-checked="true"] .strong,.opt[aria-checked="true"] .opt-t{color:var(--sel)}
+.opt-t{display:block;font-weight:600}
+.opt-d{display:block;margin-top:4px;color:var(--muted)}
 .opt .reco{display:block;width:fit-content;margin-bottom:8px}
 
 /* ============ DERIVED: DISCLOSURE, TOAST, MISC ============ */
@@ -320,8 +328,9 @@ details.disc .in{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px
 @media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
 .ico16{width:16px;height:16px}
 .tag{height:24px;padding:0 8px;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;background:#fff}
-.wr{font-size:12px;font-weight:600;border:1px solid var(--ink);border-radius:var(--r-badge);padding:0 6px;line-height:18px;display:inline-block}
-.ro{font-size:12px;color:var(--muted);border:1px dashed var(--dash);border-radius:var(--r-badge);padding:0 6px;line-height:18px;display:inline-block}
+.wr,.ro{display:inline-flex;align-items:center;justify-content:center;width:56px;height:22px;border-radius:var(--r-badge);font-size:12px;line-height:16px;font-weight:500;flex-shrink:0}
+.wr{background:#fff;border:1px solid var(--ink);color:var(--ink)}  /* kit outline badge: writes to a system */
+.ro{background:var(--fill);color:var(--muted)}                       /* kit muted badge: read-only */
 .okck{width:16px;height:16px;border-radius:50%;background:var(--ok);display:inline-grid;place-items:center;flex-shrink:0}
 .okck svg{width:10px;height:10px;color:#fff}
 

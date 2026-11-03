@@ -15,8 +15,22 @@
 .rule:last-child{border-bottom:0}
 .rule .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .editor textarea.textarea{border:0;border-radius:0;min-height:160px;display:block;line-height:24px;padding:16px 20px}
-.editor textarea.textarea:focus{outline-offset:-2px}
+.editor textarea.textarea:focus{outline:none}
+.editor:focus-within{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)} /* the ring follows the editor's rounded corners */
 .ed-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface)}
+/* Instructions starts with a label row; the other tabs start with a card, so push them down 32px (16px label + 16px gap) to line up with the Instructions card and the Agent Summary cards */
+.tabpanel:not(#panel-instructions):not(#panel-guardrails):not(#panel-models){padding-top:32px}
+.opts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.scrim{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;background:#fff;border-left:1px solid var(--line);z-index:70;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s .32s}
+.drawer.open{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.drawer-h{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px 24px 16px}
+.drawer-body{overflow-y:auto;flex:1;padding:0 24px 24px;display:flex;flex-direction:column;gap:16px}
+.x{width:32px;height:32px;border-radius:var(--r-btn);display:grid;place-items:center;flex-shrink:0}
+.x:hover{background:var(--fill)}
+.x svg{width:14px;height:14px}
+@media (prefers-reduced-motion:reduce){.drawer,.drawer.open,.scrim{transition:none}}
 .sect-h{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:12px}
 .warnline{display:flex;gap:8px;align-items:center;margin-top:8px}
 .vlist{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
@@ -29,8 +43,17 @@
 .toggle.rev:last-child{border-bottom:0;padding-bottom:0}
 .toggle.rev:first-of-type{padding-top:0}
 .glist{display:flex;flex-direction:column}
-.grow{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--fill)}
-.grow:last-child{border-bottom:0}
+.grow{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:16px;align-items:start;padding:16px 0;border-bottom:1px solid var(--fill)}
+.grow:last-child{border-bottom:0;padding-bottom:0}
+.gic{color:var(--ok);padding-top:1px}
+.gic svg{width:18px;height:18px}
+.grow .check{align-items:center;white-space:nowrap;font-size:14px;padding-top:2px}
+.grl{list-style:none;display:flex;flex-direction:column}
+.grl li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--fill)}
+.grl li:last-child{border-bottom:0;padding-bottom:0}
+.grl li:first-child{padding-top:0}
+.grl .gic{padding:0;flex-shrink:0}
+.grl .badge{margin-left:auto}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 24px}
 .tabpanel{outline:none}
 .tbl td .mono{white-space:nowrap}
@@ -56,14 +79,16 @@
     <div>
       <h1 class="t-title">Appointment Reminders</h1>
       <p>Draft v7. Edit the prompt and the agent's tools, then run a test call.</p>
+      <p class="t-caption" id="sumline" style="margin-top:8px"></p>
     </div>
     <div class="actions">
+      <button type="button" class="btn btn-secondary" id="sumbtn" aria-haspopup="dialog">Agent Summary</button>
       <button type="button" class="btn btn-secondary" id="save">Save Draft</button>
       <button type="button" class="btn btn-primary" id="test">Start Test Call</button>
     </div>
   </header>
 
-  <div class="tabs" role="tablist" aria-label="Agent settings" id="tablist">
+  <div class="tabs" role="tablist" aria-label="Agent settings" id="tablist" style="margin-bottom:40px">
     <button type="button" class="tab" role="tab" id="tab-instructions" aria-controls="panel-instructions" aria-selected="true">Instructions</button>
     <button type="button" class="tab" role="tab" id="tab-models" aria-controls="panel-models" aria-selected="false">Voice &amp; Models</button>
     <button type="button" class="tab" role="tab" id="tab-functions" aria-controls="panel-functions" aria-selected="false">Functions</button>
@@ -71,7 +96,7 @@
     <button type="button" class="tab" role="tab" id="tab-guardrails" aria-controls="panel-guardrails" aria-selected="false">Guardrails</button>
   </div>
 
-  <div class="cols main-rail">
+  <div>
     <div>
 
       <!-- Instructions -->
@@ -88,7 +113,7 @@
         </section>
 
         <section class="sect" aria-labelledby="prompt-h">
-          <div class="sect-h"><h2 class="t-eyebrow" id="prompt-h">System Prompt, <span id="rulecount">6</span> Numbered Rules</h2><span class="row g12"><span class="t-caption" id="edited">Edited 12 min ago</span><button type="button" class="action sm" id="prompt-edit">Edit</button></span></div>
+          <div class="sect-h"><h2 class="t-eyebrow" id="prompt-h">System Prompt</h2><span class="row g12"><span class="t-caption" id="edited">Edited 12 min ago</span><button type="button" class="action sm" id="prompt-edit">Edit</button></span></div>
           <div class="editor">
             <div class="bar"><span class="t-caption" id="preamble">You are a friendly scheduling assistant for Northside Health. Follow these rules in order.</span></div>
             <ol id="rules" style="list-style:none"></ol>
@@ -109,21 +134,16 @@
 
       <!-- Voice & Models -->
       <div role="tabpanel" class="tabpanel" id="panel-models" aria-labelledby="tab-models" tabindex="0" hidden>
-        <section class="card pad" aria-labelledby="vm-h">
-          <h2 class="t-heading" id="vm-h" style="margin-bottom:4px">Voice and Models</h2>
-          <p class="muted" style="margin-bottom:20px">What the agent hears with, thinks with and speaks with. Changes show in the summary.</p>
-          <div class="grid2">
-            <div class="field"><label for="m-stt">Speech-to-Text</label><div class="input mono-v"><select id="m-stt" data-k="stt"><option>Nova-3 Medical</option><option>Nova-3 General</option><option>Whisper Large</option></select>
-              <span id="c1"></span></div></div>
-            <div class="field"><label for="m-llm">LLM</label><div class="input mono-v"><select id="m-llm" data-k="llm"><option>[Provider], fast tier</option><option>[Provider], balanced tier</option><option>[Provider], reasoning tier</option></select>
-              <span id="c2"></span></div></div>
-            <div class="field"><label for="m-voice">Voice</label><div class="input mono-v"><select id="m-voice" data-k="voice"><option>Aura-2, thalia-en</option><option>Aura-2, orion-en</option><option>Aura-2, luna-en</option></select>
-              <span id="c3"></span></div></div>
-            <div class="field"><label for="m-lang">Language</label><div class="input"><select id="m-lang" data-k="lang"><option>English (US)</option><option>English (UK)</option><option>Spanish (US)</option></select>
-              <span id="c4"></span></div></div>
-          </div>
-          <p class="t-caption" style="margin-top:20px">Spanish speakers are handled by the Spanish speaker test scenario on Test Scenarios.</p>
-        </section>
+        <div class="sect-h" style="min-height:20px"><h2 class="t-eyebrow" id="stt-h">Speech-To-Text</h2></div>
+        <div class="opts3" role="radiogroup" aria-labelledby="stt-h" id="stt-opts"></div>
+        <div class="sect-h" style="min-height:20px;margin-top:32px"><h2 class="t-eyebrow" id="llm-h">LLM</h2></div>
+        <div class="opts3" role="radiogroup" aria-labelledby="llm-h" id="llm-opts"></div>
+        <div class="sect-h" style="min-height:20px;margin-top:32px"><h2 class="t-eyebrow" id="vl-h">Voice and Language</h2></div>
+        <div class="grid2" style="max-width:720px">
+          <div class="field"><label for="m-voice">Voice</label><div class="input mono-v"><select id="m-voice" data-k="voice"><option>Aura-2, thalia-en</option><option>Aura-2, orion-en</option><option>Aura-2, luna-en</option></select><span></span></div></div>
+          <div class="field"><label for="m-lang">Language</label><div class="input"><select id="m-lang" data-k="lang"><option>English (US)</option><option>English (UK)</option><option>Spanish (US)</option></select><span></span></div></div>
+        </div>
+        <p class="t-caption" style="margin-top:20px">Spanish speakers are handled by the Spanish speaker test scenario on Test Scenarios.</p>
       </div>
 
       <!-- Functions -->
@@ -152,17 +172,34 @@
 
       <!-- Guardrails -->
       <div role="tabpanel" class="tabpanel" id="panel-guardrails" aria-labelledby="tab-guardrails" tabindex="0" hidden>
+        <div class="sect-h" style="min-height:20px"><h2 class="t-eyebrow" id="g-h">Always Enforced</h2></div>
         <section class="card pad" aria-labelledby="g-h">
-          <h2 class="t-heading" id="g-h" style="margin-bottom:4px">Guardrails</h2>
-          <p class="muted" style="margin-bottom:8px">Always enforced in the prompt and in the backend. The switch only controls whether a guardrail event is shown in call reviews.</p>
+          <p class="muted" style="margin-bottom:8px">These rules apply to every call and can't be turned off. Choose whether each rule's events appear in call reviews.</p>
           <div class="glist" id="glist"></div>
         </section>
       </div>
 
     </div>
 
-    <aside class="stack g16" aria-label="Agent summary">
-      <h2 class="t-eyebrow">Agent Summary</h2>
+  </div>
+
+</div>
+</main>
+</div>
+
+
+<div class="scrim" id="sumscrim"></div>
+<aside class="drawer" id="sumdrawer" role="dialog" aria-modal="true" aria-labelledby="sumdrawer-h" aria-hidden="true">
+  <div class="drawer-h">
+    <div><div class="t-eyebrow" style="margin-bottom:4px">Appointment Reminders · Draft v7</div><h2 class="t-headline" id="sumdrawer-h">Agent Summary</h2></div>
+    <button type="button" class="x" id="sumclose" aria-label="Close summary"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
+  </div>
+  <div class="drawer-body">
+      <section class="card pad" aria-labelledby="sum-g">
+        <div class="rail-h"><h3 class="t-heading" id="sum-g">Guardrails</h3><button type="button" class="action sm" id="g-manage">Manage</button></div>
+        <p class="t-caption" style="margin-bottom:12px">4 rules, always enforced.</p>
+        <ul class="grl" id="sum-gr"></ul>
+      </section>
       <section class="card pad" aria-labelledby="sum-m">
         <div class="rail-h"><h3 class="t-heading" id="sum-m">Models</h3><button type="button" class="action sm" id="models-edit">Edit</button></div>
         <dl class="kv ruled" id="sum-models"></dl>
@@ -176,17 +213,8 @@
           <ul id="sum-wr" style="list-style:none"></ul>
         </div>
       </section>
-      <section class="card pad" aria-labelledby="sum-g">
-        <h3 class="t-heading" id="sum-g">Guardrails, 4</h3>
-        <p class="t-caption" style="margin-bottom:12px">Enforced in the prompt and in the backend. Switches control review visibility.</p>
-        <div id="sum-gr"></div>
-      </section>
-    </aside>
   </div>
-
-</div>
-</main>
-</div>
+</aside>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -239,7 +267,6 @@ const usedVars = () => {
 function renderInstr() {
   $('greet-view').innerHTML = chipify(S.greeting);
   $('rules').innerHTML = S.rules.map((r, i) => `<li class="rule"><span class="n" aria-hidden="true">${i + 1}</span><span><span class="sr-only">Rule ${i + 1}. </span>${chipify(r)}</span></li>`).join('');
-  $('rulecount').textContent = S.rules.length;
   const used = usedVars();
   $('varcount').textContent = used.length;
   $('varsin').innerHTML = used.map(v => `<li><span class="var">{${v}}</span></li>`).join('');
@@ -276,8 +303,25 @@ $('prompt-done').addEventListener('click', () => {
 });
 
 /* ---------- models + summary ---------- */
+const STT = [['Nova-3 Medical', 'Tuned for clinical vocabulary: drug names, procedures and provider names.'], ['Nova-3 General', 'Everyday vocabulary. Faster, but less accurate on medical terms.'], ['Whisper Large', 'Strong with accents and noisy lines. Slower to respond.']];
+const LLMS = [['[Provider], fast tier', 'Lowest latency. Best for short, scripted calls like reminders.'], ['[Provider], balanced tier', 'Better judgment on unusual replies. A little slower.'], ['[Provider], reasoning tier', 'Strongest on multi-step requests. Highest latency, rarely needed here.']];
+function optGroup(el, list, key) {
+  el.innerHTML = list.map(([t, d]) => `<button type="button" class="opt" role="radio" aria-checked="${S.models[key] === t}" tabindex="${S.models[key] === t ? 0 : -1}" data-v="${esc(t)}"><span class="radio" aria-hidden="true"></span><span><span class="opt-t">${esc(t)}</span><span class="opt-d">${d}</span></span></button>`).join('');
+  const btns = Array.from(el.querySelectorAll('.opt'));
+  const pick = (b, focus) => { S.models[key] = b.dataset.v; renderModels(); if (focus) el.querySelector('[aria-checked="true"]').focus(); };
+  btns.forEach((b, i) => {
+    b.addEventListener('click', () => pick(b, true));
+    b.addEventListener('keydown', e => {
+      const st = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!st) return; e.preventDefault(); pick(btns[(i + st + btns.length) % btns.length], true);
+    });
+  });
+}
+function updateLine() { $('sumline').textContent = S.guards.length + ' guardrails · ' + S.models.stt + ' · ' + FNS.length + ' functions'; }
 function renderModels() {
   const m = S.models;
+  optGroup($('stt-opts'), STT, 'stt'); optGroup($('llm-opts'), LLMS, 'llm');
+  updateLine();
   $('sum-models').innerHTML = `<dt>Speech-to-text</dt><dd class="mono">${esc(m.stt)}</dd><dt>LLM</dt><dd class="mono">${esc(m.llm)}</dd><dt>Voice</dt><dd class="mono">${esc(m.voice)}</dd><dt>Language</dt><dd>${esc(m.lang)}</dd>`;
 }
 document.querySelectorAll('#panel-models select').forEach(sel => {
@@ -302,19 +346,19 @@ function renderVarRows() {
 
 /* ---------- guardrails (shared state, two views) ---------- */
 function renderGuards() {
-  const sw = (g, i, rev) => `<button type="button" class="toggle ${rev ? 'rev' : ''}" role="switch" aria-checked="${g[2]}" data-g="${i}"><span class="trk"></span><span>${g[0]}</span></button>`;
-  $('sum-gr').innerHTML = S.guards.map((g, i) => sw(g, i, true)).join('');
-  $('glist').innerHTML = S.guards.map((g, i) => `<div class="grow"><div><div class="strong">${g[0]}</div><div class="muted">${g[1]}</div></div>
-    <div class="row g12"><span class="badge ${g[2] ? 'badge-muted' : 'badge-dashed'}">${g[2] ? 'Enforced, shown in reviews' : 'Enforced, hidden from reviews'}</span>
-    <button type="button" class="toggle" role="switch" aria-checked="${g[2]}" data-g="${i}" aria-label="Show ${g[0]} in reviews"><span class="trk"></span></button></div></div>`).join('');
-  document.querySelectorAll('[data-g]').forEach(b => b.addEventListener('click', () => {
-    const g = S.guards[+b.dataset.g]; g[2] = !g[2];
-    NS.toast(g[2] ? g[0] + ' is shown in reviews.' : g[0] + ' is still enforced, but hidden from reviews.');
-    const keep = b.dataset.g, inRail = !!b.closest('#sum-gr');
+  const ico = '<span class="gic" aria-hidden="true">' + NS.ico('checkmark.shield.fill') + '</span>';
+  $('sum-gr').innerHTML = S.guards.map(g => `<li>${ico}<span>${g[0]}</span>${g[2] ? '' : '<span class="badge badge-muted">Not in reviews</span>'}</li>`).join('');
+  $('glist').innerHTML = S.guards.map((g, i) => `<div class="grow">${ico}<div><div class="strong">${g[0]}</div><div class="muted">${g[1]}</div></div>
+    <label class="check"><input type="checkbox" data-g="${i}" ${g[2] ? 'checked' : ''}><span>Show in call reviews</span></label></div>`).join('');
+  $('glist').querySelectorAll('[data-g]').forEach(b => b.addEventListener('change', () => {
+    const g = S.guards[+b.dataset.g]; g[2] = b.checked;
+    NS.toast(g[2] ? g[0] + ': events are shown in call reviews.' : g[0] + ' is still enforced. Its events are hidden from call reviews.');
+    const keep = b.dataset.g;
     renderGuards();
-    const again = (inRail ? $('sum-gr') : $('glist')).querySelector('[data-g="' + keep + '"]'); if (again) again.focus();
+    const again = $('glist').querySelector('[data-g="' + keep + '"]'); if (again) again.focus();
   }));
 }
+$('g-manage').addEventListener('click', () => { closeSummary(true); $('tab-guardrails').click(); $('tab-guardrails').focus(); });
 
 /* ---------- tabs ---------- */
 NS.tabs($('tablist'), (t) => {
@@ -322,12 +366,39 @@ NS.tabs($('tablist'), (t) => {
   history.replaceState(null, '', '#' + t.id.replace('tab-', ''));
 });
 const openTab = (name) => { const t = $('tab-' + name); if (t) t.click(); };
-$('models-edit').addEventListener('click', () => { openTab('models'); $('tab-models').focus(); });
+$('models-edit').addEventListener('click', () => { closeSummary(true); openTab('models'); $('tab-models').focus(); });
 if (location.hash) openTab(location.hash.slice(1));
 
 /* ---------- actions ---------- */
 $('save').addEventListener('click', () => NS.toast('Draft v7 saved.'));
 $('test').addEventListener('click', () => { NS.toast('Starting a simulated reschedule call.'); setTimeout(() => { location.href = 'p03-live-call.html'; }, 700); });
+
+/* ---------- Agent Summary drawer ---------- */
+let summaryOpener = null;
+function openSummary(from) {
+  summaryOpener = from;
+  $('sumdrawer').classList.add('open'); $('sumdrawer').setAttribute('aria-hidden', 'false'); $('sumscrim').classList.add('open');
+  document.querySelector('.main').setAttribute('inert', ''); document.querySelector('.side').setAttribute('inert', '');
+  $('sumclose').focus();
+}
+function closeSummary(skipFocus) {
+  if (!$('sumdrawer').classList.contains('open')) return;
+  $('sumdrawer').classList.remove('open'); $('sumdrawer').setAttribute('aria-hidden', 'true'); $('sumscrim').classList.remove('open');
+  document.querySelector('.main').removeAttribute('inert'); document.querySelector('.side').removeAttribute('inert');
+  if (!skipFocus && summaryOpener) summaryOpener.focus();
+}
+$('sumbtn').addEventListener('click', e => openSummary(e.currentTarget));
+$('sumclose').addEventListener('click', () => closeSummary());
+$('sumscrim').addEventListener('click', () => closeSummary());
+document.addEventListener('keydown', e => {
+  if (!$('sumdrawer').classList.contains('open')) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeSummary(); return; }
+  if (e.key === 'Tab') {
+    const f = Array.from($('sumdrawer').querySelectorAll('button')).filter(b => !b.disabled);
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+});
 
 renderInstr(); renderModels(); renderFns(); renderGuards();
 </script>

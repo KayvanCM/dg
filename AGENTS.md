@@ -12,7 +12,7 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 ## File map
 | File | What it is |
 |---|---|
-| `p01-templates.html` | Choose a template. Card grid with an always-visible details panel. |
+| `p01-templates.html` | Choose a template. Card grid, details drawer. |
 | `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). |
 | `p03-live-call.html` | Live test call: transcript, call state, latency, guardrails. |
 | `p03-alt-wrong-person.html` | Test call where a guardrail held (wrong person answered). |
@@ -40,11 +40,15 @@ P01 pick a template, P02 configure, P03 test call, P04 scenarios (scenario 3 fai
 
 **Layout follows an existing admin-UI pattern:** left nav, page header with a hairline divider, main column plus a sticky right rail, slide-out drawers for details.
 
-**Status is encoded by form, never by color alone.** Filled = done or passed. Outline = changed. Dashed = absent or not run. Muted fill = passive. Heavy outline with a "!" = needs a person. Color only confirms the form. `[data-fi="low"]` (an attribute `shell.js` sets on `<html>`) maps every color token back to neutrals, so each screen must read the same in grayscale. Test every change with `?fi=low`.
+**Status is encoded by form, never by color alone.** Filled = done or passed. Outline = changed. Dashed = absent or not run. Muted fill = passive. Heavy outline with a "!" = needs a person. Color only confirms the form, and it comes from the Northstar palette (go green `#1D6A4E`, soon slate `#2E5873`, stop rust `#8A3A22`, link and selection teal `#146F6A`). Green and rust have almost the same luminance, so never let color alone carry a status. `[data-fi="low"]` (an attribute `shell.js` sets on `<html>`) maps every color token back to neutrals, so each screen must read the same in grayscale. Test every change with `?fi=low`.
 
 **Typography.** Inter for language, Roboto Mono for machine strings. Seven text styles plus mono: Display 40/44, Title 28/32, Headline 20/24, Heading 16/24, Body 14/20, Caption 12/16, Eyebrow 12/16 caps, Mono 12/16. Use mono only for text a machine produced that a developer might copy or compare: function names, args and results, status codes, latencies, IDs, `{variables}`, transcript timestamps. Never for anything a person said or wrote, and never for buttons or labels.
 
 **Choosing between chips, tabs and segmented controls.** Chips filter one list or grid in place (P01 categories, C03 call outcomes). Underline tabs switch between sections that show different content (P02 sections, C04 transcript / function calls / audit log). The segmented control picks one value of a setting that rescopes a page (C02 date range). Do not mix them for the same job.
+
+**Selecting among a few options.** Use option cards (`.opt` with a title and a one-line description) when there are four options or fewer and each needs explaining (P02 speech-to-text and LLM, C04-alt resolution). Use the kit select for long or self-explanatory lists (P02 voice and language). The selected card uses `--sel` teal `#146F6A` with the `--sel-bg` tint `#E6F2EF`, taken from the Northstar palette; in Low fidelity it falls back to ink on white.
+
+**Detail panels are drawers.** P01 template details and the P02 Agent Summary open in a right-hand drawer (460px) over a dim layer. Keep the drawer outside the page container so `inert` on the page does not disable it.
 
 **Spacing and sizes** use even pixels only (4s preferred, 2s allowed). No fractional rem.
 
@@ -74,6 +78,7 @@ Exposed as `window.NS`.
 - `NS.reviewCount()`, `NS.isResolved(id)`, `NS.resolve(id)`: demo queue state. The seeded count is 6 and the resolvable call is `call_3c71d0`.
 - `NS.reset()`: clears resolved calls, `deployed`, `ack` and saved resolutions. The nav's Reset Demo link calls it.
 - Query params: `?fi=low|high` sets fidelity, `?ann=on|off` shows or hides the brief annotations.
+- `p01-templates.html#open=reminders` opens a template's details drawer.
 
 Each page declares `<body data-product="play|cons|ref" data-nav="p01">` and an empty `<aside class="side" id="side">`. `shell.js` fills the nav.
 
@@ -85,5 +90,5 @@ Invented: the wording of the P02 prompt rules, the other five templates, extra C
 ## Open items
 - Screen reader and automated accessibility audit.
 - Let a prompt fix in P02 flow into a passing re-run on P04.
-- Guardrail weighting (P02 open question) is answered with a note, not a visual hierarchy.
+- Guardrail weighting (P02 open question): answered by showing the rules as fixed (shield icon, "Always Enforced", no on/off switch) with one "Show in call reviews" checkbox per rule, and by listing them first in the Agent Summary. Worth testing with Sam.
 - Compact density for the Call Log. Dark mode.

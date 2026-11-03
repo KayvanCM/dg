@@ -49,7 +49,7 @@
           <div><div class="t-eyebrow">Call time</div><div class="clock" id="clock" role="timer" aria-live="off">01:42</div></div>
         </div>
         <div><div class="t-eyebrow">Simulated Patient</div><div class="t-heading" style="margin-top:2px">Reschedule</div><div class="muted">Maria G., 59, wants early next week</div><a class="action sm" href="p03-alt-wrong-person.html">Switch To Wrong Person</a></div>
-        <div class="wave" style="width:160px" aria-hidden="true" id="callwave"></div>
+        <div class="wave" style="width:197px;height:48px" aria-hidden="true" id="callwave"></div>
       </div>
       <div class="row g12 wrapf">
         <span class="tag">Agent <span class="mono" style="margin-left:4px;color:var(--ink)">v7</span>&nbsp;draft</span>
@@ -131,7 +131,7 @@ document.getElementById('tr').innerHTML = [
   `<li class="turn pt speaking"><div class="lat"></div><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:40</span></div><div class="row g8"><div class="wave" aria-hidden="true">${NS.wave(10, 10)}</div><span class="t-caption">Speaking</span></div></div></li>`
 ].join('');
 
-document.getElementById('callwave').innerHTML = NS.wave(48, 34);
+document.getElementById('callwave').innerHTML = NS.wave(40, 27); /* 40 bars at the kit's 5px pitch = 197px */
 
 document.getElementById('latstrip').innerHTML = agentTurns.map(([id, ts, w, v, slow], i) =>
   `<button type="button" class="${slow ? 'slow' : ''}" style="height:${Math.round(w / 11)}%" data-t="${id}" aria-label="Turn ${i + 1} at ${ts}, ${v}${slow ? ', slowest turn' : ''}"></button>`).join('');

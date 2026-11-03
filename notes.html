@@ -127,7 +127,7 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
     <div class="card pad">
       <div class="eye" role="table" aria-label="Reading order per screen">
         <div class="hd t-eyebrow" role="columnheader">Screen</div><div class="hd t-eyebrow" role="columnheader">First</div><div class="hd t-eyebrow" role="columnheader">Second</div><div class="hd t-eyebrow" role="columnheader">Third</div>
-        <div class="strong mono" role="cell">P01</div><div role="cell">The selected card: 2px ink border plus a Selected check</div><div role="cell">Details panel: four large counts, then the function list</div><div role="cell">Use This Template, the only filled button</div>
+        <div class="strong mono" role="cell">P01</div><div role="cell">Six equal cards with nothing preselected, so the choice leads</div><div role="cell">After a click, the card keeps a 2px border and a Selected check while a drawer shows four counts, then the function list</div><div role="cell">Use This Template, the only filled button, in the drawer footer</div>
         <div class="strong mono" role="cell">P02</div><div role="cell">The 6 numbered prompt rules, the most-edited thing</div><div role="cell">Functions That Write, labeled apart from read-only</div><div role="cell">Start Test Call</div>
         <div class="strong mono" role="cell">P03</div><div role="cell">Live badge and 28px call clock</div><div role="cell">The transcript spine, with dashed mono function blocks inset from the bubbles</div><div role="cell">Latency gutter: the slow turn is a hollow bar with a bold value</div>
         <div class="strong mono" role="cell">P03-alt</div><div role="cell">The calm banner: Guardrail Held, Working As Intended</div><div role="cell">The riskiest turn, outlined and pinned</div><div role="cell">Withheld list: four struck-through items</div>
@@ -148,13 +148,13 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
       <table class="tbl"><caption class="sr-only">Status forms and what color adds</caption>
         <thead><tr><th scope="col">Meaning</th><th scope="col">Form (always)</th><th scope="col">Badge</th><th scope="col">Color adds (High)</th></tr></thead>
         <tbody>
-          <tr><td>Done, passed</td><td>Filled</td><td><span class="badge badge-filled">Confirmed</span></td><td>Green</td></tr>
-          <tr><td>Changed</td><td>Outline</td><td><span class="badge badge-outline">Rescheduled</span></td><td>Blue</td></tr>
+          <tr><td>Done, passed</td><td>Filled</td><td><span class="badge badge-filled">Confirmed</span></td><td>Green (Northstar go)</td></tr>
+          <tr><td>Changed</td><td>Outline</td><td><span class="badge badge-outline">Rescheduled</span></td><td>Slate blue (Northstar soon)</td></tr>
           <tr><td>Absent, not run</td><td>Dashed</td><td><span class="badge badge-dashed">No answer</span></td><td>Nothing, on purpose</td></tr>
           <tr><td>Passive, closed</td><td>Muted fill</td><td><span class="badge badge-muted">Cancelled</span></td><td>Nothing, on purpose</td></tr>
-          <tr><td>Needs a person</td><td>Heavy outline with !</td><td><span class="badge badge-alert">Needs review</span></td><td>Red, only here</td></tr>
+          <tr><td>Needs a person</td><td>Heavy outline with !</td><td><span class="badge badge-alert">Needs review</span></td><td>Rust (Northstar stop), only here</td></tr>
           <tr><td>Switch on or off</td><td>Knob position plus label</td><td><button type="button" class="toggle" role="switch" aria-checked="true" data-toggle aria-label="Example, on"><span class="trk"></span></button></td><td>Green when on</td></tr>
-          <tr><td>Links and focus</td><td>Underline, 2px focus ring</td><td><a class="action" href="#color">Text action</a></td><td>Blue</td></tr>
+          <tr><td>Links and focus</td><td>Underline, 2px focus ring</td><td><a class="action" href="#color">Text action</a></td><td>Teal (Northstar link)</td></tr>
         </tbody>
       </table>
     </div>
@@ -167,9 +167,9 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
           <tr><td>Muted text #626262 on white</td><td class="r num">6.1</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
           <tr><td>Muted text #626262 on #EBEBEB</td><td class="r num">5.1</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
           <tr><td>Kit gray #6B6B6B on #EBEBEB</td><td class="r num">4.47</td><td>4.5 text</td><td class="bad-t">Misses by 0.03</td></tr>
-          <tr><td>Link blue on white</td><td class="r num">6.4</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
-          <tr><td>White on Confirmed green</td><td class="r num">5.9</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
-          <tr><td>Alert red on alert tint</td><td class="r num">4.9</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
+          <tr><td>Link teal on white</td><td class="r num">6.0</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
+          <tr><td>White on Confirmed green</td><td class="r num">6.5</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
+          <tr><td>Alert rust on alert tint</td><td class="r num">6.4</td><td>4.5 text</td><td class="ok-t">Pass</td></tr>
           <tr><td>Control edge #8C8C8C on white</td><td class="r num">3.4</td><td>3 non-text</td><td class="ok-t">Pass</td></tr>
           <tr><td>Kit field border #D1D1D1 on white</td><td class="r num">1.5</td><td>3 non-text</td><td class="bad-t">Fails for controls</td></tr>
         </tbody>
