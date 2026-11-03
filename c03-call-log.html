@@ -18,11 +18,13 @@
 .search input::placeholder{color:var(--muted);opacity:1}
 .sel{width:220px}
 .sel.sm{width:160px}
-.tabs.attached{margin-bottom:0;overflow-x:auto}
-.tab .badge{height:20px;padding:0 6px}
+.outcomes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip .n{font-size:12px;color:var(--muted)}
+.chip[aria-pressed="true"] .n{color:#fff;opacity:.85}
+.chip .badge{height:20px;padding:0 6px}
 .only-review .tbl tbody tr.flag td{background:transparent}
 .only-review .tbl tbody tr.flag:hover td{background:var(--surface)}
-.tbl-card{border-top-left-radius:0;border-top-right-radius:0;border-top:0;overflow:hidden}
+.tbl-card{overflow:hidden}
 .name{font-weight:500;color:var(--ink);text-decoration:none}
 .name:hover{text-decoration:underline}
 .flag .name{font-weight:600}
@@ -74,8 +76,8 @@
     </div>
   </form>
 
-  <div class="tabs attached" role="tablist" aria-label="Call outcome" id="tabs"></div>
-  <div class="card tbl-card" role="tabpanel" id="panel" aria-labelledby="tab-all">
+  <div class="outcomes" role="group" aria-label="Filter by call outcome" id="tabs"></div>
+  <div class="card tbl-card" id="panel" role="region" aria-label="Calls">
     <div id="tblHost"></div>
   </div>
   <div class="foot">
@@ -139,10 +141,13 @@ function renderTabs() {
   el.innerHTML = TABS.map(([k, l]) => {
     const c = count(k), sel = k === tab;
     const badge = k === 'review' && c > 0 ? `<span class="badge badge-alert">${c}</span>` : `<span class="n num">${fmt(c)}</span>`;
-    return `<button type="button" class="tab" role="tab" id="tab-${k}" data-k="${k}" aria-selected="${sel}" aria-controls="panel">${l}${badge}</button>`;
+    return `<button type="button" class="chip" data-k="${k}" aria-pressed="${sel}">${l}${badge}</button>`;
   }).join('');
-  NS.tabs(el, t => { tab = t.dataset.k; document.getElementById('panel').setAttribute('aria-labelledby', t.id); renderTable(); });
-  document.getElementById('panel').setAttribute('aria-labelledby', 'tab-' + tab);
+  el.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+    tab = b.dataset.k;
+    el.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    renderTable();
+  }));
 }
 
 const digits = s => s.replace(/\D/g, '');

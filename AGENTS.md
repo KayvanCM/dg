@@ -44,6 +44,8 @@ P01 pick a template, P02 configure, P03 test call, P04 scenarios (scenario 3 fai
 
 **Typography.** Inter for language, Roboto Mono for machine strings. Seven text styles plus mono: Display 40/44, Title 28/32, Headline 20/24, Heading 16/24, Body 14/20, Caption 12/16, Eyebrow 12/16 caps, Mono 12/16. Use mono only for text a machine produced that a developer might copy or compare: function names, args and results, status codes, latencies, IDs, `{variables}`, transcript timestamps. Never for anything a person said or wrote, and never for buttons or labels.
 
+**Choosing between chips, tabs and segmented controls.** Chips filter one list or grid in place (P01 categories, C03 call outcomes). Underline tabs switch between sections that show different content (P02 sections, C04 transcript / function calls / audit log). The segmented control picks one value of a setting that rescopes a page (C02 date range). Do not mix them for the same job.
+
 **Spacing and sizes** use even pixels only (4s preferred, 2s allowed). No fractional rem.
 
 ## Copy rules

@@ -8,7 +8,7 @@
 <script src="icons.js"></script>
 <script src="shell.js"></script>
 <style>
-.tpl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tpl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .tpl{border:1px solid var(--line);border-radius:var(--r-card);padding:20px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:12px;min-height:200px;width:100%;color:inherit}
 .tpl:hover{background:var(--surface)}
 .tpl[aria-pressed="true"]{border:2px solid var(--ink);padding:19px;background:#fff}
@@ -21,7 +21,7 @@
 .tpl .more{margin-top:auto;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink)}
 .tpl .more svg{width:12px;height:12px}
 .dir{font-size:12px;line-height:16px;color:var(--muted)}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}
 .scrim{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
 .scrim.open{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;background:#fff;border-left:1px solid var(--line);z-index:70;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s .32s}
@@ -76,7 +76,7 @@
 
   <section aria-labelledby="tpl-h">
     <div class="chips" role="group" aria-label="Category" id="chips"></div>
-    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="tpl-h"><span id="tplcount">6 Templates</span></h2><span class="t-caption">Select a template to see what it includes</span></div>
+    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="tpl-h"><span id="tplcount">6 Templates</span></h2></div>
     <div id="empty" class="empty" hidden></div>
     <div class="tpl-grid" id="grid"></div>
   </section>
@@ -159,7 +159,7 @@ function renderGrid() {
         <span class="sel"><span class="okck" aria-hidden="true">${NS.check}</span>Selected</span></span>
       <p>${t.desc}</p>
       <span class="tags">${t.tags.map(x => `<span class="tag">${x}</span>`).join('')}</span>
-      <span class="more">View What's Included ${NS.chev('')}</span>
+      <span class="more">View Details ${NS.chev('')}</span>
     </button>`).join('');
   $('grid').querySelectorAll('.tpl').forEach(c => c.addEventListener('click', () => openDrawer(c.dataset.id, c)));
 }
@@ -188,7 +188,7 @@ function renderDetail() {
     <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.guards.length} ${t.guards.length === 1 ? 'Guardrail' : 'Guardrails'}</h3>
       ${t.guards.length ? `<ul class="lst">${t.guards.map(g => `<li class="ck"><span class="okck" aria-hidden="true">${NS.check}</span><span>${g}</span></li>`).join('')}</ul>` : '<p class="none">None included</p>'}</div>
     </div>
-    <div class="drawer-f"><button type="button" class="btn btn-outline" id="use" style="flex:1">Use This Template</button><button type="button" class="btn btn-secondary" id="dcancel">Cancel</button></div>`;
+    <div class="drawer-f"><button type="button" class="btn btn-primary" id="use" style="flex:1">Use This Template</button><button type="button" class="btn btn-secondary" id="dcancel">Cancel</button></div>`;
   $('dclose').addEventListener('click', () => closeDrawer());
   $('dcancel').addEventListener('click', () => closeDrawer());
   $('use').addEventListener('click', () => {
