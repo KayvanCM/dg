@@ -76,7 +76,7 @@
 
   <section aria-labelledby="tpl-h">
     <div class="chips" role="group" aria-label="Category" id="chips"></div>
-    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="tpl-h"><span id="tplcount">Template Cards, 6</span></h2><span class="t-caption">Select a template to see what it includes</span></div>
+    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="tpl-h"><span id="tplcount">6 Templates</span></h2><span class="t-caption">Select a template to see what it includes</span></div>
     <div id="empty" class="empty" hidden></div>
     <div class="tpl-grid" id="grid"></div>
   </section>
@@ -147,7 +147,7 @@ function renderChips() {
 
 function renderGrid() {
   const v = visible();
-  $('tplcount').textContent = 'Template Cards, ' + v.length;
+  $('tplcount').textContent = v.length + (v.length === 1 ? ' Template' : ' Templates');
   const real = v.filter(t => t.cat !== '*').length;
   const e = $('empty');
   e.hidden = real > 0;
