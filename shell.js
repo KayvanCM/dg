@@ -91,9 +91,11 @@
       ['Test Scenarios', 'p04-scenarios.html', 'checkmark.shield.fill', 'p04']
     ],
     cons: [
+      ['Deploy', 'c01-deploy.html', 'square.and.arrow.up', 'c01'],
       ['Overview', 'c02-overview.html', 'chart.line.uptrend.xyaxis', 'c02'],
       ['Call Log', 'c03-call-log.html', 'bubble.left.and.bubble.right', 'c03'],
-      ['Deploy', 'c01-deploy.html', 'square.and.arrow.up', 'c01']
+      ['Call Detail', 'c04-call-detail.html', 'checkmark.circle', 'c04'],
+      ['Needs Review', 'c04-alt-needs-review.html', 'exclamationmark.triangle', 'c04alt']
     ]
   };
 
@@ -223,8 +225,8 @@
     setTimeout(finish, COUNT_MS + WIPE_MS + TILE_MS + 1200);   // failsafe: the splash can never get stuck, even if the browser pauses animations
 
     const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-    function reveal(selector, offset, blur, delay, duration) {
-      document.querySelectorAll(selector).forEach(el => {
+    function reveal(target, offset, blur, delay, duration) {
+      (typeof target === 'string' ? document.querySelectorAll(target) : [target]).forEach(el => {
         animations.push(el.animate([
           { opacity: 0, transform: 'translateY(' + offset + 'px)', filter: 'blur(' + blur + 'px)' },
           { opacity: 1, transform: 'none', filter: 'none' }
@@ -249,8 +251,8 @@
       exit.onfinish = () => { splash.remove(); exit.cancel(); document.removeEventListener('focusin', finish); };
       reveal('#side > *, .crumb', -6, 0, WIPE_MS * 0.5, 420);
       reveal('.head', 12, 8, WIPE_MS * 0.6, 520);
-      reveal(page === 'p01' ? '.page > section[aria-labelledby="tpl-h"]' : '#naCard', 12, 8, WIPE_MS * 0.7, 520);
-      if (page === 'c02') reveal('#naCard ~ .sect', 12, 8, WIPE_MS * 0.8, 520);
+      if (page === 'p01') reveal('.page > section[aria-labelledby="tpl-h"]', 12, 8, WIPE_MS * 0.7, 520);
+      else document.querySelectorAll('.page > section:not(.annots)').forEach((el, i) => reveal(el, 12, 8, WIPE_MS * (0.7 + i * 0.1), 520));
     }
 
     const start = performance.now();

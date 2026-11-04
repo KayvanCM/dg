@@ -17,14 +17,13 @@
 @media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--focus);outline-offset:4px}}
 
 /* guardrail banner and withheld list */
-.banner{margin-bottom:24px}
+.banner{margin-bottom:24px;padding:16px 24px}
 .banner .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.banner .acts{margin-top:12px}
-.withheld{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-@media (max-width:1280px){.withheld{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.withheld li{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border:1px dashed var(--dash);border-radius:6px;background:#fff}
+.banner p .action{margin-left:4px}
+.wh{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.withheld{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.withheld li{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 12px;border:1px dashed var(--dash);border-radius:var(--r-badge);background:#fff;font-size:12px;line-height:16px}
 .withheld .nm{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted);font-weight:500}
-.withheld .st{display:flex;align-items:center;gap:8px}
 .risk-pin{display:flex;justify-content:flex-end;margin-top:8px}
 .risk-pin .badge{gap:8px;padding-left:4px}
 
@@ -152,18 +151,12 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
     <div class="ico" aria-hidden="true"></div>
     <div>
       <div class="top">
-        <h2 class="t-headline" id="gh-h">Guardrail Held: Identity Not Verified, So Appointment Details Were Withheld</h2>
+        <h2 class="t-headline" id="gh-h">Guardrail Held: Appointment Details Withheld</h2>
         <span class="badge badge-filled" style="flex-shrink:0">Working as Intended</span>
       </div>
-      <p class="muted" style="margin-top:8px;max-width:760px">The agent did not say the provider, date, time or location. It left a callback number only.</p>
-      <div class="acts"><button type="button" class="action sm" id="jump">Jump To the Riskiest Turn</button></div>
+      <p class="muted" style="margin-top:4px;max-width:760px">Identity was not verified, so the agent left a callback number only. <button type="button" class="action sm" id="jump">Jump To the Riskiest Turn</button></p>
+      <div class="wh"><span class="t-eyebrow" id="wh-h">Not Said</span><ul class="withheld" id="withheld" aria-labelledby="wh-h"></ul></div>
     </div>
-  </section>
-
-  <section class="card pad" aria-labelledby="wh-h" style="margin-bottom:32px">
-    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="wh-h">Withheld From This Call</h2><span class="t-caption">4 items</span></div>
-    <ul class="withheld" id="withheld"></ul>
-    <p class="t-caption" style="margin-top:12px">Each item is struck through because the agent never said it.</p>
   </section>
 
   <section aria-labelledby="conv-h">
@@ -250,12 +243,13 @@ $('scnlist').innerHTML = NS.otherCalls(3);
 NS.bindSubnav($('scnlist')); NS.initGroups($('subnav'));
 
 $('withheld').innerHTML = ['Provider name', 'Appointment date & time', 'Clinic location', 'Reason for visit'].map(x =>
-  `<li><span class="nm"><span class="sr-only">Withheld: </span>${x}</span><span class="st"><span class="okck" aria-hidden="true">${NS.check}</span><span class="t-caption">Not said</span></span></li>`).join('');
+  `<li><span class="nm">${x}</span></li>`).join('');
 
 $('s-slowb').addEventListener('click', () => { const t = $('fn-log'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); });
 
 $('jump').addEventListener('click', () => {
   const t = $('risk');
+  jump(EV[nodes.indexOf(t)].t, false);   // the scrubber moves to the riskiest turn, keeping play or pause as it was
   t.scrollIntoView({ behavior: 'smooth', block: 'center' });
   t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
 });

@@ -15,9 +15,8 @@
 [data-fi="low"] .dep{color:var(--ink)}
 .dep svg{width:14px;height:14px}
 
-/* Needs Attention leads the page. The brief asks whether the queue should leave the side column:
-   it moves to the top, because it is the only element on this screen that asks for an action today,
-   and Teresa checks it first every morning. The metrics step down beneath it. */
+/* The metrics lead the page and Needs Attention sits directly beneath them. The brief asks whether the queue should
+   leave the side column: it is now a full-width block in the main column, just below the numbers. */
 .na{border-color:var(--alert-line)}
 .na-list{list-style:none}
 .q-row{display:grid;grid-template-columns:24px 232px minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--fill);text-decoration:none;color:inherit}
@@ -36,10 +35,7 @@
 .q-row .go{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--link);text-decoration:underline;text-underline-offset:3px}
 .q-row .go svg{width:12px;height:12px}
 
-.mgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;gap:16px}
-.mgrid .hero{grid-row:1 / span 2;display:flex;flex-direction:column;justify-content:space-between;padding:20px 24px}
-.mgrid .metric .big{margin:4px 0}
-.mgrid .hero .big{margin:0 0 8px}
+.kgrid{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:16px}
 .chart-wrap{position:relative}
 .chart-wrap svg text{font-family:var(--sans)}
 .legend{display:flex;gap:20px;align-items:center}
@@ -47,8 +43,8 @@
 .sw-l.post{border-top-color:var(--info)}
 @media (max-width:1180px){
   .q-row{grid-template-columns:24px 180px minmax(0,1fr) auto}
-  .mgrid{grid-template-columns:1fr 1fr}
-  .mgrid .hero{grid-column:1 / span 2;grid-row:auto}
+  .kgrid{grid-template-columns:1fr 1fr}
+  .kgrid .kpi.lead{grid-column:1 / span 2}
 }
 </style>
 </head>
@@ -87,6 +83,11 @@
 
   <p class="sr-only" role="status" id="live"></p>
 
+  <section class="sect" aria-labelledby="m-h">
+    <h2 class="t-eyebrow" id="m-h">Results<span class="marker sm pin" aria-hidden="true">1</span></h2>
+    <div class="kgrid" id="metrics"></div>
+  </section>
+
   <section class="card na sect" aria-labelledby="na-h" id="naCard">
     <div class="card-h">
       <div class="row g12">
@@ -99,23 +100,23 @@
     <ul class="na-list" id="naList"></ul>
   </section>
 
-  <section class="sect" aria-labelledby="m-h">
-    <h2 class="t-eyebrow" id="m-h">Results<span class="marker sm pin" aria-hidden="true">1</span></h2>
-    <div class="mgrid" id="metrics"></div>
-  </section>
 
-  <section class="card pad" aria-labelledby="ch-h">
-    <div class="row between" style="margin-bottom:4px">
-      <h2 class="t-heading" id="ch-h">No-Show Rate, Last 12 Weeks</h2>
-      <span class="t-caption mono" id="readout" aria-hidden="true">Jul 21 to Oct 12</span>
+  <section class="tray" aria-labelledby="ch-h">
+    <div class="tray-h"><h2 class="t-eyebrow" id="ch-h">No-Show Rate, Last 12 Weeks</h2><span class="t-caption mono" id="readout" aria-hidden="true">Jul 21 to Oct 12</span></div>
+    <div class="tray-in">
+      <p class="t-caption" style="margin-bottom:12px">Share of booked appointments where the patient did not show. Lower is better.</p>
+      <div class="chart-wrap" id="chartWrap"></div>
+      <table class="sr-only">
+        <caption>No-show rate by week, Jul 21 to Oct 12. The agent went live Sep 15.</caption>
+        <thead><tr><th scope="col">Week of</th><th scope="col">No-show rate</th></tr></thead>
+        <tbody id="chartTbl"></tbody>
+      </table>
+      <dl class="strip">
+        <div><dt class="t-caption">Before the agent</dt><dd>11.8%</dd></div>
+        <div><dt class="t-caption">Latest week</dt><dd>6.2%</dd></div>
+        <div><dt class="t-caption">Change</dt><dd>5.6 pts lower</dd></div>
+      </dl>
     </div>
-    <p class="t-caption" style="margin-bottom:12px">Share of booked appointments where the patient did not show. Lower is better.</p>
-    <div class="chart-wrap" id="chartWrap"></div>
-    <table class="sr-only">
-      <caption>No-show rate by week, Jul 21 to Oct 12. The agent went live Sep 15.</caption>
-      <thead><tr><th scope="col">Week of</th><th scope="col">No-show rate</th></tr></thead>
-      <tbody id="chartTbl"></tbody>
-    </table>
   </section>
 
 </div>
@@ -129,6 +130,16 @@ const RANGES = {
   '7d':  { lbl: 'last 7 days', noshow: '6.2%', calls: '1,284', appts: '902 appointments', conf: '71%', confN: '644 appointments', resch: 81, unr: '16%', unrN: 'after all retries', failed: 2, total: 1284 },
   '30d': { lbl: 'last 30 days', noshow: '7.4%', calls: '4,912', appts: '3,461 appointments', conf: '69%', confN: '2,388 appointments', resch: 312, unr: '18%', unrN: 'after all retries', failed: 2, total: 4912 }
 };
+const PTS = [11.8, 11.6, 11.9, 11.5, 11.7, 11.3, 10.9, 9.4, 8.1, 7.0, 6.5, 6.2];
+const LIVE = 8; /* Sep 15 */
+/* chart wash: a left-to-right gradient (dark to light) that fades out toward the baseline, with a fine black grain at 20% */
+function wash(id, x1, x2, top, base) {
+  return { defs: `<linearGradient id="${id}G" gradientUnits="userSpaceOnUse" x1="${x1}" x2="${x2}" y1="0" y2="0"><stop offset="0" style="stop-color:var(--grad-a)"/><stop offset="1" style="stop-color:var(--grad-b)"/></linearGradient>
+    <linearGradient id="${id}F" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${top}" y2="${base}"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <mask id="${id}M" maskUnits="userSpaceOnUse" x="0" y="0" width="10000" height="10000"><rect x="0" y="0" width="10000" height="10000" fill="url(#${id}F)"/></mask>
+    <filter id="${id}N" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.6 0 0 0 -.35"/></filter>`,
+    area: (d) => `<clipPath id="${id}C"><path d="${d}"/></clipPath><path d="${d}" fill="url(#${id}G)" mask="url(#${id}M)"/><g clip-path="url(#${id}C)"><g mask="url(#${id}M)" opacity=".2"><rect x="${x1}" y="${top}" width="${Math.abs(x2 - x1)}" height="${base - top}" filter="url(#${id}N)"/></g></g>` };
+}
 let cur = '7d';
 
 const MARIA = 'call_3c71d0';
@@ -154,16 +165,59 @@ document.getElementById('naCount').textContent = n + (n === 1 ? ' call' : ' call
 
 /* ---------- metrics ---------- */
 function failedCount() { return Math.max(0, RANGES[cur].failed - (done ? 1 : 0)); }
-function renderMetrics() {
-  const d = RANGES[cur];
+/* Each tile is an inner card with the number and a small picture of it, plus a footer that says how it moved.
+   The change figures other than No-Show Rate are placeholders (invented), not from the brief. */
+const DELTAS = {
+  today: { prev: 'vs yesterday', ns: '5.9 pts', calls: '+4%', conf: '+1 pt', unr: '1 pt' },
+  '7d':  { prev: 'vs last week', ns: '5.6 pts', calls: '+8%', conf: '+2 pts', unr: '1 pt' },
+  '30d': { prev: 'vs last month', ns: '4.4 pts', calls: '+11%', conf: '+3 pts', unr: '2 pts' }
+};
+const ARW = { up: 'M3.5 8.5l5-5M4.5 3.5h4v4', down: 'M3.5 3.5l5 5M8.5 4.5v4h-4' };
+const pill = (dir, txt) => `<span class="dp"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ARW[dir]}"/></svg>${txt}</span>`;
+const pct = s => parseFloat(s);
+const spark = (w, h) => {
+  const lo = 5, hi = 12.5, X = i => 2 + i * (w - 4) / (PTS.length - 1), Y = v => 2 + (hi - v) / (hi - lo) * (h - 4);
+  const d = PTS.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X(PTS.length - 1)}" cy="${Y(PTS[PTS.length - 1])}" r="3" fill="var(--ink)"/></svg>`;
+};
+const bars = (hs) => `<svg width="52" height="32" viewBox="0 0 52 32" aria-hidden="true">${hs.map((v, i) => `<rect x="${i * 8}" y="${32 - v * 32 / 100}" width="4" height="${v * 32 / 100}" rx="1" fill="${i === hs.length - 1 ? 'var(--ink)' : 'var(--line)'}"/>`).join('')}</svg>`;
+const ring = (p, tone) => `<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="var(--fill)" stroke-width="5"/><circle cx="20" cy="20" r="16" fill="none" stroke="${tone}" stroke-width="5" stroke-linecap="butt" stroke-dasharray="${(p * 100.53 / 100).toFixed(1)} 100.53" transform="rotate(-90 20 20)"/></svg>`;
+const BARS = { today: [40, 56, 48, 64, 52, 60, 72], '7d': [52, 44, 60, 56, 68, 48, 64], '30d': [44, 52, 48, 60, 56, 64, 72] };
+const tile = (cls, label, value, note, viz, foot) => `<article class="kpi ${cls}"><div class="kpi-in"><div class="t-eyebrow">${label}</div><div class="kpi-row"><div class="kv-n">${value}</div><div class="kpi-viz">${viz}</div></div>${note ? `<div class="t-caption muted kpi-note">${note}</div>` : ''}</div><div class="kpi-ft">${foot}</div></article>`;
+/* switching the range: numbers count to their new value, bars grow, rings draw, the rest fades in. About 0.3s in all. */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const parseVal = s => ({ n: parseFloat(s.replace(/,/g, '')), dec: (s.split('.')[1] || '').replace(/\D/g, '').length, pct: s.includes('%'), comma: s.includes(',') });
+const fmtVal = (n, m) => (m.comma ? n.toLocaleString('en-US', { minimumFractionDigits: m.dec, maximumFractionDigits: m.dec }) : n.toFixed(m.dec)) + (m.pct ? '%' : '');
+function playMetrics(before) {
+  const ease = 'cubic-bezier(0.2, 0.7, 0.2, 1)', DUR = 320;
+  document.querySelectorAll('#metrics .kv-n').forEach((el, i) => {
+    const to = el.textContent, a = parseVal(before[i] || to), b = parseVal(to);
+    if (isNaN(a.n) || isNaN(b.n)) return;
+    const t0 = performance.now();
+    setTimeout(() => { el.textContent = to; }, DUR + 80);   // failsafe: the number always lands on its real value
+    (function step(now) {
+      const k = Math.min(1, (now - t0) / DUR), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = k < 1 ? fmtVal(a.n + (b.n - a.n) * e, b) : to;
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  });
+  document.querySelectorAll('#metrics .kpi-viz svg > rect').forEach((r, i) => r.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: DUR, delay: (i % 7) * 20, easing: ease, fill: 'backwards' }));
+  document.querySelectorAll('#metrics .kpi-viz svg > circle[stroke-dasharray]').forEach(c => { const full = c.getAttribute('stroke-dasharray'); c.animate([{ strokeDasharray: '0 100.53' }, { strokeDasharray: full }], { duration: DUR, easing: ease, fill: 'backwards' }); });
+  document.querySelectorAll('#metrics .kpi-viz svg > path').forEach(p => p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: DUR, easing: ease, fill: 'backwards' }));
+  document.querySelectorAll('#metrics .kpi-ft > *, #metrics .kpi-note').forEach(el => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 60, easing: 'ease-out', fill: 'backwards' }));
+}
+function renderMetrics(animate) {
+  const d = RANGES[cur], dl = DELTAS[cur];
+  const before = Array.from(document.querySelectorAll('#metrics .kv-n')).map(e => e.textContent);
   const f = failedCount();
-  document.getElementById('metrics').innerHTML = `
-    <div class="card hero"><div class="t-eyebrow">No-Show Rate</div><div><div class="t-display num">${d.noshow}</div><div class="muted">was 11.8% before the agent</div></div></div>
-    <div class="card metric"><div class="t-eyebrow">Calls Placed</div><div class="big">${d.calls}</div><div class="muted">across ${d.appts}</div></div>
-    <div class="card metric"><div class="t-eyebrow">Confirmed</div><div class="big">${d.conf}</div><div class="muted">${d.confN}</div></div>
-    <div class="card metric"><div class="t-eyebrow">Rescheduled</div><div class="big">${d.resch}</div>
-      <div>${f ? `<span class="badge badge-alert">${f} failed to write</span>` : '<span class="muted">All calendar writes succeeded</span>'}</div></div>
-    <div class="card metric"><div class="t-eyebrow">Unreached</div><div class="big">${d.unr}</div><div class="muted">${d.unrN}</div></div>`;
+  document.getElementById('metrics').innerHTML =
+    tile('lead', 'No-Show Rate', d.noshow, 'was 11.8% before the agent', spark(112, 40), `${pill('down', dl.ns)}<span class="t-caption muted">vs before the agent</span>`) +
+    tile('', 'Calls Placed', d.calls, 'across ' + d.appts, bars(BARS[cur]), `${pill('up', dl.calls)}<span class="t-caption muted">${dl.prev}</span>`) +
+    tile('', 'Confirmed', d.conf, d.confN, ring(pct(d.conf), 'var(--ink)'), `${pill('up', dl.conf)}<span class="t-caption muted">${dl.prev}</span>`) +
+    tile('', 'Rescheduled', d.resch, f ? 'incl. failed writes' : 'All calendar writes succeeded', bars(BARS[cur].slice().reverse()),
+      f ? `<span class="dp bad"><b aria-hidden="true">!</b>${f} failed to write</span>` : `<span class="t-caption muted">No failed writes</span>`) +
+    tile('', 'Unreached', d.unr, d.unrN, ring(pct(d.unr), 'var(--control)'), `${pill('down', dl.unr)}<span class="t-caption muted">${dl.prev}</span>`);
+  if (animate && !reduceMotion) playMetrics(before);
   document.getElementById('rangeLbl').textContent = d.lbl;
   document.getElementById('live').textContent = 'Showing results for ' + d.lbl + '.';
 }
@@ -171,9 +225,10 @@ renderMetrics();
 
 document.querySelectorAll('#range button').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.r === 'custom') { NS.toast('Custom date ranges are not part of this prototype.'); return; }
+  if (b.dataset.r === cur) return;
   cur = b.dataset.r;
   document.querySelectorAll('#range button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  renderMetrics();
+  renderMetrics(true);
 }));
 document.getElementById('export').addEventListener('click', () => NS.toast('Exporting ' + RANGES[cur].total.toLocaleString('en-US') + ' calls as CSV.'));
 
@@ -183,8 +238,6 @@ if (NS.get('deployed')) {
 }
 
 /* ---------- trend chart: 12 weekly points, Jul 21 to Oct 12 ---------- */
-const PTS = [11.8, 11.6, 11.9, 11.5, 11.7, 11.3, 10.9, 9.4, 8.1, 7.0, 6.5, 6.2];
-const LIVE = 8; /* Sep 15 */
 const wk = i => { const d = new Date(2026, 6, 21 + i * 7); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
 document.getElementById('chartTbl').innerHTML = PTS.map((v, i) => `<tr><th scope="row">${wk(i)}${i === LIVE ? ' (agent went live)' : ''}</th><td>${v}%</td></tr>`).join('');
 
@@ -199,8 +252,12 @@ function draw() {
   const halo = 'paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"';
   const ex = X(LIVE);
   const last = PTS.length - 1;
+  const wsh = wash('tr', X(0), X(PTS.length - 1), T, Y(0));
+  const areaD = seg(0, PTS.length - 1) + `L${X(PTS.length - 1)} ${Y(0)}L${X(0)} ${Y(0)}Z`;
   document.getElementById('chartWrap').innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart. The no-show rate was about 11.8 percent in the week of Jul 21, held near 11 to 12 percent until the agent went live on Sep 15, then fell to 6.2 percent by the week of Oct 6.">
+    <defs>${wsh.defs}</defs>
     ${grid}
+    ${wsh.area(areaD)}
     <line x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}" stroke="#D1D1D1"/>
     <path d="${seg(0, LIVE)}" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="${seg(LIVE, last)}" fill="none" stroke="var(--info)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
