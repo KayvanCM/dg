@@ -14,9 +14,9 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 |---|---|
 | `p01-templates.html` | Choose a template. Card grid, details drawer. |
 | `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). |
-| `p03-live-call.html` | Live test call: transcript, call state, latency, guardrails. |
-| `p03-alt-wrong-person.html` | Test call where a guardrail held (wrong person answered). |
-| `p04-scenarios.html` | Test scenarios and results. One scenario fails by design. |
+| `p03-live-call.html` | Test call in two states on one page. While live, the bottom dock holds only the Live badge, clock, waveform, Mute Agent and End Call. End Call flips the same page to Ended: the dock becomes a scrubber (play, skip, speed) with a Run Test Scenarios button. The left panel shows call state, response time and guardrail statuses. |
+| `p03-alt-wrong-person.html` | The same template, already ended: a call where a guardrail held (wrong person answered). |
+| `p04-scenarios.html` | Test scenarios and results. A verdict banner (Not Ready To Deploy) leads, then filter chips, search and CSV download, then the table. A scenario name opens a detail drawer (expected, actual, function call, transcript excerpt, prompt fix). One scenario fails by design. |
 | `c01-deploy.html` | Deploy rules. Deploy is gated by an acknowledgement checkbox. |
 | `c02-overview.html` | Console overview: Needs Attention queue, metrics, trend chart. |
 | `c03-call-log.html` | Filterable call log. |
@@ -24,7 +24,7 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 | `c04-alt-needs-review.html` | The same failure reaching a patient. Resolve flow. |
 | `notes.html` | Design notes: type scale, mono rule, reading order, color logic. |
 | `northside.css` | All tokens and shared components. |
-| `shell.js` | Left nav, product switcher, fidelity and annotation toggles, toast, demo state, tab helper. |
+| `shell.js` | Left nav, user switcher (Sam sees Playground, Teresa sees Console), fidelity and annotation toggles, toast, demo state, tab helper. |
 | `icons.js` | SF Symbols as inline SVG strings, `window.NSI`. |
 | `fonts/` | Inter and Roboto Mono, bundled. |
 | `assets/user-flow.svg` | The user flow diagram shown on the notes page. |

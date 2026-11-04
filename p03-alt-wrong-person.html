@@ -8,31 +8,130 @@
 <script src="icons.js"></script>
 <script src="shell.js"></script>
 <style>
+.main{padding-bottom:152px}
 .tr{list-style:none}
-.callhead{padding:20px 24px;margin-bottom:24px}
-.callhead .r1{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
 .clock{font-size:28px;line-height:32px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.banner{margin-bottom:24px}
-.banner .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.banner .acts{margin-top:12px}
-.risk-pin{display:flex;justify-content:flex-end;margin:-8px 0 0 104px}
-.risk-pin .badge{gap:8px;padding-left:4px}
-.withheld{list-style:none;display:flex;flex-direction:column;gap:8px}
-.withheld li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px dashed var(--dash);border-radius:6px;background:#fff}
-.withheld .nm{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted);font-weight:500}
-.withheld .st{display:flex;align-items:center;gap:8px}
+.turn,.fn{scroll-margin-bottom:152px}
 .flash{animation:flash 1.4s ease-out}
 @keyframes flash{0%{outline:3px solid var(--focus);outline-offset:4px}100%{outline:3px solid transparent;outline-offset:4px}}
 @media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--focus);outline-offset:4px}}
+
+/* guardrail banner and withheld list */
+.banner{margin-bottom:24px}
+.banner .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.banner .acts{margin-top:12px}
+.withheld{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1280px){.withheld{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.withheld li{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border:1px dashed var(--dash);border-radius:6px;background:#fff}
+.withheld .nm{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted);font-weight:500}
+.withheld .st{display:flex;align-items:center;gap:8px}
+.risk-pin{display:flex;justify-content:flex-end;margin-top:8px}
+.risk-pin .badge{gap:8px;padding-left:4px}
+
+/* conversation tools */
+.tools{display:flex;gap:4px;align-items:center}
+.pop-wrap{position:relative}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-btn);display:grid;place-items:center;color:var(--ink)}
+.icon-btn:hover,.icon-btn[aria-expanded="true"]{background:var(--fill)}
+.icon-btn svg{width:16px;height:16px}
+.pop{position:absolute;right:0;top:calc(100% + 8px);z-index:50;background:#fff;border:1px solid var(--line);border-radius:var(--r-card);box-shadow:0 8px 24px rgba(0,0,0,.12);width:340px}
+.pop[hidden]{display:none}
+.pop-h{padding:14px 16px 8px}
+.pop .kv{padding:0 16px 14px}
+.pop .kv dt{white-space:nowrap}
+#dlbtn svg{width:14px;height:20px}
+.pop .menu-item{display:flex;width:100%;align-items:center;gap:12px;padding:10px 16px;text-align:left;font-size:14px}
+.pop .menu-item:hover{background:var(--fill)}
+.pop .menu-item:first-child{border-radius:var(--r-card) var(--r-card) 0 0}
+.pop .menu-item:last-child{border-radius:0 0 var(--r-card) var(--r-card)}
+.pop .menu-item .cap{margin-left:auto}
+.convhead{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-height:36px}
+.convhead h2{margin-right:auto}
+.findbar{width:0;padding:0;overflow:hidden;opacity:0;margin-right:0;transition:width .28s cubic-bezier(.2,.7,.2,1),padding .28s,opacity .2s,margin .28s}
+.findbar.open{width:330px;padding:2px;opacity:1;margin-right:8px}
+@media (prefers-reduced-motion:reduce){.findbar{transition:none}}
+.findbar .input{height:36px;justify-content:flex-start;gap:8px;flex-wrap:nowrap}
+.findbar .input svg{width:14px;height:14px;color:var(--muted);flex-shrink:0}
+.findbar input{min-width:0;flex:1}
+input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;display:none}
+#fcount{white-space:nowrap}
+.fx{width:24px;height:24px;border-radius:var(--r-badge);display:grid;place-items:center;flex-shrink:0;color:var(--ink)}
+.fx:hover{background:var(--fill)}
+.fx svg{width:12px;height:12px;color:inherit}
+mark{background:#D3E8E5;color:inherit;border-radius:2px;padding:0 1px}
+mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
+[data-fi="low"] mark{background:var(--fill)}
+[data-fi="low"] mark.on{background:var(--line)}
+
+/* persistent dock with the scrubber */
+.dock{position:fixed;left:calc(var(--side) + 320px);right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:12px 48px}
+.dock-in{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.dock-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dock .clock{min-width:80px}
+#dbadge{min-width:72px;justify-content:center}
+.dock .wave{position:relative;width:100%;height:54px;padding-top:6px;overflow:visible;cursor:pointer;touch-action:none}
+.ph{position:absolute;top:0;left:0;width:10px;height:54px;pointer-events:none;will-change:transform}
+.ph .knob{position:absolute;top:0;left:1px;width:8px;height:8px;border-radius:50%;background:var(--playhead)}
+.ph .cap{position:absolute;top:9px;left:0;width:10px;height:42px;border-radius:5px;border:1px solid var(--playhead);background:color-mix(in srgb,var(--playhead) 12%,transparent)}
+.dock .wave i{pointer-events:none}
+.dock .playbtn{width:40px;height:40px;border-radius:20px}
+.dock .playbtn:hover{background:#4A4A4A}
+.dock .playbtn svg{width:14px;height:14px}
+.tbtn{height:40px;min-width:36px;padding:0 4px;border-radius:var(--r-btn);display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:500;color:var(--ink)}
+.tbtn:hover{background:var(--fill)}
+.tbtn svg{width:16px;height:16px}
+.cur .bub{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
+.cur.fn{border-style:solid;border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
+.seg button{height:28px;padding:0 8px}
+@media (max-width:1180px){.dock{padding:12px 32px}}
+@media (max-width:1100px){.dock{left:var(--side)}}
 </style>
 </head>
-<body data-product="play" data-nav="p03">
-<div class="app">
+<body data-product="play" data-nav="p03alt">
+<div class="app has-sub">
 <aside class="side" id="side"></aside>
+<aside class="subnav" id="subnav" aria-label="Test calls">
+  <section class="sgroup plain" aria-labelledby="sgh1">
+    <h2 class="sg-h static" id="sgh1"><span class="t-heading">This Call</span></h2>
+    <div class="sg-body">
+      <div class="strong">Wrong person answers</div>
+      <p class="muted" style="margin:2px 0 8px">Patient's son answers</p>
+      <span class="badge badge-muted">Ended, 00:41</span>
+    </div>
+  </section>
+  <section class="sgroup card" aria-labelledby="sgh2">
+    <h2 class="sg-h" id="sgh2"><button type="button" class="sg-btn" aria-expanded="true" aria-controls="sgb2"><span class="t-heading">Call State</span><span class="sg-chev" aria-hidden="true"></span></button></h2>
+    <div class="sg-body" id="sgb2">
+      <div>
+      <div class="srow"><span class="muted">Scenario check</span><span class="badge badge-filled">Passed</span></div>
+      <div class="srow"><span class="muted">Result</span><b>Wrong party</b></div>
+      <div class="srow"><span class="muted">Identity</span><b>Not verified</b></div>
+      <div class="srow"><span class="muted">PHI disclosed</span><b>None</b></div>
+      <div class="srow"><span class="muted">Next attempt</span><b>Today, 1:42 PM</b></div>
+      <div class="srow"><span class="muted">Guardrail</span><span class="badge badge-filled">Held</span></div>
+    </div>
+    </div>
+  </section>
+  <section class="sgroup card" aria-labelledby="sgh3">
+    <h2 class="sg-h" id="sgh3"><button type="button" class="sg-btn" aria-expanded="true" aria-controls="sgb3"><span class="t-heading">Response Time</span><span class="sg-chev" aria-hidden="true"></span></button></h2>
+    <div class="sg-body" id="sgb3">
+      <div class="srow"><span class="muted">Median turn</span><b class="mono">530 ms</b></div>
+      <div class="srow"><span class="muted">p95 turn</span><b class="mono">590 ms</b></div>
+      <div class="srow wrap"><span class="muted">Slowest</span><button type="button" class="action mono" id="s-slowb">log_outcome 96 ms</button></div>
+    </div>
+  </section>
+  <section class="sgroup card" aria-labelledby="sgh5">
+    <h2 class="sg-h" id="sgh5"><button type="button" class="sg-btn" aria-expanded="true" aria-controls="sgb5"><span class="t-heading">Other Test Calls</span><span class="sg-chev" aria-hidden="true"></span></button></h2>
+    <div class="sg-body" id="sgb5">
+      <div id="scnlist"></div>
+      <a class="action sm more-link" href="p04-scenarios.html">View All In Test Scenarios</a>
+    </div>
+  </section>
+</aside>
 <main class="main" id="main">
 <div class="page">
 
-  <nav class="crumb" aria-label="Breadcrumb"><a href="p01-templates.html">Playground</a><span class="sl" aria-hidden="true">/</span><a href="p02-configure.html">Appointment Reminders</a><span class="sl" aria-hidden="true">/</span><a href="p03-live-call.html">Test Call</a><span class="sl" aria-hidden="true">/</span><span class="cur" aria-current="page">Wrong Person Answers</span></nav>
+  <nav class="crumb" aria-label="Breadcrumb"><a href="p01-templates.html">Playground</a><span class="sl" aria-hidden="true">/</span><a href="p02-configure.html">Appointment Reminders</a><span class="sl" aria-hidden="true">/</span><a href="p03-live-call.html">Test Call</a><span class="sl" aria-hidden="true">/</span><span class="cur" aria-current="page">Wrong Person Answers</span><span aria-hidden="true">·</span><a class="action sm" href="p02-configure.html">Back To Config</a></nav>
 
   <section class="annots" aria-label="Brief annotations">
     <span class="t-eyebrow">Brief annotations for P03-alt</span>
@@ -41,32 +140,13 @@
     <div class="annot"><span class="marker">3</span><p>Showing what the agent did NOT say is unusual. Is a list the right form?</p></div>
   </section>
 
-  <h1 class="sr-only">Test Call: Wrong Person Answers</h1>
-
-  <div class="card callhead">
-    <div class="r1">
-      <div class="row wrapf" style="gap:32px">
-        <div>
-          <div class="t-eyebrow">Status and Duration</div>
-          <div class="row g8" style="margin-top:2px"><span class="badge badge-muted">Ended</span><span class="clock" aria-label="Call length 41 seconds">00:41</span></div>
-        </div>
-        <div>
-          <div class="t-eyebrow">Test Scenario</div>
-          <div class="t-heading" style="margin-top:2px">Wrong Person</div>
-          <div class="muted">Patient's son answers</div>
-        </div>
-        <div class="stack g4">
-          <a class="action sm" href="p02-configure.html">Back To Config</a>
-          <a class="action sm" href="p04-scenarios.html">View Test Scenarios</a>
-        </div>
-      </div>
-      <div class="row g12 wrapf">
-        <span class="tag">Agent <span class="mono" style="margin-left:4px;color:var(--ink)">v7</span>&nbsp;draft</span>
-        <button type="button" class="btn btn-secondary" disabled>Mute Agent</button>
-        <button type="button" class="btn btn-secondary" disabled>End Call</button>
-      </div>
+  <header class="head">
+    <div>
+      <h1 class="t-title">Wrong Person Answers</h1>
+      <p>Agent <span class="mono">v7</span> draft. Test scenario: Wrong person. The patient's son answers.</p>
     </div>
-  </div>
+  </header>
+  <hr class="div">
 
   <section class="banner calm" aria-labelledby="gh-h">
     <div class="ico" aria-hidden="true"></div>
@@ -80,61 +160,238 @@
     </div>
   </section>
 
-  <div class="cols main-rail">
-    <section aria-labelledby="conv-h">
-      <h2 class="t-eyebrow" id="conv-h" style="margin-bottom:12px">The Conversation</h2>
-      <ol class="tr" id="tr"></ol>
-    </section>
+  <section class="card pad" aria-labelledby="wh-h" style="margin-bottom:32px">
+    <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="wh-h">Withheld From This Call</h2><span class="t-caption">4 items</span></div>
+    <ul class="withheld" id="withheld"></ul>
+    <p class="t-caption" style="margin-top:12px">Each item is struck through because the agent never said it.</p>
+  </section>
 
-    <aside class="stack g16 sticky" aria-label="Call summary">
-      <section class="card pad" aria-labelledby="wh-h">
-        <div class="row between" style="margin-bottom:12px"><h2 class="t-eyebrow" id="wh-h">Withheld From This Call</h2><span class="t-caption">4 items</span></div>
-        <ul class="withheld" id="withheld"></ul>
-        <p class="t-caption" style="margin-top:12px">Each item is struck through because the agent never said it.</p>
-      </section>
-      <section class="card pad" aria-labelledby="oc-h">
-        <h2 class="t-eyebrow" id="oc-h" style="margin-bottom:12px">Outcome</h2>
-        <dl class="kv ruled">
-          <dt>Result</dt><dd>Wrong party</dd>
-          <dt>Next attempt</dt><dd>Today · 1:42 PM</dd>
-          <dt>Scenario check</dt><dd><span class="badge badge-filled">Passed</span></dd>
-        </dl>
-      </section>
-    </aside>
-  </div>
+  <section aria-labelledby="conv-h">
+    <div class="convhead"><h2 class="t-eyebrow" id="conv-h">The Conversation</h2>
+      <div class="findbar" id="findbar" role="search" aria-label="Find in transcript" inert>
+        <label class="input"><span id="fico"></span><input type="search" id="fq" placeholder="Find in transcript" aria-label="Find in transcript" autocomplete="off"><span class="t-caption" id="fcount" aria-live="polite"></span><button type="button" class="fx" id="fclose" aria-label="Close search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button></label>
+      </div>
+      <div class="tools">
+        <button type="button" class="icon-btn" id="findbtn" aria-label="Search transcript" aria-expanded="false" aria-controls="findbar"></button>
+        <div class="pop-wrap">
+          <button type="button" class="icon-btn" id="infobtn" aria-label="Call details" aria-haspopup="dialog" aria-expanded="false" aria-controls="infopop"></button>
+          <div class="pop" id="infopop" role="dialog" aria-label="Call details" hidden>
+            <div class="pop-h t-eyebrow">Call Details</div>
+            <dl class="kv ruled">
+              <dt>Call ID</dt><dd class="mono">call_5e2a88</dd>
+              <dt>Agent</dt><dd>Appointment Reminders <span class="mono">v7</span></dd>
+              <dt>Scenario</dt><dd>Wrong person</dd>
+              <dt>Answered by</dt><dd>Patient's son</dd>
+              <dt>Started</dt><dd>Oct 12, 2026, 11:21 AM</dd>
+              <dt>Length</dt><dd class="mono">0:41</dd>
+              <dt>Speech-to-text</dt><dd class="mono">Nova-3 Medical</dd>
+              <dt>LLM</dt><dd class="mono">[Provider], fast tier</dd>
+              <dt>Voice</dt><dd class="mono">Aura-2, thalia-en</dd>
+            </dl>
+          </div>
+        </div>
+        <div class="pop-wrap">
+          <button type="button" class="icon-btn" id="dlbtn" aria-label="Download" aria-haspopup="menu" aria-expanded="false" aria-controls="dlpop"></button>
+          <div class="pop" id="dlpop" role="menu" aria-label="Download" style="width:280px" hidden>
+            <button type="button" class="menu-item" role="menuitem" id="dl-txt">Transcript<span class="t-caption cap mono">.txt</span></button>
+            <button type="button" class="menu-item" role="menuitem" id="dl-json">Call Data<span class="t-caption cap mono">.json</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ol class="tr" id="tr"></ol>
+  </section>
 
 </div>
 </main>
 </div>
 
+<div class="dock" id="dock" role="region" aria-label="Call playback controls">
+  <div class="dock-in">
+    <div class="wave" id="callwave" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="41" aria-valuenow="0" aria-valuetext="00:00 of 00:41"></div>
+    <div class="dock-bar">
+      <span class="badge badge-muted" id="dbadge"><span>Paused</span></span>
+      <div class="clock" id="clock" role="timer" aria-live="off">00:00</div>
+      <span class="t-caption" id="dur">of 00:41</span>
+      <div class="row g8">
+        <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"><span id="back-i"></span>10</button>
+        <button type="button" class="playbtn" id="pp" aria-label="Play"></button>
+        <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds">10<span id="fwd-i"></span></button>
+      </div>
+      <div style="flex:1"></div>
+      <a class="btn btn-primary" href="p04-scenarios.html">Run Test Scenarios</a>
+    </div>
+  </div>
+</div>
+
 <script>
+const $ = (id) => document.getElementById(id);
 document.querySelector('.banner .ico').innerHTML = NS.ico('checkmark.shield.fill');
 
-const fn = (o) => `<li class="fn">
+const fn = (o) => `<li class="fn" ${o.id ? 'id="' + o.id + '"' : ''}>
   <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span><span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span></div>
   <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
 
-const turn = (side, who, ts, txt, lat, id, cls) => `<li class="turn ${side} ${cls || ''}" ${id ? 'id="' + id + '"' : ''}>
-  <div class="lat">${lat ? `<span class="bar" style="width:${lat.w}px"></span><span class="v">${lat.v}</span>` : ''}</div>
-  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span></div><div class="bub">${txt}</div></div></li>`;
+const turn = (side, who, ts, txt, lat, id, extra) => `<li class="turn ${side}" ${id ? 'id="' + id + '"' : ''}>
+  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span>${lat ? `<span class="lat-in"><span class="v">${lat}</span></span>` : ''}</div><div class="bub">${txt}</div>${extra || ''}</div></li>`;
 
-document.getElementById('tr').innerHTML = [
-  turn('ag', 'Agent', '00:02', 'Hi, this is the Northside Health assistant calling for Maria. Is this Maria?', { w: 20, v: '470 ms' }),
-  turn('pt', 'Other Person', '00:05', "No, this is her son. She's at work."),
-  turn('pt', 'Other Person', '00:16', 'Is everything OK? Is this about her test results?', null, 'risk', 'risk'),
-  `<li class="risk-pin"><span class="badge badge-outline"><span class="marker sm" aria-hidden="true">1</span>Riskiest turn: asks about test results</span></li>`,
-  turn('ag', 'Agent', '00:20', "I'm not able to share details, but it's nothing urgent from this call. Could you ask her to call us back at the clinic number?", { w: 30, v: '590 ms' }),
-  fn({ name: 'log_outcome', code: 200, ms: 96, dur: 25, args: '{ result: "wrong_party", phi_disclosed: false, retry: "+3h" }', res: '→ { logged: true, next_attempt: "13:42" }' })
-].join('');
+/* t = seconds into the call */
+const EV = [
+  { t: 2,  html: turn('ag', 'Agent', '00:02', 'Hi, this is the Northside Health assistant calling for Maria. Is this Maria?', '470 ms') },
+  { t: 5,  html: turn('pt', 'Other Person', '00:05', "No, this is her son. She's at work.") },
+  { t: 16, html: turn('pt', 'Other Person', '00:16', 'Is everything OK? Is this about her test results?', null, 'risk', '<div class="risk-pin"><span class="badge badge-outline"><span class="marker sm" aria-hidden="true">1</span>Riskiest turn: asks about test results</span></div>') },
+  { t: 20, html: turn('ag', 'Agent', '00:20', "I'm not able to share details, but it's nothing urgent from this call. Could you ask her to call us back at the clinic number?", '590 ms') },
+  { t: 21, html: fn({ id: 'fn-log', name: 'log_outcome', code: 200, ms: 96, dur: 25, args: '{ result: "wrong_party", phi_disclosed: false, retry: "+3h" }', res: '→ { logged: true, next_attempt: "13:42" }' }) }
+];
+const D = 41;
+$('tr').innerHTML = EV.map(e => e.html).join('');
+const nodes = Array.from($('tr').children);
+$('scnlist').innerHTML = NS.otherCalls(3);
+NS.bindSubnav($('scnlist')); NS.initGroups($('subnav'));
 
-document.getElementById('withheld').innerHTML = ['Provider name', 'Appointment date & time', 'Clinic location', 'Reason for visit'].map(x =>
-  `<li><span class="nm"><span class="sr-only">Withheld: </span>${x}</span><span class="st"><span class="t-caption">Not said</span><span class="okck" aria-hidden="true">${NS.check}</span></span></li>`).join('');
+$('withheld').innerHTML = ['Provider name', 'Appointment date & time', 'Clinic location', 'Reason for visit'].map(x =>
+  `<li><span class="nm"><span class="sr-only">Withheld: </span>${x}</span><span class="st"><span class="okck" aria-hidden="true">${NS.check}</span><span class="t-caption">Not said</span></span></li>`).join('');
 
-document.getElementById('jump').addEventListener('click', () => {
-  const t = document.getElementById('risk');
+$('s-slowb').addEventListener('click', () => { const t = $('fn-log'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); });
+
+$('jump').addEventListener('click', () => {
+  const t = $('risk');
   t.scrollIntoView({ behavior: 'smooth', block: 'center' });
   t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
 });
+
+/* ---------- playback: a recording of the ended call ---------- */
+const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s) % 60).padStart(2, '0');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PAUSE = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>';
+$('back-i').innerHTML = NS.ico('arrow.trianglehead.2.counterclockwise');
+$('fwd-i').innerHTML = NS.ico('arrow.trianglehead.2.clockwise.rotate.90');
+
+let pos = 0, playing = false, speed = 1, N = 0, lastIdx = -1, lastSec = -1, phEl = null;
+const wave = $('callwave');
+
+function build() {
+  N = Math.max(10, Math.floor((wave.clientWidth + 3) / 5));
+  wave.innerHTML = NS.wave(N, 0) + '<div class="ph" aria-hidden="true"><span class="knob"></span><span class="cap"></span></div>';
+  phEl = wave.querySelector('.ph'); lastIdx = -1; draw();
+}
+function moveHead() {
+  const idx = Math.floor(pos / D * N);
+  if (idx !== lastIdx) { const bars = wave.children; for (let i = 0; i < N; i++) bars[i].className = i > idx ? 'off' : ''; lastIdx = idx; }
+  if (phEl) phEl.style.transform = 'translateX(' + (pos / D * (N * 5 - 3) - 4) + 'px)';
+}
+function draw() {
+  moveHead(); lastSec = Math.floor(pos);
+  $('clock').textContent = fmt(pos);
+  const state = playing ? 'Playing' : 'Ended';
+  $('dbadge').className = 'badge badge-muted';
+  $('dbadge').innerHTML = '<span>' + state + '</span>';
+  $('pp').innerHTML = playing ? PAUSE : NS.play;
+  $('pp').setAttribute('aria-label', playing ? 'Pause' : pos >= D ? 'Replay' : 'Play');
+  wave.setAttribute('aria-valuenow', Math.floor(pos)); wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(D));
+  let cur = -1; EV.forEach((e, i) => { if (e.t <= pos) cur = i; });
+  nodes.forEach((n, i) => n.classList.toggle('cur', i === cur));
+}
+function jump(newPos, scroll) {
+  pos = Math.max(0, Math.min(D, newPos)); draw();
+  if (scroll) { const c = nodes.find(n => n.classList.contains('cur')); if (c) c.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }); }
+}
+let lastTs = null;
+function frame(ts) {
+  if (lastTs === null) lastTs = ts;
+  const dt = Math.min(0.1, (ts - lastTs) / 1000); lastTs = ts;
+  if (playing) { pos = Math.min(D, pos + dt * speed); if (pos >= D) { playing = false; draw(); } }
+  moveHead();
+  if (Math.floor(pos) !== lastSec) draw();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+$('pp').addEventListener('click', () => { if (!playing && pos >= D) pos = 0; playing = !playing; draw(); });
+$('back').addEventListener('click', () => jump(pos - 10, true));
+$('fwd').addEventListener('click', () => jump(pos + 10, true));
+let dragging = false;
+const seekAt = (e, scroll) => { const r = wave.getBoundingClientRect(); jump((e.clientX - r.left) / r.width * D, scroll); };
+wave.addEventListener('pointerdown', e => { dragging = true; wave.setPointerCapture(e.pointerId); seekAt(e, false); });
+wave.addEventListener('pointermove', e => { if (dragging) seekAt(e, false); });
+wave.addEventListener('pointerup', e => { if (!dragging) return; dragging = false; seekAt(e, true); });
+wave.addEventListener('pointercancel', () => { dragging = false; });
+wave.addEventListener('keydown', e => {
+  const k = { ArrowRight: 5, ArrowLeft: -5, ArrowUp: 5, ArrowDown: -5 }[e.key];
+  if (k) { e.preventDefault(); jump(pos + k, true); }
+  if (e.key === 'Home') { e.preventDefault(); jump(0, true); }
+  if (e.key === 'End') { e.preventDefault(); jump(D, true); }
+});
+build(); window.addEventListener('resize', build);
+
+/* ---------- conversation tools: search, call details, download ---------- */
+$('findbtn').innerHTML = NS.ico('magnifyingglass'); $('infobtn').innerHTML = NS.ico('info.circle'); $('dlbtn').innerHTML = NS.ico('square.and.arrow.down');
+$('fico').innerHTML = NS.ico('magnifyingglass');
+
+const pops = [['infobtn', 'infopop'], ['dlbtn', 'dlpop']];
+function closePops(except) { pops.forEach(([b, p]) => { if (p !== except) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); } }); }
+pops.forEach(([b, p]) => $(b).addEventListener('click', e => {
+  e.stopPropagation(); const open = $(p).hidden; closePops(p);
+  $(p).hidden = !open; $(b).setAttribute('aria-expanded', String(open));
+  if (open && p === 'dlpop') $('dl-txt').focus();
+}));
+document.addEventListener('click', e => { if (!e.target.closest('.pop-wrap')) closePops(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const was = pops.find(([b, p]) => !$(p).hidden); closePops(); if (was) $(was[0]).focus(); } });
+
+function save(name, type, text) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
+}
+function transcriptData() {
+  return nodes.map(n => {
+    if (n.classList.contains('fn')) return { type: 'function', name: n.querySelector('.nm').textContent, status: n.querySelector('.code').textContent, duration: n.querySelector('.ms').textContent, detail: n.querySelector('.body').innerText.trim() };
+    const m = n.querySelector('.lat-in .v');
+    return { type: 'turn', speaker: n.querySelector('.who-l b').textContent, at: n.querySelector('.who-l .mono').textContent, text: n.querySelector('.bub').textContent.trim(), responseTime: m ? m.textContent : null };
+  });
+}
+$('dl-txt').addEventListener('click', () => {
+  const lines = transcriptData().map(r => r.type === 'turn' ? '[' + r.at + '] ' + r.speaker + ': ' + r.text + (r.responseTime ? ' (' + r.responseTime + ')' : '') : '        ' + r.name + '() ' + r.status + ' ' + r.duration + ' ' + r.detail.replace(/\n/g, ' '));
+  save('call_5e2a88-transcript.txt', 'text/plain', 'Test Call, call_5e2a88\nAgent v7 draft, scenario: Wrong person\n\n' + lines.join('\n') + '\n');
+  closePops(); NS.toast('Transcript downloaded.');
+});
+$('dl-json').addEventListener('click', () => {
+  save('call_5e2a88.json', 'application/json', JSON.stringify({ call_id: 'call_5e2a88', agent: 'Appointment Reminders v7 draft', scenario: 'Wrong person', events: transcriptData() }, null, 2));
+  closePops(); NS.toast('Call data downloaded.');
+});
+
+const fq = $('fq'); let orig = new Map(), marks = [], mi = -1;
+function clearMarks() { orig.forEach((html, el) => { el.innerHTML = html; }); orig.clear(); marks = []; mi = -1; }
+function setCur(i) {
+  if (!marks.length) { $('fcount').textContent = fq.value ? 'No matches' : ''; return; }
+  mi = (i + marks.length) % marks.length;
+  marks.forEach((m, j) => m.classList.toggle('on', j === mi));
+  $('fcount').textContent = (mi + 1) + ' of ' + marks.length;
+  marks[mi].scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+}
+function runFind() {
+  clearMarks(); const q = fq.value.trim(); if (!q) { $('fcount').textContent = ''; return; }
+  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  document.querySelectorAll('#tr .bub, #tr .fn .nm, #tr .fn .body').forEach(el => {
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), hits = [];
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (re.test(n.nodeValue)) hits.push(n), re.lastIndex = 0;
+    if (!hits.length) return;
+    orig.set(el, el.innerHTML);
+    hits.forEach(n => {
+      const frag = document.createDocumentFragment(); let last = 0; re.lastIndex = 0; let m;
+      while ((m = re.exec(n.nodeValue))) { frag.append(n.nodeValue.slice(last, m.index)); const k = document.createElement('mark'); k.textContent = m[0]; frag.append(k); last = m.index + m[0].length; if (!m[0].length) re.lastIndex++; }
+      frag.append(n.nodeValue.slice(last)); n.replaceWith(frag);
+    });
+  });
+  marks = Array.from(document.querySelectorAll('#tr mark')); setCur(0);
+}
+function toggleFind(show) {
+  const fb = $('findbar'); fb.classList.toggle('open', show); fb.inert = !show; $('findbtn').setAttribute('aria-expanded', String(show));
+  if (show) setTimeout(() => fq.focus(), reduceMotion ? 0 : 120); else { clearMarks(); fq.value = ''; $('fcount').textContent = ''; $('findbtn').focus(); }
+}
+$('findbtn').addEventListener('click', () => toggleFind(!$('findbar').classList.contains('open')));
+$('fclose').addEventListener('click', () => toggleFind(false));
+fq.addEventListener('input', runFind);
+fq.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setCur(mi + (e.shiftKey ? -1 : 1)); } if (e.key === 'Escape') { e.stopPropagation(); toggleFind(false); } });
 </script>
 </body>
 </html>

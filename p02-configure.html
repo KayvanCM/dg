@@ -34,6 +34,11 @@
 .sect-h{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:12px}
 .warnline{display:flex;gap:8px;align-items:center;margin-top:8px}
 .vlist{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
+.vbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
+.vbar .t-caption{color:var(--muted);margin-right:4px}
+.vbar button.var{height:24px;padding:0 8px;cursor:pointer;border:1px solid transparent}
+.vbar button.var:hover{background:var(--fill);border-color:var(--control)}
+.vbar .action{margin-left:auto}
 .rail-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .fcard{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--fill)}
 .fcard:last-child{border-bottom:0;padding-bottom:0}
@@ -43,7 +48,7 @@
 .toggle.rev:last-child{border-bottom:0;padding-bottom:0}
 .toggle.rev:first-of-type{padding-top:0}
 .glist{display:flex;flex-direction:column}
-.grow{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:16px;align-items:start;padding:16px 0;border-bottom:1px solid var(--fill)}
+.grow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;padding:16px 0;border-bottom:1px solid var(--fill)}
 .grow:last-child{border-bottom:0;padding-bottom:0}
 .gic{color:var(--ok);padding-top:1px}
 .gic svg{width:18px;height:18px}
@@ -106,7 +111,7 @@
           <div class="editor">
             <div class="greet" id="greet-view"></div>
             <div id="greet-edit-wrap" hidden>
-              <textarea class="textarea" id="greet-ta" aria-label="Greeting text. Wrap variables in curly braces." rows="3"></textarea>
+              <textarea class="textarea" id="greet-ta" aria-label="Greeting text. Use the Insert Variable buttons below, or wrap a variable name in curly braces." rows="3"></textarea>
               <div class="ed-foot"><button type="button" class="btn btn-secondary btn-sm" id="greet-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="greet-done">Done</button></div>
             </div>
           </div>
@@ -118,7 +123,7 @@
             <div class="bar"><span class="t-caption" id="preamble">You are a friendly scheduling assistant for Northside Health. Follow these rules in order.</span></div>
             <ol id="rules" style="list-style:none"></ol>
             <div id="prompt-edit-wrap" hidden>
-              <textarea class="textarea" id="prompt-ta" aria-label="System prompt rules. One rule per line. Wrap variables in curly braces." rows="8"></textarea>
+              <textarea class="textarea" id="prompt-ta" aria-label="System prompt rules. One rule per line. Use the Insert Variable buttons below, or wrap a variable name in curly braces." rows="8"></textarea>
               <div class="ed-foot"><span class="t-caption" style="margin-right:auto">One rule per line. Numbers are added for you.</span><button type="button" class="btn btn-secondary btn-sm" id="prompt-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="prompt-done">Done</button></div>
             </div>
           </div>
@@ -174,7 +179,7 @@
       <div role="tabpanel" class="tabpanel" id="panel-guardrails" aria-labelledby="tab-guardrails" tabindex="0" hidden>
         <div class="sect-h" style="min-height:20px"><h2 class="t-eyebrow" id="g-h">Always Enforced</h2></div>
         <section class="card pad" aria-labelledby="g-h">
-          <p class="muted" style="margin-bottom:8px">These rules apply to every call and can't be turned off. Choose whether each rule's events appear in call reviews.</p>
+          <p class="muted" style="margin-bottom:8px">These rules apply to every call and can't be turned off. Use the checkbox to choose whether each rule's events appear in call reviews.</p>
           <div class="glist" id="glist"></div>
         </section>
       </div>
@@ -287,6 +292,22 @@ const toggleEdit = (kind, on) => {
     $(isG ? 'greet-ta' : 'prompt-ta').focus();
   } else $(kind + '-edit').focus();
 };
+/* insert-variable row under each editor: click a chip to drop it at the cursor */
+['greet-ta', 'prompt-ta'].forEach(id => {
+  const ta = $(id);
+  const bar = document.createElement('div');
+  bar.className = 'vbar'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', 'Insert a variable');
+  bar.innerHTML = '<span class="t-caption">Insert Variable</span>' +
+    Object.keys(DEFINED).map(k => `<button type="button" class="var" data-v="${k}" aria-label="Insert ${DEFINED[k][0]}, {${k}}">{${k}}</button>`).join('') +
+    '<button type="button" class="action sm">See All Variables</button>';
+  ta.insertAdjacentElement('afterend', bar);
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.classList.contains('action')) { openTab('variables'); $('tab-variables').focus(); return; }
+    const s = ta.selectionStart, end = ta.selectionEnd, txt = '{' + b.dataset.v + '}';
+    ta.setRangeText(txt, s, end, 'end'); ta.focus();
+  });
+});
 $('greet-edit').addEventListener('click', () => toggleEdit('greet', true));
 $('prompt-edit').addEventListener('click', () => toggleEdit('prompt', true));
 $('greet-cancel').addEventListener('click', () => toggleEdit('greet', false));
@@ -348,8 +369,8 @@ function renderVarRows() {
 function renderGuards() {
   const ico = '<span class="gic" aria-hidden="true">' + NS.ico('checkmark.shield.fill') + '</span>';
   $('sum-gr').innerHTML = S.guards.map(g => `<li>${ico}<span>${g[0]}</span>${g[2] ? '' : '<span class="badge badge-muted">Not in reviews</span>'}</li>`).join('');
-  $('glist').innerHTML = S.guards.map((g, i) => `<div class="grow">${ico}<div><div class="strong">${g[0]}</div><div class="muted">${g[1]}</div></div>
-    <label class="check"><input type="checkbox" data-g="${i}" ${g[2] ? 'checked' : ''}><span>Show in call reviews</span></label></div>`).join('');
+  $('glist').innerHTML = S.guards.map((g, i) => `<div class="grow"><label class="check" aria-label="Show in call reviews: ${esc(g[0])}"><input type="checkbox" data-g="${i}" ${g[2] ? 'checked' : ''}></label>
+    <div><div class="strong">${g[0]}</div><div class="muted">${g[1]}</div><div class="t-caption" style="margin-top:4px">${g[2] ? 'Shown in call reviews' : 'Hidden from call reviews'}</div></div></div>`).join('');
   $('glist').querySelectorAll('[data-g]').forEach(b => b.addEventListener('change', () => {
     const g = S.guards[+b.dataset.g]; g[2] = b.checked;
     NS.toast(g[2] ? g[0] + ': events are shown in call reviews.' : g[0] + ' is still enforced. Its events are hidden from call reviews.');

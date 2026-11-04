@@ -182,8 +182,7 @@ const fnBlock = (o) => `<li class="fn">
   <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span><span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span></div>
   <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
 const turn = (side, who, ts, txt, lat, id) => `<li class="turn ${side}" ${id ? 'id="' + id + '"' : ''}>
-  <div class="lat">${lat ? `<span class="bar" style="width:${lat.w}px"></span><span class="v">${lat.v}</span>` : ''}</div>
-  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span></div><div class="bub">${txt}</div></div></li>`;
+  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span>${lat ? `<span class="lat-in ${lat.slow ? 'slow' : ''}"><span class="v">${lat.v}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
 
 document.getElementById('tr').innerHTML = [
   turn('ag', 'Agent', '00:38', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', { w: 28, v: '610 ms' }),

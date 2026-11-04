@@ -10,9 +10,10 @@
 <style>
 .tpl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .tpl{border:1px solid var(--line);border-radius:var(--r-card);padding:20px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:12px;min-height:200px;width:100%;color:inherit}
-.tpl:hover{background:var(--surface)}
+.tpl{transition:box-shadow .2s ease,background-color .2s ease}
+.tpl:hover{background:var(--surface);box-shadow:0 4px 16px rgba(26,26,26,.1)}
+.tpl[aria-pressed="true"]:hover{box-shadow:none}
 .tpl[aria-pressed="true"]{border:2px solid var(--ink);padding:19px;background:#fff}
-.tpl[aria-pressed="true"]{position:relative;z-index:65} /* stays bright above the dim layer while its drawer is open */
 .tpl .top{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:24px}
 .tpl .sel{display:none;align-items:center;gap:8px;font-size:12px;font-weight:600}
 .tpl[aria-pressed="true"] .sel{display:inline-flex}
@@ -21,6 +22,9 @@
 .tpl .tags{display:flex;gap:4px;flex-wrap:wrap}
 .tpl .more{margin-top:auto;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink)}
 .tpl .more svg{width:12px;height:12px}
+.tpl .more svg{transition:transform .2s cubic-bezier(.2,.7,.2,1)}
+.tpl:hover .more svg,.tpl:focus-visible .more svg{transform:translateX(4px)}
+@media (prefers-reduced-motion:reduce){.tpl,.tpl .more svg{transition:none}.tpl:hover .more svg,.tpl:focus-visible .more svg{transform:none}}
 .dir{font-size:12px;line-height:16px;color:var(--muted)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}
 .scrim{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -178,18 +182,18 @@ function renderDetail() {
     <div class="drawer-body">
     <div class="stats4" role="group" aria-label="Summary" style="border-top:1px solid var(--line)">
       <div><b>${t.fns.length}</b><span class="t-caption">functions</span></div>
+      <div><b>${t.guards.length}</b><span class="t-caption">guardrails</span></div>
       <div><b>${t.vars.length}</b><span class="t-caption">variables</span></div>
       <div><b>${t.scen.length}</b><span class="t-caption">scenarios</span></div>
-      <div><b>${t.guards.length}</b><span class="t-caption">guardrails</span></div>
     </div>
     <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.fns.length} ${t.fns.length === 1 ? 'Function' : 'Functions'}</h3>
       ${t.fns.length ? `<ul class="lst">${t.fns.map(([n, w]) => `<li><span class="mono">${n}()</span>${w ? '<span class="wr">Writes</span>' : '<span class="ro">Read</span>'}</li>`).join('')}</ul>` : '<p class="none">None included</p>'}</div>
+    <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.guards.length} ${t.guards.length === 1 ? 'Guardrail' : 'Guardrails'}</h3>
+      ${t.guards.length ? `<ul class="lst">${t.guards.map(g => `<li class="ck"><span class="okck" aria-hidden="true">${NS.check}</span><span>${g}</span></li>`).join('')}</ul>` : '<p class="none">None included</p>'}</div>
     <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.vars.length} ${t.vars.length === 1 ? 'Variable' : 'Variables'}</h3>
       <ul class="pills">${t.vars.map(v => `<li><span class="var">{${v}}</span></li>`).join('')}</ul></div>
     <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.scen.length} Test Scenarios</h3>
       ${t.scen.length ? `<ul class="pills">${t.scen.map(s => `<li><span class="tag">${s}</span></li>`).join('')}</ul>` : '<p class="none">None included. Add your own in Test Scenarios.</p>'}</div>
-    <div class="sec"><h3 class="t-eyebrow" style="margin-bottom:12px">${t.guards.length} ${t.guards.length === 1 ? 'Guardrail' : 'Guardrails'}</h3>
-      ${t.guards.length ? `<ul class="lst">${t.guards.map(g => `<li class="ck"><span class="okck" aria-hidden="true">${NS.check}</span><span>${g}</span></li>`).join('')}</ul>` : '<p class="none">None included</p>'}</div>
     </div>
     <div class="drawer-f"><button type="button" class="btn btn-primary" id="use" style="flex:1">Use This Template</button><button type="button" class="btn btn-secondary" id="dcancel">Cancel</button></div>`;
   $('dclose').addEventListener('click', () => closeDrawer());

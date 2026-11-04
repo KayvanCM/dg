@@ -194,8 +194,8 @@ document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', 
 
 /* ---------- evidence transcript ---------- */
 document.getElementById('tr').innerHTML = `
-  <li class="turn pt"><div class="lat"></div><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:44</span></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
-  <li class="turn ag"><div class="lat"><span class="bar" style="width:28px"></span><span class="v">610 ms</span></div><div class="col"><div class="who-l"><b>Agent</b><span class="mono">01:47</span></div><div class="bub">Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.</div></div></li>
+  <li class="turn pt"><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:44</span></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
+  <li class="turn ag"><div class="col"><div class="who-l"><b>Agent</b><span class="mono">01:47</span><span class="lat-in"><span class="v">610 ms</span></span></div><div class="bub">Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.</div></div></li>
   <li class="wrong" id="turn-wrong">
     <div class="eb"><span class="t-eyebrow" style="color:inherit">The Turn Where It Went Wrong</span><span class="badge badge-alert">Wrong</span></div>
     <div class="who-l"><b>Agent</b><span class="mono">01:51</span></div>
