@@ -12,54 +12,51 @@
 .head h1{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .head .meta{margin-top:8px;max-width:none}
 
-/* The problem */
-.problem{padding:24px 28px;margin-bottom:32px;background:#fff}
-.problem.banner{display:grid}
-.mm.heard .t-eyebrow{color:var(--alert)}
-.mm.real .t-eyebrow{color:var(--muted)}
-[data-fi="low"] .mm.heard .t-eyebrow{color:var(--muted)}
-.problem .eb{display:flex;align-items:center;gap:8px}
-.problem .eb svg{width:16px;height:16px}
-.problem h2{margin-top:8px;max-width:820px}
-.problem .why{margin-top:12px;max-width:820px;font-size:16px;line-height:24px}
-.mismatch{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);align-items:stretch;margin-top:20px}
-.mm{border-radius:var(--r-card);padding:16px 20px;background:#fff}
-.mm.heard{border:2px dashed var(--alert)}
-[data-fi="low"] .mm.heard{border-color:var(--dash)}
-.mm.real{border:2px solid var(--ink)}
+/* the problem is the one loud surface on this page, so everything inside it is flat: columns and hairlines, no boxes */
+.pn.loud{border:1.5px solid var(--alert);background:#fff}
+[data-fi="low"] .pn.loud{border-color:var(--ink);background:#fff}
+.pb-t{max-width:820px}
+.pb-why{margin-top:12px;max-width:820px;font-size:16px;line-height:24px}
+.mm{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin-top:24px;padding-top:24px;border-top:1px solid var(--fill)}
+.mm .t-eyebrow{color:var(--muted)}
 .mm .big{margin:4px 0 8px}
-.mm .sub{display:flex;justify-content:space-between;gap:12px;padding-top:8px;border-top:1px solid var(--fill)}
-.mmsign{display:grid;place-items:center;font-size:24px;font-weight:600;color:var(--alert)}
-[data-fi="low"] .mmsign{color:var(--ink)}
-.tl{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:24px;position:relative}
-.tl::before{content:"";position:absolute;left:12px;right:12px;top:12px;height:1px;background:var(--alert-line)}
-.tstep{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:0 16px 8px 0;border-radius:4px;width:100%}
-.tstep .marker{margin-bottom:4px}
-.tstep:hover .txt{text-decoration:underline;text-underline-offset:3px}
-.tstep .txt{font-size:14px;line-height:20px}
+.mm .sub{display:flex;flex-direction:column;gap:2px}
+.mm .heard .big{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
+.hist{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:24px;padding-top:20px;border-top:1px solid var(--fill)}
+.hist button{display:block;text-align:left;width:100%;border-radius:4px}
+.hist button:hover .txt{text-decoration:underline;text-underline-offset:3px}
+.hist .at{display:block}
+.hist .txt{display:block;margin-top:2px}
 
-/* Evidence */
-.player{padding:12px 16px;margin-bottom:24px}
-.player .wave{flex:1;min-width:0;overflow:hidden;height:48px;cursor:pointer;border-radius:4px} /* kit waveform: 2px bars on a 5px pitch, 48px tall */
-.player .wave i{pointer-events:none}
-.player .time{white-space:nowrap}
-.player .seg button{height:26px}
-.wrong{margin-left:104px;border:2px solid var(--alert);border-radius:var(--r-card);padding:12px 16px;background:var(--alert-bg);list-style:none}
-[data-fi="low"] .wrong{background:#fff;border-color:var(--ink)}
-.wrong .eb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--alert)}
-[data-fi="low"] .wrong .eb{color:var(--ink)}
-.wrong .bub{background:#fff;max-width:none}
+.pl{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--fill)}
+.tsb{color:var(--muted);font-size:12px;line-height:16px;border-radius:4px}
+.tsb:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.turn[data-t] .bub,.fn[data-t],.wrong[data-t]{cursor:pointer}
+.cur .bub{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
+.cur.wrong{outline:2px solid var(--field-focus);outline-offset:2px}
+.cur.wrong .bub{box-shadow:none}
+.cur.fn{border-style:solid;border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
+/* the wrong turn and the failed write are marked by a heavy outline and a badge, not by a second pink surface */
+.wrong{margin-left:104px;border:2px solid var(--ink);border-radius:var(--r-card);padding:12px 16px;background:#fff;list-style:none}
+.wrong .eb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.wrong .bub{max-width:none}
+.pn .fn.bad{border-color:var(--ink)}
 .flash{animation:flash 1.4s ease-out}
 @keyframes flash{0%{outline:3px solid var(--focus);outline-offset:4px}100%{outline:3px solid transparent;outline-offset:4px}}
 @media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--focus);outline-offset:4px}}
 
-/* Fix card */
-.fixcard{padding:24px}
-.fixcard .textarea{font-family:var(--sans);font-size:14px;line-height:20px;min-height:64px}
-.opts{display:flex;flex-direction:column;gap:8px}
+/* resolution: a flat radio list, the chosen row is tinted */
+.rlist{display:flex;flex-direction:column;margin:0 -12px}
+.rlist .opt{border:0;border-radius:6px;padding:16px 12px;background:transparent;border-bottom:1px solid var(--fill)}
+.rlist .opt:last-child{border-bottom:0}
+.rlist .opt:hover{background:var(--surface)}
+.rlist .opt[aria-checked="true"]{border:0;padding:16px 12px;background:var(--sel-bg)}
+.rlist .opt[aria-checked="true"]:hover{background:var(--sel-bg)}
+.note{margin-top:20px}
+.note .textarea{font-family:var(--sans);font-size:14px;line-height:20px;min-height:64px}
 .did dt{font-size:12px;color:var(--muted);margin-bottom:2px}
-.did dd{margin-bottom:12px;font-weight:500}
-@media (max-width:1180px){.tl{grid-template-columns:1fr}.tl::before{display:none}.mismatch{grid-template-columns:1fr}.mmsign{padding:8px}}
+.did dd{margin:0 0 12px;font-weight:500}
+@media (max-width:1180px){.hist{grid-template-columns:1fr}.mm{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-product="cons" data-nav="c04alt">
@@ -73,7 +70,9 @@
   <header class="head">
     <div>
       <h1 class="t-title">Maria G. <span id="status"></span></h1>
-      <p class="meta t-caption">Oct 13, 2026 · 10:04 AM · 2:12 · Appointment Reminders <span class="mono">v7</span> · <span class="mono">call_3c71d0</span></p>
+      <p class="meta t-caption">Oct 13, 2026 · 10:04 AM · 2:12</p>
+      <div class="hmeta"><span class="tag">Appointment Reminders <span class="mono" style="margin-left:4px">v7</span></span><span class="tag mono">call_3c71d0</span></div>
+      <p class="issue t-caption" id="issue"></p>
     </div>
     <div class="actions">
       <button type="button" class="btn btn-secondary" id="ehr">Open In EHR <span id="ehr-ico" aria-hidden="true"></span></button>
@@ -91,37 +90,41 @@
     <div class="annot"><span class="marker">5</span><p>Links the production incident back to the failed test in P04.</p></div>
   </section>
 
-  <section id="problem" aria-labelledby="pb-h"></section>
+  <div class="dep-cols">
+    <nav class="steps" aria-label="On this page" id="steps"></nav>
 
-  <div class="cols main-rail-lg">
     <div>
-      <section aria-labelledby="ev-h" class="sect">
-        <h2 class="t-eyebrow" id="ev-h">The Evidence</h2>
-        <div class="card flat player" id="player">
-          <div class="row g16">
-            <button type="button" class="playbtn" id="pbtn" aria-pressed="false" aria-label="Play call recording"></button>
-            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Playback position" aria-valuemin="0" aria-valuemax="132" aria-valuenow="104" aria-valuetext="1:44 of 2:12"></div>
-            <span class="mono num muted time" id="ptime">1:44 / 2:12</span>
-            <div class="seg" role="group" aria-label="Playback speed">
-              <button type="button" aria-pressed="false" data-sp="0.75">0.75x</button>
-              <button type="button" aria-pressed="true" data-sp="1">1x</button>
-              <button type="button" aria-pressed="false" data-sp="1.5">1.5x</button>
+      <section class="card pn" id="problem" aria-labelledby="h-problem"></section>
+
+      <section class="card pn" id="evidence" aria-labelledby="h-evidence">
+        <div class="pn-h"><h2 class="t-headline" id="h-evidence" tabindex="-1">The Evidence</h2><p>The last part of the call, where the agent confirmed a time.</p></div>
+        <div class="pn-b pad">
+          <div class="pl" id="player">
+            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="132" aria-valuenow="104" aria-valuetext="1:44 of 2:12"></div>
+            <div class="pl-bar">
+              <div class="clock mono" id="ptime" role="timer" aria-live="off">1:44</div>
+              <span class="t-caption muted">of 2:12</span>
+              <div class="row g8" style="margin-left:auto">
+                <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
+                <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
+                <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
+              </div>
             </div>
           </div>
+          <ol class="tr" id="tr"></ol>
         </div>
-        <ol class="tr" id="tr"></ol>
       </section>
 
-      <details class="disc" id="tech">
-        <summary><span>Technical Details, For Sam</span><span id="tech-chev" aria-hidden="true"></span></summary>
-        <div class="in">
-          <p class="t-body"><span class="strong">Known issue.</span> Test scenario "Requested slot is taken during the call" failed on Oct 12. <span class="strong">2 calls affected this week.</span></p>
-          <div><a class="action sm" href="p04-scenarios.html">View The Failed Scenario In Playground</a></div>
-        </div>
-      </details>
-    </div>
+      <section class="card pn" id="resolution" aria-labelledby="h-resolution"></section>
 
-    <aside class="sticky" aria-label="Resolution" id="fixwrap"></aside>
+      <section class="card pn" id="tech" aria-labelledby="h-tech">
+        <div class="pn-h"><h2 class="t-headline" id="h-tech" tabindex="-1">Technical Details, For Sam</h2><p>Where this came from in testing.</p></div>
+        <div class="pn-b pad">
+          <p class="t-body"><span class="strong">Known issue.</span> Test scenario "Requested slot is taken during the call" failed on Oct 12. <span class="strong">2 calls affected this week.</span></p>
+          <div style="margin-top:12px"><a class="action sm" href="p04-scenarios.html">View The Failed Scenario In Playground</a></div>
+        </div>
+      </section>
+    </div>
   </div>
 
 </div>
@@ -129,97 +132,98 @@
 </div>
 
 <script>
+const $ = id => document.getElementById(id);
 const CALL = 'call_3c71d0';
 const RES_OPTIONS = [
-  { t: 'Book the next open slot and have staff call her', s: 'Tue Oct 20 · 3:00 PM is open with Dr. Okafor', did: 'Booked Tue Oct 20 at 3:00 PM with Dr. Okafor. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-outline badge-lg">Rescheduled</span>' },
-  { t: 'Keep Thursday and have staff call her', s: 'Original appointment stays; explain the mix-up', did: 'Kept Thu Oct 15 at 9:30 AM. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-filled badge-lg">Confirmed</span>' },
-  { t: 'Let the agent call back with new options', s: 'Automated call within 15 minutes', did: 'Agent will call Maria back within 15 minutes with new options. Thu Oct 15 at 9:30 AM stays booked until she chooses.', badge: '<span class="badge badge-muted badge-lg">Callback Scheduled</span>' }
+  { t: 'Book the next open slot and have staff call her', s: 'Tue Oct 20 · 3:00 PM is open with Dr. Okafor', did: 'Booked Tue Oct 20 at 3:00 PM with Dr. Okafor. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-outline badge-lg">Rescheduled</span>', short: 'Rescheduled' },
+  { t: 'Keep Thursday and have staff call her', s: 'Original appointment stays; explain the mix-up', did: 'Kept Thu Oct 15 at 9:30 AM. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-filled badge-lg">Confirmed</span>', short: 'Confirmed' },
+  { t: 'Let the agent call back with new options', s: 'Automated call within 15 minutes', did: 'Agent will call Maria back within 15 minutes with new options. Thu Oct 15 at 9:30 AM stays booked until she chooses.', badge: '<span class="badge badge-muted badge-lg">Callback Scheduled</span>', short: 'Callback scheduled' }
 ];
 const resolved = NS.isResolved(CALL);
 const saved = NS.get('resolution:' + CALL, { opt: 0, note: 'Slot conflict with front desk booking.' });
 
-document.getElementById('ehr-ico').innerHTML = NS.ico('arrow.up.right');
-document.getElementById('tech-chev').innerHTML = NS.chev();
-document.getElementById('ehr').addEventListener('click', () => NS.toast('Opening the patient record in the EHR. External links are not part of this prototype.'));
-document.getElementById('callback').addEventListener('click', () => NS.toast('Calling Maria G. Calls are not placed in this prototype.'));
+$('ehr-ico').innerHTML = NS.ico('arrow.up.right');
+$('ehr').addEventListener('click', () => NS.toast('Opening the patient record in the EHR. External links are not part of this prototype.'));
+$('callback').addEventListener('click', () => NS.toast('Calling Maria G. Calls are not placed in this prototype.'));
 
-/* ---------- status + problem banner ---------- */
-document.getElementById('status').innerHTML = resolved ? RES_OPTIONS[saved.opt].badge : '<span class="badge badge-alert badge-lg">Needs Review</span>';
+/* ---------- header: status, and the one thing that needs a decision ---------- */
+$('status').innerHTML = resolved ? RES_OPTIONS[saved.opt].badge : '<span class="badge badge-alert badge-lg">Needs Review</span>';
+if (resolved) $('issue').remove();
+else $('issue').innerHTML = '<i aria-hidden="true"></i><span><b class="strong">Maria was told a time that is not booked.</b> Choose how to fix it for her. <a class="action sm" href="#resolution">Go To Resolution</a></span>';
 
-const timeline = `
-  <ol class="tl" aria-label="What happened, in order">
-    <li><button type="button" class="tstep" data-go="turn-wrong"><span class="marker">1</span><span class="mono strong">01:51</span><span class="txt">Agent tells her she's all set</span></button></li>
-    <li><button type="button" class="tstep" data-go="fn-409"><span class="marker">2</span><span class="mono strong">01:52</span><span class="t-caption mono">10:05:52 AM</span><span class="txt">Front desk books Tue Oct 20 · 2:15 PM</span></button></li>
-    <li><button type="button" class="tstep" data-go="fn-409"><span class="marker bad">3</span><span class="mono strong ${resolved ? '' : 't-alert'}">01:53</span><span class="txt">Calendar write fails</span></button></li>
+/* ---------- 1 the problem ---------- */
+const AT = { '01:51': 111, '01:52': 112, '01:53': 113 };
+const history = `
+  <ol class="hist" aria-label="What happened, in order">
+    <li><button type="button" class="hstep" data-go="turn-wrong" data-t="01:51"><span class="at mono strong">01:51</span><span class="txt">Agent tells her she's all set</span></button></li>
+    <li><button type="button" class="hstep" data-go="fn-409" data-t="01:52"><span class="at mono strong">01:52 <span class="muted" style="font-weight:400">· 10:05:52 AM</span></span><span class="txt">Front desk books Tue Oct 20 · 2:15 PM</span></button></li>
+    <li><button type="button" class="hstep" data-go="fn-409" data-t="01:53"><span class="at mono strong">01:53</span><span class="txt">Calendar write fails</span></button></li>
   </ol>`;
-
+const problem = $('problem');
 if (!resolved) {
-  document.getElementById('problem').className = 'card callout-alert problem';
-  document.getElementById('problem').innerHTML = `
-    <div class="t-eyebrow eb">${NS.ico('exclamationmark.triangle.fill')}<span>The Problem</span></div>
-    <h2 class="t-title" id="pb-h">Maria was told an appointment time that isn't booked</h2>
-    <p class="why">At <span class="mono strong">01:51</span> the agent confirmed Tue Oct 20 at 2:15 PM. The calendar write failed at <span class="mono strong">01:53</span> because the front desk booked that slot at <span class="mono strong">01:52</span>. Her original appointment, Thu Oct 15 at 9:30 AM, is still on the calendar.</p>
-    <div class="mismatch">
-      <div class="mm heard">
-        <div class="t-eyebrow">What She Believes</div>
-        <div class="t-headline big num">Tue Oct 20 · 2:15 PM</div>
-        <div class="sub"><span class="t-caption">Slot she was told</span><span class="strong">Booked by another patient</span></div>
+  problem.classList.add('loud');
+  problem.innerHTML = `
+    <div class="pn-h"><h2 class="t-headline" id="h-problem" tabindex="-1">The Problem</h2><p>What went wrong, in one read.</p></div>
+    <div class="pn-b pad">
+      <h3 class="t-title pb-t">Maria was told an appointment time that isn't booked</h3>
+      <p class="pb-why">At <span class="mono strong">01:51</span> the agent confirmed Tue Oct 20 at 2:15 PM. The calendar write failed at <span class="mono strong">01:53</span> because the front desk booked that slot at <span class="mono strong">01:52</span>. Her original appointment, Thu Oct 15 at 9:30 AM, is still on the calendar.</p>
+      <div class="mm">
+        <div class="heard"><div class="t-eyebrow">What She Believes</div><div class="t-title big num">Tue Oct 20 · 2:15 PM</div><div class="sub"><span class="t-caption muted">Slot she was told</span><span class="strong">Booked by another patient</span></div></div>
+        <div><div class="t-eyebrow">Calendar Right Now</div><div class="t-title big num">Thu Oct 15 · 9:30 AM</div><div class="sub"><span class="t-caption muted">Maria's appointment</span><span class="strong">Still booked</span></div></div>
       </div>
-      <div class="mmsign" aria-hidden="true">≠</div>
-      <div class="mm real">
-        <div class="t-eyebrow">Calendar Right Now</div>
-        <div class="t-headline big num">Thu Oct 15 · 9:30 AM</div>
-        <div class="sub"><span class="t-caption">Maria's appointment</span><span class="strong">Still booked</span></div>
-      </div>
-    </div>
-    <span class="sr-only">These two times do not match.</span>
-    ${timeline}`;
-} else {
-  document.getElementById('problem').className = 'banner calm card problem';
-  document.getElementById('problem').innerHTML = `
-    <div class="ico">${NS.ico('checkmark.circle')}</div>
-    <div>
-      <h2 class="t-title" id="pb-h">Resolved, Front Desk Notified</h2>
-      <p class="why" style="margin-top:8px">${RES_OPTIONS[saved.opt].did}</p>
-      <p class="t-caption" style="margin-top:8px">What happened on the call, for the record:</p>
-      ${timeline}
+      <span class="sr-only">These two times do not match.</span>
+      ${history}
     </div>`;
-  document.querySelector('#problem .tl').style.setProperty('--x', '0');
+} else {
+  problem.innerHTML = `
+    <div class="pn-h"><h2 class="t-headline" id="h-problem" tabindex="-1">Resolved, Front Desk Notified</h2><p>${RES_OPTIONS[saved.opt].did}</p></div>
+    <div class="pn-b pad"><p class="t-caption muted">What happened on the call, for the record:</p>${history}</div>`;
 }
+
+/* ---------- 2 the evidence ---------- */
+$('tr').innerHTML = `
+  <li class="turn pt" data-t="104"><div class="col"><div class="who-l"><b>Patient</b><button type="button" class="tsb mono" data-t="104" aria-label="Play from 01:44">01:44</button></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
+  <li class="turn ag" data-t="107"><div class="col"><div class="who-l"><b>Agent</b><button type="button" class="tsb mono" data-t="107" aria-label="Play from 01:47">01:47</button><span class="lat-in"><span class="v">610 ms</span></span></div><div class="bub">Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.</div></div></li>
+  <li class="wrong" id="turn-wrong" data-t="111">
+    <div class="eb"><span class="t-eyebrow" style="color:inherit">The Turn Where It Went Wrong</span><span class="badge badge-alert">Wrong</span></div>
+    <div class="who-l"><b>Agent</b><button type="button" class="tsb mono" data-t="111" aria-label="Play from 01:51">01:51</button></div>
+    <div class="bub">You're all set for Tuesday at 2:15. You'll get a text confirmation shortly.</div>
+  </li>
+  <li class="fn bad" id="fn-409" data-t="113">
+    <div class="h"><span aria-hidden="true">{}</span><span class="nm">reschedule_appointment()</span><span class="code">409</span><span class="ms">402 ms</span></div>
+    <div class="body"><div>args: { from: "2026-10-15T09:30", to: "2026-10-20T14:15", patient: "pt_4471" }</div><div class="res">→ { error: "slot_unavailable", booked_by: "front_desk", at: "10:05:52" }</div></div>
+  </li>`;
+/* the transcript follows the recording: the turn being played is outlined, and a click or a timestamp moves the playhead */
+const evs = Array.from($('tr').children).filter(li => li.dataset.t);
+let curEv = null;
+const player = NS.player({
+  wave: $('scrub'), play: $('pbtn'), back: $('back'), fwd: $('fwd'), time: $('ptime'), dur: 132, pos: 104,
+  onTick: pos => {
+    let c = null; evs.forEach(li => { if (+li.dataset.t <= pos) c = li; });
+    if (c !== curEv) { if (curEv) curEv.classList.remove('cur'); if (c) c.classList.add('cur'); curEv = c; }
+  }
+});
+$('tr').addEventListener('click', e => { const li = e.target.closest('li[data-t]'); if (li) player.seek(+li.dataset.t); });
 document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
-  const t = document.getElementById(b.dataset.go); if (!t) return;
+  const t = $(b.dataset.go); if (!t) return;
+  player.seek(AT[b.dataset.t]);   // the scrubber goes to the same moment
   t.scrollIntoView({ behavior: 'smooth', block: 'center' });
   t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
 }));
 
-/* ---------- evidence transcript ---------- */
-document.getElementById('tr').innerHTML = `
-  <li class="turn pt"><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:44</span></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
-  <li class="turn ag"><div class="col"><div class="who-l"><b>Agent</b><span class="mono">01:47</span><span class="lat-in"><span class="v">610 ms</span></span></div><div class="bub">Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.</div></div></li>
-  <li class="wrong" id="turn-wrong">
-    <div class="eb"><span class="t-eyebrow" style="color:inherit">The Turn Where It Went Wrong</span><span class="badge badge-alert">Wrong</span></div>
-    <div class="who-l"><b>Agent</b><span class="mono">01:51</span></div>
-    <div class="bub">You're all set for Tuesday at 2:15. You'll get a text confirmation shortly.</div>
-  </li>
-  <li class="fn bad" id="fn-409">
-    <div class="h"><span aria-hidden="true">{}</span><span class="nm">reschedule_appointment()</span><span class="code">409</span><span class="ms">402 ms</span></div>
-    <div class="body"><div>args: { from: "2026-10-15T09:30", to: "2026-10-20T14:15", patient: "pt_4471" }</div><div class="res">→ { error: "slot_unavailable", booked_by: "front_desk", at: "10:05:52" }</div></div>
-  </li>`;
-
-/* ---------- fix card / resolved summary ---------- */
-const fixwrap = document.getElementById('fixwrap');
+/* ---------- 3 the resolution ---------- */
+const res = $('resolution');
 if (!resolved) {
-  fixwrap.innerHTML = `
-    <section class="card fixcard" aria-labelledby="fx-h">
-      <h2 class="t-headline" id="fx-h">How Should We Fix This For Maria?</h2>
-      <p class="t-caption" style="margin:4px 0 16px">Each option says what happens to her, not to the system.</p>
-      <div class="opts" role="radiogroup" aria-labelledby="fx-h" id="opts">
-        ${RES_OPTIONS.map((o, i) => `<button type="button" class="opt" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-i="${i}"><span class="radio" aria-hidden="true"></span><span>${i === 0 ? '<span class="badge badge-filled reco">Recommended</span>' : ''}<span class="strong" style="display:block">${o.t}</span><span class="muted" style="display:block;margin-top:4px">${o.s}</span></span></button>`).join('')}
+  res.innerHTML = `
+    <div class="pn-h"><h2 class="t-headline" id="h-resolution" tabindex="-1">How Should We Fix This For Maria?</h2><p>Each option says what happens to her, not to the system.</p></div>
+    <div class="pn-b pad">
+      <div class="rlist" role="radiogroup" aria-labelledby="h-resolution" id="opts">
+        ${RES_OPTIONS.map((o, i) => `<button type="button" class="opt" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-i="${i}"><span class="radio" aria-hidden="true"></span><span><span class="opt-t">${o.t}${i === 0 ? '<span class="badge badge-filled reco">Recommended</span>' : ''}</span><span class="opt-d">${o.s}</span></span></button>`).join('')}
       </div>
-      <div class="field" style="margin:20px 0"><label for="note">Note for audit log (prefilled)</label><textarea class="textarea" id="note" rows="2">Slot conflict with front desk booking.</textarea></div>
-      <button type="button" class="btn btn-primary btn-block" id="resolve">Resolve And Notify Staff</button>
-    </section>`;
-  const opts = Array.from(fixwrap.querySelectorAll('.opt'));
+      <div class="field note"><label for="note">Note for audit log (prefilled)</label><textarea class="textarea" id="note" rows="2">Slot conflict with front desk booking.</textarea></div>
+    </div>
+    <div class="pn-f"><button type="button" class="btn btn-primary" id="resolve">Resolve And Notify Staff</button></div>`;
+  const opts = Array.from(res.querySelectorAll('.opt'));
   const pick = (el, focus) => { opts.forEach(o => { o.setAttribute('aria-checked', String(o === el)); o.tabIndex = o === el ? 0 : -1; }); if (focus) el.focus(); };
   opts.forEach((o, i) => {
     o.addEventListener('click', () => pick(o));
@@ -229,68 +233,32 @@ if (!resolved) {
       if (e.key === ' ') { e.preventDefault(); pick(o); }
     });
   });
-  document.getElementById('resolve').addEventListener('click', () => {
+  $('resolve').addEventListener('click', () => {
     const chosen = opts.findIndex(o => o.getAttribute('aria-checked') === 'true');
-    NS.set('resolution:' + CALL, { opt: chosen, note: document.getElementById('note').value });
+    NS.set('resolution:' + CALL, { opt: chosen, note: $('note').value });
     NS.resolve(CALL);
     NS.toast('Resolved. Front desk notified.');
     setTimeout(() => { location.href = 'c03-call-log.html'; }, 900);
   });
 } else {
-  fixwrap.innerHTML = `
-    <section class="card fixcard" aria-labelledby="fx-h">
-      <h2 class="t-headline" id="fx-h">What Was Done</h2>
-      <dl class="did" style="margin-top:16px">
-        <dt>Resolution</dt><dd>${RES_OPTIONS[saved.opt].t}</dd>
-        <dt>Note for audit log</dt><dd>${saved.note.replace(/</g, '&lt;')}</dd>
-        <dt>Resolved by</dt><dd>Teresa Alvarez</dd>
-        <dt>Front desk</dt><dd><span class="badge badge-filled">Notified</span></dd>
-      </dl>
-      <a class="btn btn-secondary btn-block" style="margin-top:8px" href="c03-call-log.html">Back To Call Log</a>
-    </section>`;
+  res.innerHTML = `
+    <div class="pn-h"><h2 class="t-headline" id="h-resolution" tabindex="-1">What Was Done</h2><p>The fix chosen for Maria.</p></div>
+    <div class="pn-b pad"><dl class="did">
+      <dt>Resolution</dt><dd>${RES_OPTIONS[saved.opt].t}</dd>
+      <dt>Note for audit log</dt><dd>${saved.note.replace(/</g, '&lt;')}</dd>
+      <dt>Resolved by</dt><dd>Teresa Alvarez</dd>
+      <dt>Front desk</dt><dd><span class="badge badge-filled">Notified</span></dd>
+    </dl></div>
+    <div class="pn-f"><a class="btn btn-secondary" href="c03-call-log.html">Back To Call Log</a></div>`;
 }
 
-/* ---------- player (visual mock) ---------- */
-(function () {
-  let N = 96; const DUR = 132, wave = document.getElementById('scrub'), pbtn = document.getElementById('pbtn'), ptime = document.getElementById('ptime');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let pos = 104, speed = 1, timer = null;
-  const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  let bars = wave.children;
-  const icon = playing => playing
-    ? '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>' : NS.play;
-  const draw = () => {
-    const idx = Math.floor(pos / DUR * N);
-    for (let i = 0; i < N; i++) bars[i].className = i > idx ? 'off' : '';
-    ptime.textContent = fmt(pos) + ' / ' + fmt(DUR);
-    wave.setAttribute('aria-valuenow', Math.floor(pos));
-    wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(DUR));
-  };
-  /* as many bars as fit at the kit's 5px pitch (2px bar + 3px gap); rebuilt when the player resizes */
-  const build = () => { N = Math.max(10, Math.floor((wave.clientWidth + 3) / 5)); wave.innerHTML = NS.wave(N, 0); bars = wave.children; draw(); };
-  build(); window.addEventListener('resize', build);
-  const stop = () => { clearInterval(timer); timer = null; pbtn.setAttribute('aria-pressed', 'false'); pbtn.setAttribute('aria-label', 'Play call recording'); pbtn.innerHTML = icon(false); };
-  const start = () => {
-    pbtn.setAttribute('aria-pressed', 'true'); pbtn.setAttribute('aria-label', 'Pause call recording'); pbtn.innerHTML = icon(true);
-    const step = reduce ? 1000 : 250;
-    timer = setInterval(() => { pos = Math.min(DUR, pos + step / 1000 * speed); draw(); if (pos >= DUR) stop(); }, step);
-  };
-  pbtn.innerHTML = icon(false);
-  pbtn.addEventListener('click', () => { timer ? stop() : (pos >= DUR && (pos = 0), start()); });
-  const seek = x => { const r = wave.getBoundingClientRect(); pos = Math.max(0, Math.min(DUR, (x - r.left) / r.width * DUR)); draw(); };
-  wave.addEventListener('click', e => seek(e.clientX));
-  wave.addEventListener('keydown', e => {
-    const k = { ArrowRight: 5, ArrowLeft: -5, ArrowUp: 5, ArrowDown: -5 }[e.key];
-    if (k) { e.preventDefault(); pos = Math.max(0, Math.min(DUR, pos + k)); draw(); }
-    if (e.key === 'Home') { e.preventDefault(); pos = 0; draw(); }
-    if (e.key === 'End') { e.preventDefault(); pos = DUR; draw(); }
-  });
-  document.querySelectorAll('#player [data-sp]').forEach(b => b.addEventListener('click', () => {
-    speed = parseFloat(b.dataset.sp);
-    document.querySelectorAll('#player [data-sp]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  }));
-  draw();
-})();
+/* ---------- the section list ---------- */
+NS.stepNav({
+  el: $('steps'),
+  steps: [['problem', 'The Problem'], ['evidence', 'The Evidence'], ['resolution', resolved ? 'What Was Done' : 'Resolution'], ['tech', 'For Sam']],
+  sums: () => ({ problem: resolved ? 'Resolved' : 'Calendar write failed', evidence: 'Wrong turn at 01:51', resolution: resolved ? RES_OPTIONS[saved.opt].short : 'Choose how to fix it', tech: '2 calls affected this week' }),
+  warn: () => resolved ? null : 'problem'
+});
 </script>
 </body>
 </html>

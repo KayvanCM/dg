@@ -45,6 +45,88 @@
     return '<ul class="scn">' + top.map(r => li(r, true)).join('') + '</ul>' +
       (pass.length ? '<div class="pc"><p class="pc-l">' + pass.length + ' passed</p><ul class="scn">' + pass.map(r => li(r, false)).join('') + '</ul></div>' : '');
   };
+  /* A page of stacked sections with a step list on the left. A click jumps straight to the section, scrolling moves the highlight.
+     o.el the list element, o.steps [[id, label]], o.sums() a line per id, o.warn() the id to flag (or null). Section headings are #h-<id>. */
+  NS.stepNav = (o) => {
+    const ids = o.steps.map(s => s[0]);
+    let cur = ids[0];
+    function render() {
+      const sums = o.sums(), w = o.warn ? o.warn() : null;
+      o.el.innerHTML = o.steps.map(([id, n]) => '<a class="st' + (id === w ? ' warn' : '') + '" href="#' + id + '"' + (id === cur ? ' aria-current="location"' : '') + '><span class="n">' + n + '</span><span class="s">' + (sums[id] || '') + '</span></a>').join('');
+    }
+    const mark = (id) => { if (id === cur) return; cur = id; render(); };
+    o.el.addEventListener('click', e => {
+      const a = e.target.closest('a.st'); if (!a) return;
+      e.preventDefault();
+      const id = a.getAttribute('href').slice(1);
+      document.getElementById(id).scrollIntoView({ behavior: 'instant', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+      cur = ''; mark(id);
+      const h = document.getElementById('h-' + id); if (h) h.focus({ preventScroll: true });
+    });
+    const io = new IntersectionObserver(entries => { for (const en of entries) if (en.isIntersecting) mark(en.target.id); }, { rootMargin: '-20% 0px -65% 0px' });
+    ids.forEach(id => io.observe(document.getElementById(id)));
+    window.addEventListener('scroll', () => {
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) mark(ids[ids.length - 1]);   // the last section can be short, so the bottom of the page counts as being on it
+    }, { passive: true });
+    render();
+    if (location.hash && document.getElementById(location.hash.slice(1))) document.getElementById(location.hash.slice(1)).scrollIntoView({ behavior: 'instant' });
+    return { render };
+  };
+
+  /* Call recording player: scrubbable waveform with a playhead, play or pause, back and forward 10 seconds.
+     o: wave, play, back, fwd, time (elements), dur (seconds), pos (start). Returns { seek(seconds) }. */
+  NS.player = (o) => {
+    const D = o.dur, wave = o.wave, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let pos = o.pos || 0, playing = false, N = 0, lastIdx = -1, ph = null, last = null;
+    const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s) % 60).padStart(2, '0');
+    const PAUSE = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>';
+    o.back.innerHTML = '<span>' + NS.ico('arrow.trianglehead.2.counterclockwise') + '</span>10';
+    o.fwd.innerHTML = '10<span>' + NS.ico('arrow.trianglehead.2.clockwise.rotate.90') + '</span>';
+    function head() {
+      const idx = Math.floor(pos / D * N);
+      if (idx !== lastIdx) { const bars = wave.children; for (let i = 0; i < N; i++) bars[i].className = i > idx ? 'off' : ''; lastIdx = idx; }
+      if (ph) ph.style.transform = 'translateX(' + (pos / D * (N * 5 - 3) - 4) + 'px)';
+    }
+    function draw() {
+      head();
+      o.time.textContent = fmt(pos);
+      o.play.innerHTML = playing ? PAUSE : NS.play;
+      o.play.setAttribute('aria-label', playing ? 'Pause' : pos >= D ? 'Replay' : 'Play');
+      wave.setAttribute('aria-valuenow', Math.floor(pos)); wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(D));
+      if (o.onTick) o.onTick(pos);
+    }
+    function build() {
+      N = Math.max(10, Math.floor((wave.clientWidth + 3) / 5));
+      wave.innerHTML = NS.wave(N, 0) + '<div class="ph" aria-hidden="true"><span class="knob"></span><span class="cap"></span></div>';
+      ph = wave.querySelector('.ph'); lastIdx = -1; draw();
+    }
+    const seek = (t) => { pos = Math.max(0, Math.min(D, t)); draw(); };
+    function frame(ts) {
+      if (last === null) last = ts;
+      const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+      if (playing) { pos = Math.min(D, pos + dt); if (pos >= D) playing = false; draw(); }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    o.play.addEventListener('click', () => { if (!playing && pos >= D) pos = 0; playing = !playing; draw(); });
+    o.back.addEventListener('click', () => seek(pos - 10));
+    o.fwd.addEventListener('click', () => seek(pos + 10));
+    let drag = false;
+    const at = e => { const r = wave.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * D); };
+    wave.addEventListener('pointerdown', e => { drag = true; wave.setPointerCapture(e.pointerId); at(e); });
+    wave.addEventListener('pointermove', e => { if (drag) at(e); });
+    wave.addEventListener('pointerup', () => { drag = false; });
+    wave.addEventListener('pointercancel', () => { drag = false; });
+    wave.addEventListener('keydown', e => {
+      const k = { ArrowRight: 5, ArrowLeft: -5, ArrowUp: 5, ArrowDown: -5 }[e.key];
+      if (k) { e.preventDefault(); seek(pos + k); }
+      if (e.key === 'Home') { e.preventDefault(); seek(0); }
+      if (e.key === 'End') { e.preventDefault(); seek(D); }
+    });
+    build(); window.addEventListener('resize', build);
+    return { seek };
+  };
   /* collapsible groups in the secondary panel */
   NS.initGroups = (root) => root.querySelectorAll('.sg-btn').forEach(b => {
     const slot = b.querySelector('.sg-chev'); if (slot && !slot.innerHTML) slot.innerHTML = NS.chev('chev');

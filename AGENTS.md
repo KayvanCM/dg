@@ -14,14 +14,14 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 |---|---|
 | `p01-templates.html` | Choose a template. Card grid, details drawer. |
 | `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). |
-| `p03-live-call.html` | Test call in two states on one page. While live, the bottom dock holds only the Live badge, clock, waveform, Mute Agent and End Call. End Call flips the same page to Ended: the dock becomes a scrubber (play, skip, speed) with a Run Test Scenarios button. The left panel shows call state, response time and guardrail statuses. |
+| `p03-live-call.html` | Test call in two states on one page. While live, the bottom dock holds only the Live badge, clock, waveform, Mute Agent and End Call. End Call flips the same page to Ended: the dock becomes a scrubber (play, skip 10 seconds) with a Run Test Scenarios button. The left panel shows call state, response time and guardrail statuses. |
 | `p03-alt-wrong-person.html` | The same template, already ended: a call where a guardrail held (wrong person answered). |
-| `p04-scenarios.html` | Test scenarios and results. A verdict banner (Not Ready To Deploy) leads, then filter chips, search and CSV download, then the table. A scenario name opens a detail drawer (expected, actual, function call, transcript excerpt, prompt fix). One scenario fails by design. |
-| `c01-deploy.html` | Deploy rules. Deploy is gated by an acknowledgement checkbox. |
-| `c02-overview.html` | Console overview: Needs Attention queue, metrics, trend chart. |
-| `c03-call-log.html` | Filterable call log. |
-| `c04-call-detail.html` | A successful reschedule, end to end. |
-| `c04-alt-needs-review.html` | The same failure reaching a patient. Resolve flow. |
+| `p04-scenarios.html` | Test scenarios and results. Run All Scenarios and Re-Run Failed animate the Result column. A verdict banner (Not Ready To Deploy) leads, then filter chips, search and CSV download, then the table. A scenario name opens a detail drawer (expected, actual, function call, transcript excerpt, prompt fix). One scenario fails by design. |
+| `c01-deploy.html` | Deploy rules on one page with a step list on the left: Calendar Source, When To Call, If No One Answers, Caller ID & Hand-Off, Review And Deploy. Deploy is gated by an acknowledgement checkbox on the failed test. |
+| `c02-overview.html` | Console overview: five metric tiles (No-Show Rate leads), the Needs Attention queue, then the 12-week trend chart. The date range animates the tiles. |
+| `c03-call-log.html` | Filterable call log with outcome chips, search and Export CSV. |
+| `c04-call-detail.html` | A successful reschedule, end to end. Step list: Calendar Change, Transcript (with the player), Function Calls, Audit Log, Identity, Call Quality. |
+| `c04-alt-needs-review.html` | The same failure reaching a patient. Step list: The Problem, The Evidence, Resolution, For Sam. Resolving it removes it from the queue. |
 | `notes.html` | Design notes: type scale, mono rule, reading order, color logic. |
 | `northside.css` | All tokens and shared components. |
 | `shell.js` | Left nav, user switcher (Sam sees Playground, Teresa sees Console), fidelity and annotation toggles, toast, demo state, tab helper. |
@@ -52,6 +52,12 @@ P01 pick a template, P02 configure, P03 test call, P04 scenarios (scenario 3 fai
 
 **Spacing and sizes** use even pixels only (4s preferred, 2s allowed). No fractional rem.
 
+**Color is for one thing at a time.** The alert color (rust) marks `!` badges and at most one prominent surface per page (the P04 verdict banner, the C04-alt Problem card). Everything else uses weight, a dark outline, strikethrough or a badge. No pink row fills, no pink boxes inside pink boxes.
+
+**One container per idea.** A card never holds another bordered or filled card. Inside a card use hairlines and columns. The C02 metric tiles and chart tray are the one framed exception, taken from a reference video.
+
+**Pages with several sections** (C01, C04, C04-alt) show every section on one page with a sticky step list on the left. A click jumps straight to the section, scrolling moves the highlight, and each item carries a one-line summary. Section cards use `.pn` with `.pn-h` and `.pn-b`.
+
 ## Copy rules
 - No em dashes in UI copy. Use commas, periods or restructure. An em dash as an empty-value placeholder in a table cell is fine.
 - Title Case for buttons, titles, drawer headers, headings and tab labels. Articles (a, an, the) stay lowercase. Sentence case for prose, hints and placeholders.
@@ -71,6 +77,8 @@ P01 pick a template, P02 configure, P03 test call, P04 scenarios (scenario 3 fai
 Exposed as `window.NS`.
 - `NS.ico(name, cls)`, `NS.chev()`, `NS.chevd()`, `NS.check`, `NS.play`: icon strings.
 - `NS.wave(n, played)`: waveform bars in kit proportions.
+- `NS.player({wave, play, back, fwd, time, dur, pos})`: the call recording player (scrubbable waveform with playhead, play or pause, back and forward 10 seconds). Returns `{ seek(seconds) }`.
+- `NS.stepNav({el, steps, sums, warn})`: the sticky step list for a page of stacked sections, with instant jump and scroll highlight.
 - `NS.toast(msg)`: top-center status message (`role="status"`).
 - `NS.tabs(listEl, onChange)`: roving-tabindex tab behavior with arrow keys.
 - `NS.bindToggles(root)`: toggles marked `data-toggle`.
@@ -85,7 +93,7 @@ Each page declares `<body data-product="play|cons|ref" data-nav="p01">` and an e
 ## Content notes
 Taken from the brief and design file: personas, screen purposes, the appointment-reminders template (5 functions, 6 variables, 7 scenarios, 4 guardrails), the failure story, and all annotation text.
 
-Invented: the wording of the P02 prompt rules, the other five templates, extra Call Log rows, the Today and 30 Days figures on C02, the suggested prompt fix on P04, and the C01 retry count (2, from the user flow's "max 2 per attempt"). Replace these with real values when they exist.
+Invented: the change figures on the C02 tiles (except No-Show Rate), the mini-bar heights, the C01 worked example and step summaries, the wording of the P02 prompt rules, the other five templates, extra Call Log rows, the Today and 30 Days figures on C02, the suggested prompt fix on P04, and the C01 retry count (2, from the user flow's "max 2 per attempt"). Replace these with real values when they exist.
 
 ## Open items
 - Screen reader and automated accessibility audit.

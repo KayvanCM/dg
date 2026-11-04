@@ -12,37 +12,39 @@
 .head h1{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .head .meta{margin-top:8px;max-width:none}
 
-/* Calendar change: the answer, so it leads the page */
-.cc{padding:24px;margin-bottom:32px;border-width:1px}
-.cc-row{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);align-items:stretch;margin-top:16px}
-.cc-box{border-radius:var(--r-card);padding:16px 20px;background:#fff}
-.cc-box.before{border:1px dashed var(--dash)}
-.cc-box.before .val{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
-.cc-box.after{border:2px solid var(--ink)}
-.cc-box .val{margin:4px 0}
-.cc-arrow{display:grid;place-items:center;font-size:20px;color:var(--muted)}
-.cc-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px;padding-top:16px;border-top:1px solid var(--fill)}
+/* calendar change: the answer, so it is the first section. Two columns, no boxes. */
+.cc-row{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);align-items:center}
+.cc-row .t-caption{color:var(--muted)}
+.cc-row .val{margin-top:4px}
+.cc-before .val{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
+.cc-arrow{text-align:center;font-size:20px;color:var(--muted)}
+.cc-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px;padding-top:20px;border-top:1px solid var(--fill)}
 .cc-meta dt{font-size:12px;line-height:16px;color:var(--muted);margin-bottom:4px}
-.cc-meta dd{font-weight:500}
+.cc-meta dd{font-weight:500;margin:0}
 
-/* Player (visual mock) */
-.player{padding:12px 16px;margin-bottom:24px}
-.player .wave{flex:1;min-width:0;overflow:hidden;height:48px;cursor:pointer;border-radius:4px} /* kit waveform: 2px bars on a 5px pitch, 48px tall */
-.player .wave i{pointer-events:none}
-.player .time{white-space:nowrap}
-.player .seg button{height:26px}
-
-.lowconf{border-bottom:2px dotted var(--ink);padding-bottom:1px}
+.pl{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--fill)}
+.lowconf{border-bottom:2px dotted var(--ink);padding:0 0 1px;font:inherit;color:inherit;cursor:pointer;background:none}
+.tsb{color:var(--muted);font-size:12px;line-height:16px;border-radius:4px}
+.tsb:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.turn[data-t] .bub,.fn[data-t]{cursor:pointer}
+.cur .bub{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
+.cur.fn{border-style:solid;border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
 .lowconf-note{margin:-8px 0 0 104px;text-align:right}
 .flash{animation:flash 1.4s ease-out}
 @keyframes flash{0%{outline:3px solid var(--focus);outline-offset:4px}100%{outline:3px solid transparent;outline-offset:4px}}
 @media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--focus);outline-offset:4px}}
-
-.confirm{margin-top:16px;border:1.5px solid var(--ink);border-radius:var(--r-card);padding:16px;background:var(--surface)}
-.confirm p{margin:4px 0 12px}
-.newrow td{background:var(--surface)}
 .tbl-wrap{overflow:hidden}
-@media (max-width:1180px){.cc-meta{grid-template-columns:1fr}}
+.newrow td{background:var(--surface)}
+.rows{padding:4px 24px}
+.rowx{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:14px 0;border-bottom:1px solid var(--fill);align-items:baseline}
+.rowx:last-child{border-bottom:0}
+.rowx dt{color:var(--muted)}
+.rowx dd{margin:0}
+
+/* showing the full number asks first, inline, then writes to the audit log */
+.confirm{padding:16px 0 4px;border-top:1px solid var(--fill);margin-top:4px}
+.confirm p{margin:4px 0 12px}
+@media (max-width:1180px){.cc-meta{grid-template-columns:1fr}.cc-row{grid-template-columns:1fr}.cc-arrow{display:none}.rowx{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-product="cons" data-nav="c04">
@@ -56,10 +58,11 @@
   <header class="head">
     <div>
       <h1 class="t-title">Priya N. <span class="badge badge-outline badge-lg">Rescheduled</span></h1>
-      <p class="meta t-caption">Oct 13, 2026 · 9:58 AM · 1:47 · Appointment Reminders <span class="mono">v7</span> · <span class="mono">call_8f2a91</span></p>
+      <p class="meta t-caption">Oct 13, 2026 · 9:58 AM · 1:47</p>
+      <div class="hmeta"><span class="tag">Appointment Reminders <span class="mono" style="margin-left:4px">v7</span></span><span class="tag mono">call_8f2a91</span></div>
     </div>
     <div class="actions">
-      <button type="button" class="btn btn-ext" id="ehr">Open In EHR <span id="ehr-ico" aria-hidden="true"></span></button>
+      <button type="button" class="btn btn-secondary" id="ehr">Open In EHR <span id="ehr-ico" aria-hidden="true"></span></button>
       <button type="button" class="btn btn-secondary" id="callback">Call Back</button>
     </div>
   </header>
@@ -74,97 +77,94 @@
     <div class="annot"><span class="marker">5</span><p>Low-confidence words on dates and times are the riskiest. Should they be highlighted in the transcript itself?</p></div>
   </section>
 
-  <section class="card cc" aria-labelledby="cc-h">
-    <div class="row between">
-      <h2 class="t-eyebrow" id="cc-h">Calendar Change</h2>
-      <span class="badge badge-filled">Confirmed in EHR</span>
-    </div>
-    <div class="cc-row">
-      <div class="cc-box before">
-        <div class="t-caption">Before (released)</div>
-        <div class="t-headline val num">Thu Oct 15 · 11:15 AM<span class="sr-only"> (released)</span></div>
-      </div>
-      <div class="cc-arrow" aria-hidden="true">→</div>
-      <div class="cc-box after">
-        <div class="t-caption">After (booked)</div>
-        <div class="t-headline val num">Mon Oct 19 · 10:00 AM</div>
-      </div>
-    </div>
-    <dl class="cc-meta">
-      <div><dt>Provider and location</dt><dd>Dr. Alvarez · Elm Street clinic</dd></div>
-      <div><dt>EHR write</dt><dd><span class="badge badge-filled">Confirmed</span> <span class="mono num" style="margin-left:4px">9:59:58 AM</span></dd></div>
-      <div><dt>EHR reference</dt><dd><span class="mono">APT-55812</span></dd></div>
-    </dl>
-  </section>
+  <div class="dep-cols">
+    <nav class="steps" aria-label="On this page" id="steps"></nav>
 
-  <div class="cols main-rail">
-    <section aria-label="Call record">
-      <div class="tabs" role="tablist" aria-label="Call sections" id="ctabs">
-        <button type="button" class="tab" role="tab" id="tab-tr" aria-controls="panel-tr" aria-selected="true">Transcript</button>
-        <button type="button" class="tab" role="tab" id="tab-fn" aria-controls="panel-fn" aria-selected="false">Function Calls</button>
-        <button type="button" class="tab" role="tab" id="tab-au" aria-controls="panel-au" aria-selected="false">Audit Log <span class="n num" id="aucount">4</span></button>
-      </div>
+    <div>
+      <section class="card pn" id="change" aria-labelledby="h-change">
+        <div class="pn-h"><div class="row between"><h2 class="t-headline" id="h-change" tabindex="-1">Calendar Change</h2><span class="badge badge-filled">Confirmed in EHR</span></div><p>What changed on the clinic's calendar.</p></div>
+        <div class="pn-b pad">
+          <div class="cc-row">
+            <div class="cc-before"><div class="t-caption">Before (released)</div><div class="t-title val num">Thu Oct 15 · 11:15 AM<span class="sr-only"> (released)</span></div></div>
+            <div class="cc-arrow" aria-hidden="true">→</div>
+            <div><div class="t-caption">After (booked)</div><div class="t-title val num">Mon Oct 19 · 10:00 AM</div></div>
+          </div>
+          <dl class="cc-meta">
+            <div><dt>Provider and location</dt><dd>Dr. Alvarez · Elm Street clinic</dd></div>
+            <div><dt>EHR write</dt><dd><span class="badge badge-filled">Confirmed</span> <span class="mono num" style="margin-left:4px">9:59:58 AM</span><div style="margin-top:4px"><button type="button" class="action sm" id="seewrite">See The Write At 01:39</button></div></dd></div>
+            <div><dt>EHR reference</dt><dd><span class="mono">APT-55812</span></dd></div>
+          </dl>
+        </div>
+      </section>
 
-      <div role="tabpanel" id="panel-tr" aria-labelledby="tab-tr" tabindex="0">
-        <div class="card flat player" id="player">
-          <div class="row g16">
-            <button type="button" class="playbtn" id="pbtn" aria-pressed="false" aria-label="Play call recording"></button>
-            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Playback position" aria-valuemin="0" aria-valuemax="107" aria-valuenow="41" aria-valuetext="0:41 of 1:47"></div>
-            <span class="mono num muted time" id="ptime">0:41 / 1:47</span>
-            <div class="seg" role="group" aria-label="Playback speed">
-              <button type="button" aria-pressed="false" data-sp="0.75">0.75x</button>
-              <button type="button" aria-pressed="true" data-sp="1">1x</button>
-              <button type="button" aria-pressed="false" data-sp="1.5">1.5x</button>
+      <section class="card pn" id="transcript" aria-labelledby="h-transcript">
+        <div class="pn-h"><h2 class="t-headline" id="h-transcript" tabindex="-1">Transcript</h2><p>What was said, with the function calls in between.</p></div>
+        <div class="pn-b pad">
+          <div class="pl" id="player">
+            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="107" aria-valuenow="0" aria-valuetext="0:00 of 1:47"></div>
+            <div class="pl-bar">
+              <div class="clock mono" id="ptime" role="timer" aria-live="off">0:00</div>
+              <span class="t-caption muted">of 1:47</span>
+              <div class="row g8" style="margin-left:auto">
+                <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
+                <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
+                <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
+              </div>
             </div>
           </div>
+          <ol class="tr" id="tr"></ol>
         </div>
-        <ol class="tr" id="tr"></ol>
-      </div>
+      </section>
 
-      <div role="tabpanel" id="panel-fn" aria-labelledby="tab-fn" tabindex="0" hidden>
-        <div class="card tbl-wrap">
+      <section class="card pn" id="identity" aria-labelledby="h-identity">
+        <div class="pn-h"><h2 class="t-headline" id="h-identity" tabindex="-1">Identity</h2><p>Patient details are masked until someone with permission shows them.</p></div>
+        <div class="pn-b rows">
+          <dl>
+            <div class="rowx"><dt>Verified by</dt><dd>DOB <button type="button" class="action sm mono" id="seeverify" style="margin-left:8px">at 00:13</button></dd></div>
+            <div class="rowx"><dt>Phone (masked)</dt><dd class="mono" id="phone">•••• 7710</dd></div>
+          </dl>
+          <div style="padding:8px 0 12px"><button type="button" class="action sm" id="reveal" aria-expanded="false" aria-controls="confirm">Show Full Details (Logged)</button></div>
+          <div class="confirm" id="confirm" role="alertdialog" aria-labelledby="cf-h" aria-describedby="cf-d" hidden>
+            <h3 class="t-heading" id="cf-h">Show Full Phone Number?</h3>
+            <p id="cf-d" class="muted">Full patient details are permissioned. Your name and the time will be written to the audit log.</p>
+            <div class="row g8"><button type="button" class="btn btn-secondary btn-sm" id="cf-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="cf-ok">Show Number</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card pn" id="functions" aria-labelledby="h-functions">
+        <div class="pn-h"><h2 class="t-headline" id="h-functions" tabindex="-1">Function Calls</h2><p>Everything the agent asked the clinic's systems to do.</p></div>
+        <div class="tbl-wrap">
           <table class="tbl">
             <caption class="sr-only">Function calls made during this call</caption>
             <thead><tr><th scope="col">Call time</th><th scope="col">Function</th><th scope="col">Status</th><th scope="col">Latency</th><th scope="col">Result</th></tr></thead>
             <tbody id="fnrows"></tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <div role="tabpanel" id="panel-au" aria-labelledby="tab-au" tabindex="0" hidden>
-        <div class="card tbl-wrap">
+      <section class="card pn" id="audit" aria-labelledby="h-audit">
+        <div class="pn-h"><h2 class="t-headline" id="h-audit" tabindex="-1">Audit Log</h2><p>Who did what, and when.</p></div>
+        <div class="tbl-wrap">
           <table class="tbl">
             <caption class="sr-only">Audit log for this call</caption>
             <thead><tr><th scope="col">Time</th><th scope="col">Actor</th><th scope="col">Event</th></tr></thead>
             <tbody id="aurows"></tbody>
           </table>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <aside class="stack g16" aria-label="Call details">
-      <section class="card pad" aria-labelledby="id-h">
-        <h2 class="t-eyebrow" id="id-h" style="margin-bottom:12px">Identity</h2>
-        <dl class="kv ruled">
-          <dt>Verified by</dt><dd>DOB</dd>
-          <dt>Phone (masked)</dt><dd class="mono" id="phone">•••• 7710</dd>
-        </dl>
-        <div style="margin-top:12px"><button type="button" class="action sm" id="reveal" aria-expanded="false" aria-controls="confirm">Show Full Details (Logged)</button></div>
-        <div class="confirm" id="confirm" role="alertdialog" aria-labelledby="cf-h" aria-describedby="cf-d" hidden>
-          <h3 class="t-heading" id="cf-h">Show Full Phone Number?</h3>
-          <p id="cf-d" class="muted">Full patient details are permissioned. Your name and the time will be written to the audit log.</p>
-          <div class="row g8"><button type="button" class="btn btn-secondary btn-sm" id="cf-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="cf-ok">Show Number</button></div>
+      <section class="card pn" id="quality" aria-labelledby="h-quality">
+        <div class="pn-h"><h2 class="t-headline" id="h-quality" tabindex="-1">Call Quality</h2><p>How well the agent heard and answered.</p></div>
+        <div class="pn-b rows">
+          <dl>
+            <div class="rowx"><dt>Transcript confidence</dt><dd class="mono">0.94 avg</dd></div>
+            <div class="rowx"><dt>Lowest word</dt><dd><button type="button" class="action sm mono" id="jumpword">"nineteenth" 0.71</button></dd></div>
+            <div class="rowx"><dt>Median latency</dt><dd class="mono">610 ms</dd></div>
+          </dl>
         </div>
       </section>
-      <section class="card pad" aria-labelledby="cq-h">
-        <h2 class="t-eyebrow" id="cq-h" style="margin-bottom:12px">Call Quality</h2>
-        <dl class="kv ruled">
-          <dt>Transcript confidence</dt><dd class="mono">0.94 avg</dd>
-          <dt>Lowest word</dt><dd><button type="button" class="action sm mono" id="jumpword">"nineteenth" 0.71</button></dd>
-          <dt>Median latency</dt><dd class="mono">610 ms</dd>
-        </dl>
-      </section>
-    </aside>
+    </div>
   </div>
 
 </div>
@@ -172,34 +172,49 @@
 </div>
 
 <script>
-/* ---------- header actions ---------- */
-document.getElementById('ehr-ico').innerHTML = NS.ico('arrow.up.right');
-document.getElementById('ehr').addEventListener('click', () => NS.toast('Opening APT-55812 in the EHR. External links are not part of this prototype.'));
-document.getElementById('callback').addEventListener('click', () => NS.toast('Calling Priya N. Calls are not placed in this prototype.'));
+const $ = id => document.getElementById(id);
+$('ehr-ico').innerHTML = NS.ico('arrow.up.right');
+$('ehr').addEventListener('click', () => NS.toast('Opening APT-55812 in the EHR. External links are not part of this prototype.'));
+$('callback').addEventListener('click', () => NS.toast('Calling Priya N. Calls are not placed in this prototype.'));
 
 /* ---------- transcript ---------- */
-const fnBlock = (o) => `<li class="fn">
+const fnBlock = (o) => `<li class="fn" id="fn-write" data-t="99">
   <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span><span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span></div>
   <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
-const turn = (side, who, ts, txt, lat, id) => `<li class="turn ${side}" ${id ? 'id="' + id + '"' : ''}>
-  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span>${lat ? `<span class="lat-in ${lat.slow ? 'slow' : ''}"><span class="v">${lat.v}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
-
-document.getElementById('tr').innerHTML = [
-  turn('ag', 'Agent', '00:38', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', { w: 28, v: '610 ms' }),
-  turn('pt', 'Patient', '00:46', 'Monday the <span class="lowconf" id="lcword" tabindex="0">nineteenth<span class="sr-only"> (low confidence 0.71)</span></span> at ten.', null, 'turn-pick'),
+const sec = ts => +ts.slice(0, 2) * 60 + +ts.slice(3);
+const turn = (side, who, ts, txt, lat, id) => `<li class="turn ${side}" data-t="${sec(ts)}" ${id ? 'id="' + id + '"' : ''}>
+  <div class="col"><div class="who-l"><b>${who}</b><button type="button" class="tsb mono" data-t="${sec(ts)}" aria-label="Play from ${ts}">${ts}</button>${lat ? `<span class="lat-in"><span class="v">${lat.v}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
+$('tr').innerHTML = [
+  turn('ag', 'Agent', '00:38', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', { v: '610 ms' }),
+  turn('pt', 'Patient', '00:46', 'Monday the <button type="button" class="lowconf" id="lcword">nineteenth<span class="sr-only"> (low confidence 0.71)</span></button> at ten.', null, 'turn-pick'),
   `<li class="lowconf-note t-caption" aria-hidden="true">Underlined word, low confidence <span class="mono">0.71</span></li>`,
-  turn('ag', 'Agent', '00:50', 'Just to confirm: Monday, October 19 at 10 AM with Dr. Alvarez. Is that right?', { w: 28, v: '590 ms' }),
+  turn('ag', 'Agent', '00:50', 'Just to confirm: Monday, October 19 at 10 AM with Dr. Alvarez. Is that right?', { v: '590 ms' }),
   turn('pt', 'Patient', '01:32', "Yes, that's right. Thank you."),
-  turn('ag', 'Agent', '01:36', 'Booking that now.', { w: 20, v: '480 ms' }),
+  turn('ag', 'Agent', '01:36', 'Booking that now.', { v: '480 ms' }),
   fnBlock({ name: 'reschedule_appointment', code: 200, ms: 341, dur: 85, args: '{ from: "2026-10-15T11:15", to: "2026-10-19T10:00", patient: "pt_7710" }', res: '→ { status: "booked", ehr_ref: "APT-55812" }' }),
-  turn('ag', 'Agent', '01:41', "You're booked for Monday, October 19 at 10 AM with Dr. Alvarez. See you then.", { w: 28, v: '620 ms' })
+  turn('ag', 'Agent', '01:41', "You're booked for Monday, October 19 at 10 AM with Dr. Alvarez. See you then.", { v: '620 ms' })
 ].join('');
 
-document.getElementById('jumpword').addEventListener('click', () => {
-  document.getElementById('tab-tr').click();
-  const t = document.getElementById('turn-pick'); t.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
+/* the transcript follows the recording: the turn being played is outlined, and a click or a timestamp moves the playhead */
+const evs = Array.from($('tr').children).filter(li => li.dataset.t);
+let curEv = null;
+const player = NS.player({
+  wave: $('scrub'), play: $('pbtn'), back: $('back'), fwd: $('fwd'), time: $('ptime'), dur: 107, pos: 0,
+  onTick: pos => {
+    let c = null; evs.forEach(li => { if (+li.dataset.t <= pos) c = li; });
+    if (c !== curEv) { if (curEv) curEv.classList.remove('cur'); if (c) c.classList.add('cur'); curEv = c; }
+  }
 });
+$('tr').addEventListener('click', e => {
+  const li = e.target.closest('li[data-t]');
+  if (li && !e.target.closest('#lcword')) player.seek(+li.dataset.t);
+});
+const flash = el => { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); };
+const goTo = (id, t) => { player.seek(t); const el = $(id); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); flash(el); };
+$('lcword').addEventListener('click', () => goTo('turn-pick', 46));
+$('jumpword').addEventListener('click', () => goTo('turn-pick', 46));   // the scrubber goes to the moment the word was said
+$('seewrite').addEventListener('click', () => goTo('fn-write', 99));    // from the calendar change to the call that made it
+$('seeverify').addEventListener('click', () => { player.seek(13); $('transcript').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 
 /* ---------- function calls table ---------- */
 const FN = [
@@ -208,7 +223,9 @@ const FN = [
   ['00:36', 'check_availability', 200, '388 ms', '3 slots: Mon 19 10:00 · Tue 20 14:15 · Wed 21 08:45'],
   ['01:39', 'reschedule_appointment', 200, '341 ms', '{ status: "booked", ehr_ref: "APT-55812" }']
 ];
-document.getElementById('fnrows').innerHTML = FN.map(r => `<tr><td class="mono num muted">${r[0]}</td><td class="mono strong">${r[1]}()</td><td><span class="badge badge-filled">${r[2]}</span></td><td class="mono num">${r[3]}</td><td class="mono muted">${r[4]}</td></tr>`).join('');
+$('fnrows').innerHTML = FN.map(r => `<tr><td><button type="button" class="action sm mono num" data-fnt="${sec(r[0])}">${r[0]}</button></td><td class="mono strong">${r[1]}()</td><td><span class="badge badge-filled">${r[2]}</span></td><td class="mono num">${r[3]}</td><td class="mono muted">${r[4]}</td></tr>`).join('');
+
+$('fnrows').addEventListener('click', e => { const b = e.target.closest('[data-fnt]'); if (!b) return; const s = +b.dataset.fnt; if (s === 99) goTo('fn-write', 99); else { player.seek(s); $('transcript').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 
 /* ---------- audit log (wall clock, call started 9:58:19 AM) ---------- */
 const AU = [
@@ -217,76 +234,36 @@ const AU = [
   ['9:59:58 AM', 'Agent', 'Calendar write confirmed, APT-55812'],
   ['10:00:06 AM', 'System', 'Call ended, outcome Rescheduled']
 ];
-const auBody = document.getElementById('aurows');
+let auExtra = 0;
 const renderAu = (extra) => {
-  auBody.innerHTML = AU.concat(extra || []).map((r, i) => `<tr class="${i >= AU.length ? 'newrow' : ''}"><td class="mono num muted">${r[0]}</td><td>${r[1]}</td><td>${r[2]}${i >= AU.length ? ' <span class="badge badge-muted" style="margin-left:8px">New</span>' : ''}</td></tr>`).join('');
-  document.getElementById('aucount').textContent = AU.length + (extra ? extra.length : 0);
+  $('aurows').innerHTML = AU.concat(extra || []).map((r, i) => `<tr class="${i >= AU.length ? 'newrow' : ''}"><td class="mono num muted">${r[0]}</td><td>${r[1]}</td><td>${r[2]}${i >= AU.length ? ' <span class="badge badge-muted" style="margin-left:8px">New</span>' : ''}</td></tr>`).join('');
+  auExtra = extra ? extra.length : 0; nav.render();
 };
-renderAu();
-
-/* ---------- tabs ---------- */
-NS.tabs(document.getElementById('ctabs'), t => {
-  ['tr', 'fn', 'au'].forEach(k => { document.getElementById('panel-' + k).hidden = ('tab-' + k) !== t.id; });
-});
 
 /* ---------- reveal with confirm ---------- */
-const reveal = document.getElementById('reveal'), confirmBox = document.getElementById('confirm'), phone = document.getElementById('phone');
+const reveal = $('reveal'), confirmBox = $('confirm'), phone = $('phone');
 let revealed = false;
 const closeConfirm = () => { confirmBox.hidden = true; reveal.setAttribute('aria-expanded', 'false'); reveal.focus(); };
 reveal.addEventListener('click', () => {
-  if (revealed) { revealed = false; phone.textContent = '•••• 7710'; reveal.textContent = 'Show Full Details (Logged)'; return; }
-  confirmBox.hidden = false; reveal.setAttribute('aria-expanded', 'true'); document.getElementById('cf-cancel').focus();
+  if (revealed) { revealed = false; phone.textContent = '•••• 7710'; reveal.textContent = 'Show Full Details (Logged)'; nav.render(); return; }
+  confirmBox.hidden = false; reveal.setAttribute('aria-expanded', 'true'); $('cf-cancel').focus();
 });
-document.getElementById('cf-cancel').addEventListener('click', closeConfirm);
+$('cf-cancel').addEventListener('click', closeConfirm);
 confirmBox.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
-document.getElementById('cf-ok').addEventListener('click', () => {
+$('cf-ok').addEventListener('click', () => {
   revealed = true; phone.textContent = '(555) 010-7710'; reveal.textContent = 'Hide Details';
   confirmBox.hidden = true; reveal.setAttribute('aria-expanded', 'false'); reveal.focus();
   renderAu([['Just now', 'Teresa Alvarez', 'PHI viewed: full phone number']]);
   NS.toast('Phone number shown. This view was written to the audit log.');
 });
 
-/* ---------- player (visual mock) ---------- */
-(function () {
-  let N = 96; const DUR = 107, wave = document.getElementById('scrub'), pbtn = document.getElementById('pbtn'), ptime = document.getElementById('ptime');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let pos = 41, speed = 1, timer = null;
-  const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  let bars = wave.children;
-  const icon = playing => playing
-    ? '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>' : NS.play;
-  const draw = () => {
-    const idx = Math.floor(pos / DUR * N);
-    for (let i = 0; i < N; i++) bars[i].className = i > idx ? 'off' : '';
-    ptime.textContent = fmt(pos) + ' / ' + fmt(DUR);
-    wave.setAttribute('aria-valuenow', Math.floor(pos));
-    wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(DUR));
-  };
-  /* as many bars as fit at the kit's 5px pitch (2px bar + 3px gap); rebuilt when the player resizes */
-  const build = () => { N = Math.max(10, Math.floor((wave.clientWidth + 3) / 5)); wave.innerHTML = NS.wave(N, 0); bars = wave.children; draw(); };
-  build(); window.addEventListener('resize', build);
-  const stop = () => { clearInterval(timer); timer = null; pbtn.setAttribute('aria-pressed', 'false'); pbtn.setAttribute('aria-label', 'Play call recording'); pbtn.innerHTML = icon(false); };
-  const start = () => {
-    pbtn.setAttribute('aria-pressed', 'true'); pbtn.setAttribute('aria-label', 'Pause call recording'); pbtn.innerHTML = icon(true);
-    const step = reduce ? 1000 : 250;
-    timer = setInterval(() => { pos = Math.min(DUR, pos + step / 1000 * speed); draw(); if (pos >= DUR) stop(); }, step);
-  };
-  pbtn.innerHTML = icon(false);
-  pbtn.addEventListener('click', () => { timer ? stop() : (pos >= DUR && (pos = 0), start()); });
-  const seek = x => { const r = wave.getBoundingClientRect(); pos = Math.max(0, Math.min(DUR, (x - r.left) / r.width * DUR)); draw(); };
-  wave.addEventListener('click', e => seek(e.clientX));
-  wave.addEventListener('keydown', e => {
-    const k = { ArrowRight: 5, ArrowLeft: -5, ArrowUp: 5, ArrowDown: -5 }[e.key];
-    if (k) { e.preventDefault(); pos = Math.max(0, Math.min(DUR, pos + k)); draw(); }
-    if (e.key === 'Home') { e.preventDefault(); pos = 0; draw(); }
-    if (e.key === 'End') { e.preventDefault(); pos = DUR; draw(); }
-  });
-  document.querySelectorAll('#player [data-sp]').forEach(b => b.addEventListener('click', () => {
-    speed = parseFloat(b.dataset.sp);
-    document.querySelectorAll('#player [data-sp]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  }));
-  draw();
-})();
+/* ---------- the section list ---------- */
+const nav = NS.stepNav({
+  el: $('steps'),
+  steps: [['change', 'Calendar Change'], ['transcript', 'Transcript'], ['identity', 'Identity'], ['functions', 'Function Calls'], ['audit', 'Audit Log'], ['quality', 'Call Quality']],
+  sums: () => ({ change: 'Thu Oct 15 to Mon Oct 19', transcript: '1:47, 1 low-confidence word', functions: '4 calls, all succeeded', audit: (AU.length + auExtra) + ' events', identity: revealed ? 'Full phone shown' : 'Verified by DOB, phone masked', quality: '0.94 average confidence' })
+});
+renderAu();
 </script>
 </body>
 </html>

@@ -17,20 +17,19 @@
 
 /* The metrics lead the page and Needs Attention sits directly beneath them. The brief asks whether the queue should
    leave the side column: it is now a full-width block in the main column, just below the numbers. */
-.na{border-color:var(--alert-line)}
 .na-list{list-style:none}
 .q-row{display:grid;grid-template-columns:24px 232px minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--fill);text-decoration:none;color:inherit}
 .na-list li:last-child .q-row{border-bottom:0;border-radius:0 0 7px 7px}
 .q-row:hover{background:var(--surface)}
 .q-row:focus-visible{outline-offset:-2px}
-.q-row.hi{background:var(--alert-bg)}
+.q-row.hi{background:transparent}
 [data-fi="low"] .q-row.hi{background:var(--surface)}
-.q-row.hi:hover{background:var(--alert-bg);filter:brightness(.97)}
+.q-row.hi:hover{background:var(--surface)}
 .q-row .why{font-weight:500}
-.q-row.hi .why{font-weight:600;color:var(--alert)}
+.q-row.hi .why{font-weight:600}
 [data-fi="low"] .q-row.hi .why{color:var(--ink)}
 .q-row .ic{width:16px;height:16px;color:var(--muted)}
-.q-row.hi .ic{color:var(--alert)}
+.q-row.hi .ic{color:var(--ink)}
 [data-fi="low"] .q-row.hi .ic{color:var(--ink)}
 .q-row .go{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--link);text-decoration:underline;text-underline-offset:3px}
 .q-row .go svg{width:12px;height:12px}

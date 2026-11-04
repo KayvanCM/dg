@@ -140,7 +140,7 @@ function renderTabs() {
   const el = document.getElementById('tabs');
   el.innerHTML = TABS.map(([k, l]) => {
     const c = count(k), sel = k === tab;
-    const badge = k === 'review' && c > 0 ? `<span class="badge badge-alert">${c}</span>` : `<span class="n num">${fmt(c)}</span>`;
+    const badge = k === 'review' && c > 0 ? `<span class="n num">${fmt(c)}</span>` : `<span class="n num">${fmt(c)}</span>`;
     return `<button type="button" class="chip" data-k="${k}" aria-pressed="${sel}">${l}${badge}</button>`;
   }).join('');
   el.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {

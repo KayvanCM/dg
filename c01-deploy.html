@@ -8,31 +8,6 @@
 <script src="icons.js"></script>
 <script src="shell.js"></script>
 <style>
-/* header: version and connection on one line, then the one thing that needs a decision */
-.hmeta{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
-.issue{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--ink)}
-.issue i{width:8px;height:8px;border-radius:50%;background:var(--alert);flex-shrink:0}
-[data-fi="low"] .issue i{background:var(--ink)}
-
-/* a step list on the left, one step on the right */
-.dep-cols{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start}
-.steps{position:sticky;top:24px;display:flex;flex-direction:column;gap:4px}
-.st{text-decoration:none;display:block;width:100%;text-align:left;padding:10px 12px;border-radius:6px;color:var(--muted)}
-.st:hover{background:var(--fill);color:var(--ink)}
-.st[aria-current="location"]{background:var(--fill);color:var(--ink)}
-.st .n{display:block;font-size:14px;line-height:20px;font-weight:500}
-.st[aria-current="location"] .n{font-weight:600}
-.st .s{display:block;font-size:12px;line-height:16px;margin-top:2px;color:var(--muted)}
-.st.warn .s{color:var(--alert);font-weight:600}
-[data-fi="low"] .st.warn .s{color:var(--ink)}
-
-.pn{margin-bottom:24px;scroll-margin-top:24px}
-.pn:last-child{margin-bottom:0}
-.pn-h{padding:20px 24px 16px;border-bottom:1px solid var(--line)}
-.pn-h p{margin-top:4px;color:var(--muted)}
-.pn-h h2:focus,.pn-h h2:focus-visible{outline:none}   /* the heading takes focus after a jump so keyboard users land there, but it shows no ring */
-.pn-b{padding:8px 24px 16px}
-.pn-b.pad{padding:24px}
 .pn.live{border:1.5px solid var(--ink)}
 .setrow{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--fill);align-items:center}
 .setrow:last-child{border-bottom:0}
@@ -67,18 +42,12 @@
 .rc.two:last-child{border-bottom:0}
 .rc dt{color:var(--muted)}
 .rc dd{margin:0}
-.gate-t{color:var(--alert);font-weight:600}
+.gate-t{font-weight:600}
 [data-fi="low"] .gate-t{color:var(--ink)}
 .phi{display:flex;gap:8px;align-items:flex-start;color:var(--muted)}
 .phi svg{width:14px;height:14px;margin-top:3px;flex-shrink:0;color:var(--ink)}
 .go{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px}
-@media (max-width:1100px){
-  .dep-cols{grid-template-columns:1fr}
-  .steps{position:static;flex-direction:row;flex-wrap:wrap}
-  .st{width:auto}
-  .st .s{display:none}
-  .setrow,.rc{grid-template-columns:1fr}
-}
+@media (max-width:1100px){.setrow,.rc{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-product="cons" data-nav="c01">
@@ -205,40 +174,18 @@ const noText = () => { const r = +retries.value; return r ? 'Up to ' + (r + 1) +
 const xferName = () => xfer.value.replace(/ \(.*/, '');
 
 /* the step list: each step says in one line what it is set to */
-function sums() {
-  return { source: 'EHR connected', when: '48 and 24 hours before', none: noText(), hand: xferName(), review: ack.checked ? 'Acknowledged' : '1 test scenario failed' };
-}
-let cur = 'source';
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-function renderSteps() {
-  const s = sums();
-  $('steps').innerHTML = STEPS.map(([id, n]) => `<a class="st ${id === 'review' && !ack.checked ? 'warn' : ''}" href="#${id}" ${id === cur ? 'aria-current="location"' : ''}><span class="n">${n}</span><span class="s">${s[id]}</span></a>`).join('');
-}
-/* a click jumps straight to the step; scrolling the page moves the highlight */
-function mark(id) { if (id === cur) return; cur = id; renderSteps(); }
-$('steps').addEventListener('click', e => {
-  const a = e.target.closest('a.st'); if (!a) return;
-  e.preventDefault();
-  const id = a.getAttribute('href').slice(1);
-  document.getElementById(id).scrollIntoView({ behavior: 'instant', block: 'start' });
-  history.replaceState(null, '', '#' + id);
-  cur = ''; mark(id);
-  $('h-' + id).focus({ preventScroll: true });
+const nav = NS.stepNav({
+  el: $('steps'), steps: STEPS,
+  sums: () => ({ source: 'EHR connected', when: '48 and 24 hours before', none: noText(), hand: xferName(), review: ack.checked ? 'Acknowledged' : '1 test scenario failed' }),
+  warn: () => ack.checked ? null : 'review'
 });
-const io = new IntersectionObserver(entries => {
-  for (const en of entries) if (en.isIntersecting) mark(en.target.id);
-}, { rootMargin: '-20% 0px -65% 0px' });
-STEPS.forEach(([id]) => io.observe(document.getElementById(id)));
-window.addEventListener('scroll', () => {
-  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) mark('review');   // the last card is short, so the bottom of the page counts as being on it
-}, { passive: true });
-[retries, gap, xfer].forEach(el => el.addEventListener('change', renderSteps));
+[retries, gap, xfer].forEach(el => el.addEventListener('change', nav.render));
 
 ack.addEventListener('change', () => {
   const on = ack.checked;
   dep.setAttribute('aria-disabled', String(!on));
   why.textContent = on ? 'You are deploying with 1 failed test scenario. This is recorded in the audit log.' : 'Check the box above to enable Deploy.';
-  renderSteps();
+  nav.render();
 });
 dep.addEventListener('click', () => {
   if (dep.getAttribute('aria-disabled') === 'true') { NS.toast('Acknowledge the failed test before deploying.'); ack.focus(); return; }
@@ -247,8 +194,6 @@ dep.addEventListener('click', () => {
   setTimeout(() => { location.href = 'c02-overview.html'; }, 1100);
 });
 
-renderSteps();
-if (location.hash && document.getElementById(location.hash.slice(1))) document.getElementById(location.hash.slice(1)).scrollIntoView({ behavior: 'instant' });
 </script>
 </body>
 </html>
