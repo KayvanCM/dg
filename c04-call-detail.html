@@ -9,23 +9,20 @@
 <script src="shell.js"></script>
 <style>
 .tr{list-style:none}
+.turn,.fn,.wrong{scroll-margin-bottom:160px}
 .head h1{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .head .meta{margin-top:8px;max-width:none}
 
 /* calendar change: the answer, so it is the first section. Two columns, no boxes. */
-.cc-row{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);align-items:center}
+.cc-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center}
 .cc-row .t-caption{color:var(--muted)}
 .cc-row .val{margin-top:4px}
 .cc-before .val{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
-.cc-arrow{text-align:center;font-size:20px;color:var(--muted)}
 .cc-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px;padding-top:20px;border-top:1px solid var(--fill)}
 .cc-meta dt{font-size:12px;line-height:16px;color:var(--muted);margin-bottom:4px}
 .cc-meta dd{font-weight:500;margin:0}
 
-.pl{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--fill)}
 .lowconf{border-bottom:2px dotted var(--ink);padding:0 0 1px;font:inherit;color:inherit;cursor:pointer;background:none}
-.tsb{color:var(--muted);font-size:12px;line-height:16px;border-radius:4px}
-.tsb:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .turn[data-t] .bub,.fn[data-t]{cursor:pointer}
 .cur .bub{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
 .cur.fn{border-style:solid;border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
@@ -44,7 +41,7 @@
 /* showing the full number asks first, inline, then writes to the audit log */
 .confirm{padding:16px 0 4px;border-top:1px solid var(--fill);margin-top:4px}
 .confirm p{margin:4px 0 12px}
-@media (max-width:1180px){.cc-meta{grid-template-columns:1fr}.cc-row{grid-template-columns:1fr}.cc-arrow{display:none}.rowx{grid-template-columns:1fr}}
+@media (max-width:1180px){.cc-meta{grid-template-columns:1fr}.cc-row{grid-template-columns:1fr}.rowx{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-product="cons" data-nav="c04">
@@ -86,7 +83,6 @@
         <div class="pn-b pad">
           <div class="cc-row">
             <div class="cc-before"><div class="t-caption">Before (released)</div><div class="t-title val num">Thu Oct 15 · 11:15 AM<span class="sr-only"> (released)</span></div></div>
-            <div class="cc-arrow" aria-hidden="true">→</div>
             <div><div class="t-caption">After (booked)</div><div class="t-title val num">Mon Oct 19 · 10:00 AM</div></div>
           </div>
           <dl class="cc-meta">
@@ -97,21 +93,14 @@
         </div>
       </section>
 
+      <section class="card pn" id="checks" aria-labelledby="h-checks">
+        <div class="pn-h"><div class="row between"><h2 class="t-headline" id="h-checks" tabindex="-1">Checks</h2><span class="t-caption muted" id="ck-sum"></span></div><p>What the agent said, checked against what the clinic's systems did.</p></div>
+        <div class="pn-b pad"><ul class="ck-list" id="cklist"></ul></div>
+      </section>
+
       <section class="card pn" id="transcript" aria-labelledby="h-transcript">
         <div class="pn-h"><h2 class="t-headline" id="h-transcript" tabindex="-1">Transcript</h2><p>What was said, with the function calls in between.</p></div>
         <div class="pn-b pad">
-          <div class="pl" id="player">
-            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="107" aria-valuenow="0" aria-valuetext="0:00 of 1:47"></div>
-            <div class="pl-bar">
-              <div class="clock mono" id="ptime" role="timer" aria-live="off">0:00</div>
-              <span class="t-caption muted">of 1:47</span>
-              <div class="row g8" style="margin-left:auto">
-                <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
-                <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
-                <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
-              </div>
-            </div>
-          </div>
           <ol class="tr" id="tr"></ol>
         </div>
       </section>
@@ -145,13 +134,7 @@
 
       <section class="card pn" id="audit" aria-labelledby="h-audit">
         <div class="pn-h"><h2 class="t-headline" id="h-audit" tabindex="-1">Audit Log</h2><p>Who did what, and when.</p></div>
-        <div class="tbl-wrap">
-          <table class="tbl">
-            <caption class="sr-only">Audit log for this call</caption>
-            <thead><tr><th scope="col">Time</th><th scope="col">Actor</th><th scope="col">Event</th></tr></thead>
-            <tbody id="aurows"></tbody>
-          </table>
-        </div>
+        <div class="pn-b rows"><ul class="feed" id="aurows" aria-label="Audit log for this call"></ul></div>
       </section>
 
       <section class="card pn" id="quality" aria-labelledby="h-quality">
@@ -164,6 +147,18 @@
           </dl>
         </div>
       </section>
+      <div class="dockp pl" id="dock" role="region" aria-label="Call playback controls">
+        <div class="pbar">
+          <div class="pbar-tx">
+            <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
+            <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
+            <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
+          </div>
+          <span class="pbar-now" id="ptime" role="timer" aria-label="Playhead position" aria-live="off">00:00</span>
+          <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="107" aria-valuenow="0" aria-valuetext="00:00 of 01:47"></div>
+          <span class="pbar-end">01:47</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -177,22 +172,31 @@ $('ehr-ico').innerHTML = NS.ico('arrow.up.right');
 $('ehr').addEventListener('click', () => NS.toast('Opening APT-55812 in the EHR. External links are not part of this prototype.'));
 $('callback').addEventListener('click', () => NS.toast('Calling Priya N. Calls are not placed in this prototype.'));
 
-/* ---------- transcript ---------- */
-const fnBlock = (o) => `<li class="fn" id="fn-write" data-t="99">
-  <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span><span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span></div>
-  <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
+/* ---------- transcript, end to end ---------- */
 const sec = ts => +ts.slice(0, 2) * 60 + +ts.slice(3);
+const fnBlock = (o) => `<li class="fn" id="${o.id}" data-t="${sec(o.at)}">
+  <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span>${o.dur ? `<span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span>` : ''}</div>
+  <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
 const turn = (side, who, ts, txt, lat, id) => `<li class="turn ${side}" data-t="${sec(ts)}" ${id ? 'id="' + id + '"' : ''}>
-  <div class="col"><div class="who-l"><b>${who}</b><button type="button" class="tsb mono" data-t="${sec(ts)}" aria-label="Play from ${ts}">${ts}</button>${lat ? `<span class="lat-in"><span class="v">${lat.v}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
+  <div class="col"><div class="who-l"><b>${who}</b><button type="button" class="tsb mono" data-t="${sec(ts)}" aria-label="Play from ${ts}">${ts}</button>${lat ? `<span class="lat-in"><span class="v">${lat}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
 $('tr').innerHTML = [
-  turn('ag', 'Agent', '00:38', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', { v: '610 ms' }),
+  turn('ag', 'Agent', '00:02', 'Hi, this is the Northside Health assistant calling for Priya. Is this Priya?', '460 ms'),
+  turn('pt', 'Patient', '00:06', 'Yes, speaking.'),
+  turn('ag', 'Agent', '00:08', 'Thanks. For your privacy, can you confirm your date of birth?', '540 ms'),
+  turn('pt', 'Patient', '00:12', 'June 2nd, 1988.'),
+  fnBlock({ id: 'fn-verify', at: '00:13', name: 'verify_identity', code: 200, ms: 212, args: '{ dob: "1988-06-02", patient: "pt_7710" }', res: '→ { verified: true }' }),
+  turn('ag', 'Agent', '00:17', "Thank you. I'm calling about your visit with Dr. Alvarez on Thursday, October 15 at 11:15 AM. Can you make it?", '600 ms'),
+  turn('pt', 'Patient', '00:28', "I can't do Thursday morning anymore. Is anything open early next week?"),
+  fnBlock({ id: 'fn-avail', at: '00:36', name: 'check_availability', code: 200, ms: 388, args: '{ provider: "dr_alvarez", from: "2026-10-19", to: "2026-10-21" }', res: '→ 3 slots: Mon 19 10:00 · Tue 20 14:15 · Wed 21 08:45' }),
+  turn('ag', 'Agent', '00:38', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', '610 ms'),
   turn('pt', 'Patient', '00:46', 'Monday the <button type="button" class="lowconf" id="lcword">nineteenth<span class="sr-only"> (low confidence 0.71)</span></button> at ten.', null, 'turn-pick'),
   `<li class="lowconf-note t-caption" aria-hidden="true">Underlined word, low confidence <span class="mono">0.71</span></li>`,
-  turn('ag', 'Agent', '00:50', 'Just to confirm: Monday, October 19 at 10 AM with Dr. Alvarez. Is that right?', { v: '590 ms' }),
+  turn('ag', 'Agent', '00:50', 'Just to confirm: Monday, October 19 at 10 AM with Dr. Alvarez. Is that right?', '590 ms', 'turn-readback'),
   turn('pt', 'Patient', '01:32', "Yes, that's right. Thank you."),
-  turn('ag', 'Agent', '01:36', 'Booking that now.', { v: '480 ms' }),
-  fnBlock({ name: 'reschedule_appointment', code: 200, ms: 341, dur: 85, args: '{ from: "2026-10-15T11:15", to: "2026-10-19T10:00", patient: "pt_7710" }', res: '→ { status: "booked", ehr_ref: "APT-55812" }' }),
-  turn('ag', 'Agent', '01:41', "You're booked for Monday, October 19 at 10 AM with Dr. Alvarez. See you then.", { v: '620 ms' })
+  turn('ag', 'Agent', '01:36', 'Booking that now.', '480 ms'),
+  fnBlock({ id: 'fn-write', at: '01:39', name: 'reschedule_appointment', code: 200, ms: 341, dur: 85, args: '{ from: "2026-10-15T11:15", to: "2026-10-19T10:00", patient: "pt_7710" }', res: '→ { status: "booked", ehr_ref: "APT-55812" }' }),
+  turn('ag', 'Agent', '01:41', "You're booked for Monday, October 19 at 10 AM with Dr. Alvarez. See you then.", '620 ms', 'turn-done'),
+  turn('pt', 'Patient', '01:45', 'Great, bye.')
 ].join('');
 
 /* the transcript follows the recording: the turn being played is outlined, and a click or a timestamp moves the playhead */
@@ -210,34 +214,49 @@ $('tr').addEventListener('click', e => {
   if (li && !e.target.closest('#lcword')) player.seek(+li.dataset.t);
 });
 const flash = el => { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); };
-const goTo = (id, t) => { player.seek(t); const el = $(id); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); flash(el); };
+const goEl = (el, t) => { player.seek(t); el = el || curEv; if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); flash(el); };
+const goTo = (id, t) => goEl($(id), t);
+const goT = s => goEl($('tr').querySelector('li[data-t="' + s + '"]'), s);   // a call time with no block of its own lands on the turn being played
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(b.dataset.go, +b.dataset.sec); });
 $('lcword').addEventListener('click', () => goTo('turn-pick', 46));
 $('jumpword').addEventListener('click', () => goTo('turn-pick', 46));   // the scrubber goes to the moment the word was said
 $('seewrite').addEventListener('click', () => goTo('fn-write', 99));    // from the calendar change to the call that made it
-$('seeverify').addEventListener('click', () => { player.seek(13); $('transcript').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('seeverify').addEventListener('click', () => goTo('fn-verify', 13));
+
+/* ---------- checks: said vs. done ---------- */
+const tj = (ts, id) => `<button type="button" class="tj" data-go="${id}" data-sec="${sec(ts)}">${ts}</button>`;
+const CHECKS = [
+  { ok: 1, t: 'Identity verified before any details', d: `Date of birth confirmed at ${tj('00:13', 'fn-verify')}, before the visit was mentioned.` },
+  { ok: 1, t: 'Read-back matches what was booked', d: `Said "Monday, October 19 at 10 AM" at ${tj('00:50', 'turn-readback')}. Booked <span class="mono">2026-10-19T10:00</span>.` },
+  { ok: 1, t: 'Calendar write succeeded', d: `<span class="mono">reschedule_appointment()</span> returned <span class="mono">200</span> at ${tj('01:39', 'fn-write')}, reference <span class="mono">APT-55812</span>.` },
+  { ok: 1, t: 'Patient told only after the write', d: `Written at ${tj('01:39', 'fn-write')}, confirmed to Priya at ${tj('01:41', 'turn-done')}.` }
+];
+$('cklist').innerHTML = CHECKS.map(c => `<li>${c.ok ? `<span class="okck" aria-hidden="true">${NS.check}</span>` : '<span class="xck" aria-hidden="true">!</span>'}<div><div class="nm">${c.t}</div><div class="d t-caption">${c.d}</div></div><span class="ck-s">${c.ok ? 'Passed' : 'Failed'}</span></li>`).join('');
+const nFailed = CHECKS.filter(c => !c.ok).length;
+$('ck-sum').textContent = nFailed ? nFailed + ' of ' + CHECKS.length + ' failed' : CHECKS.length + ' of ' + CHECKS.length + ' passed';
 
 /* ---------- function calls table ---------- */
 const FN = [
   ['00:13', 'verify_identity', 200, '212 ms', '{ verified: true }'],
-  ['00:31', 'get_appointment', 200, '176 ms', '{ time: "2026-10-15T11:15", provider: "dr_alvarez" }'],
+  ['00:15', 'get_appointment', 200, '176 ms', '{ time: "2026-10-15T11:15", provider: "dr_alvarez" }'],
   ['00:36', 'check_availability', 200, '388 ms', '3 slots: Mon 19 10:00 · Tue 20 14:15 · Wed 21 08:45'],
   ['01:39', 'reschedule_appointment', 200, '341 ms', '{ status: "booked", ehr_ref: "APT-55812" }']
 ];
 $('fnrows').innerHTML = FN.map(r => `<tr><td><button type="button" class="action sm mono num" data-fnt="${sec(r[0])}">${r[0]}</button></td><td class="mono strong">${r[1]}()</td><td><span class="badge badge-filled">${r[2]}</span></td><td class="mono num">${r[3]}</td><td class="mono muted">${r[4]}</td></tr>`).join('');
 
-$('fnrows').addEventListener('click', e => { const b = e.target.closest('[data-fnt]'); if (!b) return; const s = +b.dataset.fnt; if (s === 99) goTo('fn-write', 99); else { player.seek(s); $('transcript').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+$('fnrows').addEventListener('click', e => { const b = e.target.closest('[data-fnt]'); if (b) goT(+b.dataset.fnt); });
 
 /* ---------- audit log (wall clock, call started 9:58:19 AM) ---------- */
-const AU = [
-  ['9:58:19 AM', 'System', 'Call placed to patient'],
-  ['9:58:32 AM', 'Agent', 'Identity verified by date of birth'],
-  ['9:59:58 AM', 'Agent', 'Calendar write confirmed, APT-55812'],
-  ['10:00:06 AM', 'System', 'Call ended, outcome Rescheduled']
+const AU = [   // [time, event, detail, who]
+  ['9:58:19 AM', 'Call placed', 'to •••• 7710', 'System'],
+  ['9:58:32 AM', 'Identity verified', 'by date of birth', 'Agent'],
+  ['9:59:58 AM', 'Calendar write confirmed', 'APT-55812', 'Agent'],
+  ['10:00:06 AM', 'Call ended', 'outcome Rescheduled', 'System']
 ];
-let auExtra = 0;
+let nav, auExtra = 0;
 const renderAu = (extra) => {
-  $('aurows').innerHTML = AU.concat(extra || []).map((r, i) => `<tr class="${i >= AU.length ? 'newrow' : ''}"><td class="mono num muted">${r[0]}</td><td>${r[1]}</td><td>${r[2]}${i >= AU.length ? ' <span class="badge badge-muted" style="margin-left:8px">New</span>' : ''}</td></tr>`).join('');
-  auExtra = extra ? extra.length : 0; nav.render();
+  $('aurows').innerHTML = AU.concat(extra || []).map((r, i) => `<li class="${i >= AU.length ? 'newrow' : ''}"><div><div class="ev"><b>${r[1]}</b>${r[2] ? ' · ' + r[2] : ''}${i >= AU.length ? '<span class="badge badge-muted">New</span>' : ''}</div><div class="by t-caption">${r[3]}</div></div><span class="when">${r[0]}</span></li>`).join('');
+  auExtra = extra ? extra.length : 0; if (nav) nav.render();
 };
 
 /* ---------- reveal with confirm ---------- */
@@ -253,15 +272,24 @@ confirmBox.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfi
 $('cf-ok').addEventListener('click', () => {
   revealed = true; phone.textContent = '(555) 010-7710'; reveal.textContent = 'Hide Details';
   confirmBox.hidden = true; reveal.setAttribute('aria-expanded', 'false'); reveal.focus();
-  renderAu([['Just now', 'Teresa Alvarez', 'PHI viewed: full phone number']]);
+  renderAu([['Just now', 'PHI viewed', 'full phone number', 'Teresa Alvarez']]);
   NS.toast('Phone number shown. This view was written to the audit log.');
 });
 
+
+/* the player is docked at the bottom once the transcript comes into view, so you can scrub while you read */
+const dockEl = $('dock'), dockTarget = $('transcript');
+const showDock = () => {
+  dockEl.classList.toggle('on', dockTarget.getBoundingClientRect().top < innerHeight - 120);
+  dockEl.classList.toggle('rest', dockEl.getBoundingClientRect().bottom < innerHeight - 1);   // resting at the end of the page, not pinned to the bottom
+};
+window.addEventListener('scroll', showDock, { passive: true }); window.addEventListener('resize', showDock); showDock();
+
 /* ---------- the section list ---------- */
-const nav = NS.stepNav({
+nav = NS.stepNav({
   el: $('steps'),
-  steps: [['change', 'Calendar Change'], ['transcript', 'Transcript'], ['identity', 'Identity'], ['functions', 'Function Calls'], ['audit', 'Audit Log'], ['quality', 'Call Quality']],
-  sums: () => ({ change: 'Thu Oct 15 to Mon Oct 19', transcript: '1:47, 1 low-confidence word', functions: '4 calls, all succeeded', audit: (AU.length + auExtra) + ' events', identity: revealed ? 'Full phone shown' : 'Verified by DOB, phone masked', quality: '0.94 average confidence' })
+  steps: [['change', 'Calendar Change'], ['checks', 'Checks'], ['transcript', 'Transcript'], ['identity', 'Identity'], ['functions', 'Function Calls'], ['audit', 'Audit Log'], ['quality', 'Call Quality']],
+  sums: () => ({ change: 'Thu Oct 15 to Mon Oct 19', checks: $('ck-sum').textContent, transcript: '1:47, 1 low-confidence word', functions: '4 calls, all succeeded', audit: (AU.length + auExtra) + ' events', identity: revealed ? 'Full phone shown' : 'Verified by DOB, phone masked', quality: '0.94 average confidence' })
 });
 renderAu();
 </script>

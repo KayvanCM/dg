@@ -9,28 +9,24 @@
 <script src="shell.js"></script>
 <style>
 .tr{list-style:none}
+.turn,.fn,.wrong{scroll-margin-bottom:160px}
 .head h1{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .head .meta{margin-top:8px;max-width:none}
 
 /* the problem is the one loud surface on this page, so everything inside it is flat: columns and hairlines, no boxes */
-.pn.loud{border:1.5px solid var(--alert);background:#fff}
-[data-fi="low"] .pn.loud{border-color:var(--ink);background:#fff}
+.pn.loud{border:1.5px solid var(--alert);background:#fff}   /* the warning is the rust border alone; the inside stays plain white */
 .pb-t{max-width:820px}
-.pb-why{margin-top:12px;max-width:820px;font-size:16px;line-height:24px}
+.pb-t:focus,.pb-t:focus-visible{outline:none}
+.pb-cause{margin-top:8px;max-width:820px}
+/* the evidence opens on the end of the call, as in the brief; the earlier turns fold above it */
+.more-row{list-style:none;display:flex;align-items:baseline;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--fill)}
+.pb-why{margin-top:12px;max-width:820px;font-size:14px;line-height:20px}   /* Body size, so the headline above leads */
 .mm{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin-top:24px;padding-top:24px;border-top:1px solid var(--fill)}
 .mm .t-eyebrow{color:var(--muted)}
 .mm .big{margin:4px 0 8px}
 .mm .sub{display:flex;flex-direction:column;gap:2px}
 .mm .heard .big{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
-.hist{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:24px;padding-top:20px;border-top:1px solid var(--fill)}
-.hist button{display:block;text-align:left;width:100%;border-radius:4px}
-.hist button:hover .txt{text-decoration:underline;text-underline-offset:3px}
-.hist .at{display:block}
-.hist .txt{display:block;margin-top:2px}
 
-.pl{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--fill)}
-.tsb{color:var(--muted);font-size:12px;line-height:16px;border-radius:4px}
-.tsb:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .turn[data-t] .bub,.fn[data-t],.wrong[data-t]{cursor:pointer}
 .cur .bub{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)}
 .cur.wrong{outline:2px solid var(--field-focus);outline-offset:2px}
@@ -53,10 +49,21 @@
 .rlist .opt[aria-checked="true"]{border:0;padding:16px 12px;background:var(--sel-bg)}
 .rlist .opt[aria-checked="true"]:hover{background:var(--sel-bg)}
 .note{margin-top:20px}
+.rlist .opt-n{display:block;margin-top:4px;font-size:12px;line-height:16px;color:var(--ink)}
+.rlist .opt-w{display:block;margin-top:4px;font-size:12px;line-height:16px;color:var(--muted)}
 .note .textarea{font-family:var(--sans);font-size:14px;line-height:20px;min-height:64px}
+.tbl-wrap{overflow:hidden}
+.newrow td{background:var(--surface)}
+.rows{padding:4px 24px}
+.rowx{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:14px 0;border-bottom:1px solid var(--fill);align-items:baseline}
+.rowx:last-child{border-bottom:0}
+.rowx dt{color:var(--muted)}
+.rowx dd{margin:0}
+.confirm{padding:16px 0 4px;border-top:1px solid var(--fill);margin-top:4px}
+.confirm p{margin:4px 0 12px}
 .did dt{font-size:12px;color:var(--muted);margin-bottom:2px}
 .did dd{margin:0 0 12px;font-weight:500}
-@media (max-width:1180px){.hist{grid-template-columns:1fr}.mm{grid-template-columns:1fr}}
+@media (max-width:1180px){.mm{grid-template-columns:1fr}.rowx{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-product="cons" data-nav="c04alt">
@@ -96,26 +103,62 @@
     <div>
       <section class="card pn" id="problem" aria-labelledby="h-problem"></section>
 
+      <section class="card pn" id="checks" aria-labelledby="h-checks">
+        <div class="pn-h"><div class="row between"><h2 class="t-headline" id="h-checks" tabindex="-1">Checks</h2><span class="t-caption muted" id="ck-sum"></span></div><p>What the agent said, checked against what the clinic's systems did.</p></div>
+        <div class="pn-b pad"><ul class="ck-list" id="cklist"></ul></div>
+      </section>
+
       <section class="card pn" id="evidence" aria-labelledby="h-evidence">
-        <div class="pn-h"><h2 class="t-headline" id="h-evidence" tabindex="-1">The Evidence</h2><p>The last part of the call, where the agent confirmed a time.</p></div>
+        <div class="pn-h"><h2 class="t-headline" id="h-evidence" tabindex="-1">The Evidence</h2><p>The end of the call, where the agent confirmed a time. The turn where it went wrong is outlined.</p></div>
         <div class="pn-b pad">
-          <div class="pl" id="player">
-            <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="132" aria-valuenow="104" aria-valuetext="1:44 of 2:12"></div>
-            <div class="pl-bar">
-              <div class="clock mono" id="ptime" role="timer" aria-live="off">1:44</div>
-              <span class="t-caption muted">of 2:12</span>
-              <div class="row g8" style="margin-left:auto">
-                <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
-                <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
-                <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
-              </div>
-            </div>
-          </div>
           <ol class="tr" id="tr"></ol>
         </div>
       </section>
 
       <section class="card pn" id="resolution" aria-labelledby="h-resolution"></section>
+
+      <section class="card pn" id="identity" aria-labelledby="h-identity">
+        <div class="pn-h"><h2 class="t-headline" id="h-identity" tabindex="-1">Identity</h2><p>Patient details are masked until someone with permission shows them.</p></div>
+        <div class="pn-b rows">
+          <dl>
+            <div class="rowx"><dt>Verified by</dt><dd>DOB <button type="button" class="action sm mono" id="seeverify" style="margin-left:8px">at 00:14</button></dd></div>
+            <div class="rowx"><dt>Phone (masked)</dt><dd class="mono" id="phone">•••• 4471</dd></div>
+          </dl>
+          <div style="padding:8px 0 12px"><button type="button" class="action sm" id="reveal" aria-expanded="false" aria-controls="confirm">Show Full Details (Logged)</button></div>
+          <div class="confirm" id="confirm" role="alertdialog" aria-labelledby="cf-h" aria-describedby="cf-d" hidden>
+            <h3 class="t-heading" id="cf-h">Show Full Phone Number?</h3>
+            <p id="cf-d" class="muted">Full patient details are permissioned. Your name and the time will be written to the audit log.</p>
+            <div class="row g8"><button type="button" class="btn btn-secondary btn-sm" id="cf-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="cf-ok">Show Number</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card pn" id="functions" aria-labelledby="h-functions">
+        <div class="pn-h"><h2 class="t-headline" id="h-functions" tabindex="-1">Function Calls</h2><p>Everything the agent asked the clinic's systems to do.</p></div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <caption class="sr-only">Function calls made during this call</caption>
+            <thead><tr><th scope="col">Call time</th><th scope="col">Function</th><th scope="col">Status</th><th scope="col">Latency</th><th scope="col">Result</th></tr></thead>
+            <tbody id="fnrows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card pn" id="audit" aria-labelledby="h-audit">
+        <div class="pn-h"><h2 class="t-headline" id="h-audit" tabindex="-1">Audit Log</h2><p>Who did what, and when.</p></div>
+        <div class="pn-b rows"><ul class="feed" id="aurows" aria-label="Audit log for this call"></ul></div>
+      </section>
+
+      <section class="card pn" id="quality" aria-labelledby="h-quality">
+        <div class="pn-h"><h2 class="t-headline" id="h-quality" tabindex="-1">Call Quality</h2><p>How well the agent heard and answered.</p></div>
+        <div class="pn-b rows">
+          <dl>
+            <div class="rowx"><dt>Transcript confidence</dt><dd class="mono">0.93 avg</dd></div>
+            <div class="rowx"><dt>Lowest word</dt><dd><button type="button" class="action sm mono" id="jumpword">"2:15" 0.88</button></dd></div>
+            <div class="rowx"><dt>Median latency</dt><dd class="mono">580 ms</dd></div>
+          </dl>
+        </div>
+      </section>
 
       <section class="card pn" id="tech" aria-labelledby="h-tech">
         <div class="pn-h"><h2 class="t-headline" id="h-tech" tabindex="-1">Technical Details, For Sam</h2><p>Where this came from in testing.</p></div>
@@ -124,6 +167,18 @@
           <div style="margin-top:12px"><a class="action sm" href="p04-scenarios.html">View The Failed Scenario In Playground</a></div>
         </div>
       </section>
+      <div class="dockp pl" id="dock" role="region" aria-label="Call playback controls">
+        <div class="pbar">
+          <div class="pbar-tx">
+            <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"></button>
+            <button type="button" class="playbtn" id="pbtn" aria-label="Play"></button>
+            <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds"></button>
+          </div>
+          <span class="pbar-now" id="ptime" role="timer" aria-label="Playhead position" aria-live="off">01:44</span>
+          <div class="wave" id="scrub" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="132" aria-valuenow="104" aria-valuetext="01:44 of 02:12"></div>
+          <span class="pbar-end">02:12</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -135,12 +190,22 @@
 const $ = id => document.getElementById(id);
 const CALL = 'call_3c71d0';
 const RES_OPTIONS = [
-  { t: 'Book the next open slot and have staff call her', s: 'Tue Oct 20 · 3:00 PM is open with Dr. Okafor', did: 'Booked Tue Oct 20 at 3:00 PM with Dr. Okafor. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-outline badge-lg">Rescheduled</span>', short: 'Rescheduled' },
-  { t: 'Keep Thursday and have staff call her', s: 'Original appointment stays; explain the mix-up', did: 'Kept Thu Oct 15 at 9:30 AM. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-filled badge-lg">Confirmed</span>', short: 'Confirmed' },
-  { t: 'Let the agent call back with new options', s: 'Automated call within 15 minutes', did: 'Agent will call Maria back within 15 minutes with new options. Thu Oct 15 at 9:30 AM stays booked until she chooses.', badge: '<span class="badge badge-muted badge-lg">Callback Scheduled</span>', short: 'Callback scheduled' }
+  { t: 'Book the next open slot and have staff call her', s: 'Tue Oct 20 · 3:00 PM is open with Dr. Okafor', n: 'Front desk calls her today to explain. Thursday is released.', why: 'Closest to what she asked for: a Tuesday afternoon with Dr. Okafor.', btn: 'Resolve And Notify Staff', did: 'Booked Tue Oct 20 at 3:00 PM with Dr. Okafor. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-outline badge-lg">Rescheduled</span>', short: 'Rescheduled' },
+  { t: 'Keep Thursday and have staff call her', s: 'Her original appointment, Thu Oct 15 at 9:30 AM, stays', n: 'Front desk calls her today to explain the mix-up.', btn: 'Resolve And Notify Staff', did: 'Kept Thu Oct 15 at 9:30 AM. Front desk will call Maria to explain the mix-up.', badge: '<span class="badge badge-filled badge-lg">Confirmed</span>', short: 'Confirmed' },
+  { t: 'Let the agent call back with new options', s: 'Automated call within 15 minutes', n: 'The agent offers new times. Thursday stays booked until she picks one.', btn: 'Resolve And Schedule Callback', did: 'Agent will call Maria back within 15 minutes with new options. Thu Oct 15 at 9:30 AM stays booked until she chooses.', badge: '<span class="badge badge-muted badge-lg">Callback Scheduled</span>', short: 'Callback scheduled' },
+  { t: 'Marked reviewed, patient not affected', did: 'Nothing changed on the calendar, and no one was asked to call her.', badge: '<span class="badge badge-muted badge-lg">Reviewed</span>', short: 'Reviewed' }
 ];
+/* the flow ends when the calendar matches what the patient heard: [she will hear, calendar now, matched] */
+const END = [
+  ['Tue Oct 20 · 3:00 PM', 'From the front desk, today', 'Tue Oct 20 · 3:00 PM', 'Booked with Dr. Okafor', 1],
+  ['Thu Oct 15 · 9:30 AM', 'From the front desk, today', 'Thu Oct 15 · 9:30 AM', 'Still booked', 1],
+  ['New options', 'From the agent, within 15 minutes', 'Thu Oct 15 · 9:30 AM', 'Stays booked until she chooses', 0],
+  ['Nothing new', 'She was not told a wrong time', 'Thu Oct 15 · 9:30 AM', 'Still booked', 1]
+];
+const REVIEWED = 3;
 const resolved = NS.isResolved(CALL);
 const saved = NS.get('resolution:' + CALL, { opt: 0, note: 'Slot conflict with front desk booking.' });
+const end = END[saved.opt];
 
 $('ehr-ico').innerHTML = NS.ico('arrow.up.right');
 $('ehr').addEventListener('click', () => NS.toast('Opening the patient record in the EHR. External links are not part of this prototype.'));
@@ -149,67 +214,114 @@ $('callback').addEventListener('click', () => NS.toast('Calling Maria G. Calls a
 /* ---------- header: status, and the one thing that needs a decision ---------- */
 $('status').innerHTML = resolved ? RES_OPTIONS[saved.opt].badge : '<span class="badge badge-alert badge-lg">Needs Review</span>';
 if (resolved) $('issue').remove();
-else $('issue').innerHTML = '<i aria-hidden="true"></i><span><b class="strong">Maria was told a time that is not booked.</b> Choose how to fix it for her. <a class="action sm" href="#resolution">Go To Resolution</a></span>';
+else $('issue').innerHTML = '<i aria-hidden="true"></i><span><b class="strong">Action needed. Her real visit is Thu Oct 15, in 2 days.</b> Choose how to fix this for Maria. <a class="action sm" href="#resolution">Go To Resolution</a></span>';
 
-/* ---------- 1 the problem ---------- */
-const AT = { '01:51': 111, '01:52': 112, '01:53': 113 };
-const history = `
-  <ol class="hist" aria-label="What happened, in order">
-    <li><button type="button" class="hstep" data-go="turn-wrong" data-t="01:51"><span class="at mono strong">01:51</span><span class="txt">Agent tells her she's all set</span></button></li>
-    <li><button type="button" class="hstep" data-go="fn-409" data-t="01:52"><span class="at mono strong">01:52 <span class="muted" style="font-weight:400">· 10:05:52 AM</span></span><span class="txt">Front desk books Tue Oct 20 · 2:15 PM</span></button></li>
-    <li><button type="button" class="hstep" data-go="fn-409" data-t="01:53"><span class="at mono strong">01:53</span><span class="txt">Calendar write fails</span></button></li>
-  </ol>`;
+/* ---------- 1 the problem: the headline leads, and the times in the explanation jump to the moment ---------- */
+const sec = ts => +ts.slice(0, 2) * 60 + +ts.slice(3);
+const tj = (ts, id) => `<button type="button" class="tj" data-go="${id}" data-sec="${sec(ts)}">${ts}</button>`;
+const why = `At ${tj('01:51', 'turn-wrong')} the agent confirmed Tue Oct 20 at 2:15 PM. The calendar write failed at ${tj('01:53', 'fn-409')} because the front desk booked that slot at ${tj('01:52', 'fn-409')}. Her original appointment, Thu Oct 15 at 9:30 AM, is still on the calendar.`;
 const problem = $('problem');
 if (!resolved) {
   problem.classList.add('loud');
   problem.innerHTML = `
-    <div class="pn-h"><h2 class="t-headline" id="h-problem" tabindex="-1">The Problem</h2><p>What went wrong, in one read.</p></div>
     <div class="pn-b pad">
-      <h3 class="t-title pb-t">Maria was told an appointment time that isn't booked</h3>
-      <p class="pb-why">At <span class="mono strong">01:51</span> the agent confirmed Tue Oct 20 at 2:15 PM. The calendar write failed at <span class="mono strong">01:53</span> because the front desk booked that slot at <span class="mono strong">01:52</span>. Her original appointment, Thu Oct 15 at 9:30 AM, is still on the calendar.</p>
+      <h2 class="t-title pb-t" id="h-problem" tabindex="-1">Maria was told an appointment time that isn't booked</h2>
+      <p class="pb-why">${why}</p>
+      <p class="pb-cause"><b class="strong">Why it happened.</b> The agent did not re-check that the slot was still free before confirming it. <a class="action sm" href="#checks">See the checks</a></p>
       <div class="mm">
         <div class="heard"><div class="t-eyebrow">What She Believes</div><div class="t-title big num">Tue Oct 20 · 2:15 PM</div><div class="sub"><span class="t-caption muted">Slot she was told</span><span class="strong">Booked by another patient</span></div></div>
         <div><div class="t-eyebrow">Calendar Right Now</div><div class="t-title big num">Thu Oct 15 · 9:30 AM</div><div class="sub"><span class="t-caption muted">Maria's appointment</span><span class="strong">Still booked</span></div></div>
       </div>
       <span class="sr-only">These two times do not match.</span>
-      ${history}
     </div>`;
 } else {
+  const reviewed = saved.opt === REVIEWED;
   problem.innerHTML = `
-    <div class="pn-h"><h2 class="t-headline" id="h-problem" tabindex="-1">Resolved, Front Desk Notified</h2><p>${RES_OPTIONS[saved.opt].did}</p></div>
-    <div class="pn-b pad"><p class="t-caption muted">What happened on the call, for the record:</p>${history}</div>`;
+    <div class="pn-h"><div class="row between"><h2 class="t-headline" id="h-problem" tabindex="-1">${reviewed ? 'Marked Reviewed' : 'Resolved, Front Desk Notified'}</h2>${end[4] ? '<span class="badge badge-filled">Calendar Matches</span>' : '<span class="badge badge-dashed">Waiting For Maria</span>'}</div><p>${RES_OPTIONS[saved.opt].did}</p></div>
+    <div class="pn-b pad">
+      <div class="mm" style="margin-top:0;padding-top:0;border-top:0">
+        <div><div class="t-eyebrow">What She Will Hear</div><div class="t-title big num">${end[0]}</div><div class="sub"><span class="t-caption muted">${end[1]}</span></div></div>
+        <div><div class="t-eyebrow">Calendar Right Now</div><div class="t-title big num">${end[2]}</div><div class="sub"><span class="t-caption muted">${end[3]}</span></div></div>
+      </div>
+      <span class="sr-only">${end[4] ? 'These match.' : 'Not matched yet. Maria has not chosen a new time.'}</span>
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--fill)"><p class="t-caption muted">What happened on the call</p><p class="pb-why" style="margin-top:4px">${why.replace('Her original appointment, Thu Oct 15 at 9:30 AM, is still on the calendar.', 'Her original appointment was Thu Oct 15 at 9:30 AM.')}</p></div>
+    </div>`;
 }
 
+/* ---------- checks: said vs. done ---------- */
+const CHECKS = [
+  { ok: 1, t: 'Identity verified before any details', d: `Date of birth confirmed at ${tj('00:14', 'fn-verify')}, before the visit was mentioned.` },
+  { ok: 1, t: 'Read-back matches what was sent', d: `Said "Tuesday, October 20 at 2:15 PM" at ${tj('01:47', 'turn-readback')}. Sent <span class="mono">2026-10-20T14:15</span>.` },
+  { ok: 0, t: 'Calendar write succeeded', d: `<span class="mono">reschedule_appointment()</span> returned <span class="mono">409</span> at ${tj('01:53', 'fn-409')}. The front desk had booked the slot a second earlier.` },
+  { ok: 0, t: 'Patient told only after the write', d: `Confirmed to Maria at ${tj('01:51', 'turn-wrong')}, two seconds before the write at ${tj('01:53', 'fn-409')}.` }
+];
+$('cklist').innerHTML = CHECKS.map(c => `<li>${c.ok ? `<span class="okck" aria-hidden="true">${NS.check}</span>` : '<span class="xck" aria-hidden="true">!</span>'}<div><div class="nm">${c.t}</div><div class="d t-caption">${c.d}</div></div><span class="ck-s">${c.ok ? 'Passed' : 'Failed'}</span></li>`).join('');
+const nFailed = CHECKS.filter(c => !c.ok).length;
+$('ck-sum').textContent = nFailed ? nFailed + ' of ' + CHECKS.length + ' failed' : CHECKS.length + ' of ' + CHECKS.length + ' passed';
+
 /* ---------- 2 the evidence ---------- */
-$('tr').innerHTML = `
-  <li class="turn pt" data-t="104"><div class="col"><div class="who-l"><b>Patient</b><button type="button" class="tsb mono" data-t="104" aria-label="Play from 01:44">01:44</button></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
-  <li class="turn ag" data-t="107"><div class="col"><div class="who-l"><b>Agent</b><button type="button" class="tsb mono" data-t="107" aria-label="Play from 01:47">01:47</button><span class="lat-in"><span class="v">610 ms</span></span></div><div class="bub">Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.</div></div></li>
-  <li class="wrong" id="turn-wrong" data-t="111">
+const turn = (side, who, ts, txt, lat, id) => `<li class="turn ${side}" data-t="${sec(ts)}" ${id ? 'id="' + id + '"' : ''}>
+  <div class="col"><div class="who-l"><b>${who}</b><button type="button" class="tsb mono" data-t="${sec(ts)}" aria-label="Play from ${ts}">${ts}</button>${lat ? `<span class="lat-in"><span class="v">${lat}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
+const fnBlock = (o) => `<li class="fn" ${o.id ? 'id="' + o.id + '"' : ''} data-t="${sec(o.at)}"><div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span></div>
+  <div class="body"><div>args: ${o.args}</div><div class="res">${o.res}</div></div></li>`;
+$('tr').innerHTML = [
+  turn('ag', 'Agent', '00:02', 'Hi, this is the Northside Health assistant calling for Maria. Is this Maria?', '470 ms'),
+  turn('pt', 'Patient', '00:06', 'Yes, this is Maria.'),
+  turn('ag', 'Agent', '00:09', 'Thanks. For your privacy, can you confirm your date of birth?', '560 ms'),
+  turn('pt', 'Patient', '00:13', 'March 3rd, 1967.'),
+  fnBlock({ id: 'fn-verify', at: '00:14', name: 'verify_identity', code: 200, ms: 212, args: '{ dob: "1967-03-03", patient: "pt_4471" }', res: '→ { verified: true }' }),
+  turn('ag', 'Agent', '00:17', "Thank you. I'm calling about your visit with Dr. Okafor on Thursday, October 15 at 9:30 AM. Can you make it?", '610 ms'),
+  turn('pt', 'Patient', '00:24', "Actually I can't do Thursday. Do you have anything early next week?"),
+  fnBlock({ at: '00:29', name: 'check_availability', code: 200, ms: 388, args: '{ provider: "dr_okafor", from: "2026-10-19", to: "2026-10-21" }', res: '→ 3 slots: Tue 20 14:15 · Tue 20 15:00 · Wed 21 08:45' }),
+  turn('ag', 'Agent', '00:31', 'I have Tuesday the 20th at 2:15 PM or 3:00 PM, or Wednesday the 21st at 8:45 AM. Which works best?', '590 ms'),
+  turn('pt', 'Patient', '01:08', 'Which of those is in the afternoon?'),
+  turn('ag', 'Agent', '01:12', 'Tuesday the 20th at 2:15 PM or 3:00 PM.', '540 ms'),
+  turn('pt', 'Patient', '01:44', 'Tuesday at <button type="button" class="lowconf" id="lcword">2:15<span class="sr-only"> (low confidence 0.88)</span></button> works.', null, 'turn-pick'),
+  turn('ag', 'Agent', '01:47', 'Great. Just to confirm: Tuesday, October 20 at 2:15 PM with Dr. Okafor.', '610 ms', 'turn-readback'),
+  `<li class="wrong" id="turn-wrong" data-t="111">
     <div class="eb"><span class="t-eyebrow" style="color:inherit">The Turn Where It Went Wrong</span><span class="badge badge-alert">Wrong</span></div>
     <div class="who-l"><b>Agent</b><button type="button" class="tsb mono" data-t="111" aria-label="Play from 01:51">01:51</button></div>
     <div class="bub">You're all set for Tuesday at 2:15. You'll get a text confirmation shortly.</div>
-  </li>
-  <li class="fn bad" id="fn-409" data-t="113">
+  </li>`,
+  `<li class="fn bad" id="fn-409" data-t="113">
     <div class="h"><span aria-hidden="true">{}</span><span class="nm">reschedule_appointment()</span><span class="code">409</span><span class="ms">402 ms</span></div>
     <div class="body"><div>args: { from: "2026-10-15T09:30", to: "2026-10-20T14:15", patient: "pt_4471" }</div><div class="res">→ { error: "slot_unavailable", booked_by: "front_desk", at: "10:05:52" }</div></div>
-  </li>`;
+  </li>`,
+  turn('pt', 'Patient', '02:02', 'Okay, thank you. See you Tuesday.'),
+  turn('ag', 'Agent', '02:06', 'Goodbye, Maria.', '460 ms')
+].join('');
+
+/* the evidence opens at 1:44, as in the brief. Earlier turns fold above it and open on their own when the playhead moves before 1:44 */
+const START = 104;
+const earlyEls = Array.from($('tr').children).filter(li => +li.dataset.t < START);
+const nEarly = earlyEls.filter(li => li.classList.contains('turn')).length;
+$('tr').insertAdjacentHTML('afterbegin', `<li class="more-row"><button type="button" class="action sm" id="moreBtn" aria-expanded="false" aria-controls="tr"></button><span class="t-caption muted">00:00 to 01:43</span></li>`);
+let earlyOpen = false;
+const setEarly = open => {
+  earlyOpen = open; earlyEls.forEach(li => { li.hidden = !open; });
+  $('moreBtn').textContent = open ? 'Hide Earlier Turns' : 'Show Earlier Turns (' + nEarly + ')';
+  $('moreBtn').setAttribute('aria-expanded', String(open));
+};
+setEarly(false);
+
 /* the transcript follows the recording: the turn being played is outlined, and a click or a timestamp moves the playhead */
 const evs = Array.from($('tr').children).filter(li => li.dataset.t);
 let curEv = null;
 const player = NS.player({
-  wave: $('scrub'), play: $('pbtn'), back: $('back'), fwd: $('fwd'), time: $('ptime'), dur: 132, pos: 104,
+  wave: $('scrub'), play: $('pbtn'), back: $('back'), fwd: $('fwd'), time: $('ptime'), dur: 132, pos: START,
   onTick: pos => {
+    if (!earlyOpen && pos < START - 0.5) setEarly(true);
     let c = null; evs.forEach(li => { if (+li.dataset.t <= pos) c = li; });
     if (c !== curEv) { if (curEv) curEv.classList.remove('cur'); if (c) c.classList.add('cur'); curEv = c; }
   }
 });
-$('tr').addEventListener('click', e => { const li = e.target.closest('li[data-t]'); if (li) player.seek(+li.dataset.t); });
-document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
-  const t = $(b.dataset.go); if (!t) return;
-  player.seek(AT[b.dataset.t]);   // the scrubber goes to the same moment
-  t.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
-}));
+$('moreBtn').addEventListener('click', () => { const open = !earlyOpen; setEarly(open); if (!open && +$('scrub').getAttribute('aria-valuenow') < START) player.seek(START); });
+$('tr').addEventListener('click', e => { if (e.target.closest('.more-row')) return; const li = e.target.closest('li[data-t]'); if (li) player.seek(+li.dataset.t); });
+const flash = el => { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); };
+const goEl = (el, t) => { player.seek(t); el = el || curEv; if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); flash(el); };
+const goTo = (id, t) => goEl($(id), t);
+const goT = s => goEl($('tr').querySelector('li[data-t="' + s + '"]'), s);
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(b.dataset.go, +b.dataset.sec); });
 
 /* ---------- 3 the resolution ---------- */
 const res = $('resolution');
@@ -218,13 +330,22 @@ if (!resolved) {
     <div class="pn-h"><h2 class="t-headline" id="h-resolution" tabindex="-1">How Should We Fix This For Maria?</h2><p>Each option says what happens to her, not to the system.</p></div>
     <div class="pn-b pad">
       <div class="rlist" role="radiogroup" aria-labelledby="h-resolution" id="opts">
-        ${RES_OPTIONS.map((o, i) => `<button type="button" class="opt" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-i="${i}"><span class="radio" aria-hidden="true"></span><span><span class="opt-t">${o.t}${i === 0 ? '<span class="badge badge-filled reco">Recommended</span>' : ''}</span><span class="opt-d">${o.s}</span></span></button>`).join('')}
+        ${RES_OPTIONS.slice(0, REVIEWED).map((o, i) => `<button type="button" class="opt" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-i="${i}"><span class="radio" aria-hidden="true"></span><span><span class="opt-t">${o.t}${i === 0 ? '<span class="badge badge-filled reco">Recommended</span>' : ''}</span><span class="opt-d">${o.s}</span><span class="opt-n">${o.n}</span>${o.why ? `<span class="opt-w">Why recommended: ${o.why}</span>` : ''}</span></button>`).join('')}
       </div>
       <div class="field note"><label for="note">Note for audit log (prefilled)</label><textarea class="textarea" id="note" rows="2">Slot conflict with front desk booking.</textarea></div>
+      <div class="confirm" id="rv-confirm" role="alertdialog" aria-labelledby="rv-h" aria-describedby="rv-d" hidden>
+        <h3 class="t-heading" id="rv-h">Mark This Call Reviewed?</h3>
+        <p id="rv-d" class="muted">Use this only if Maria was not told a time that isn't booked. Nothing changes on the calendar, the call leaves the Needs Attention queue, and your note goes to the audit log.</p>
+        <div class="row g8"><button type="button" class="btn btn-secondary btn-sm" id="rv-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="rv-ok">Mark Reviewed</button></div>
+      </div>
     </div>
-    <div class="pn-f"><button type="button" class="btn btn-primary" id="resolve">Resolve And Notify Staff</button></div>`;
+    <div class="pn-f" style="justify-content:space-between"><button type="button" class="action sm" id="reviewed" aria-expanded="false" aria-controls="rv-confirm">Patient Not Affected? Mark Reviewed</button><button type="button" class="btn btn-primary" id="resolve">Resolve And Notify Staff</button></div>`;
   const opts = Array.from(res.querySelectorAll('.opt'));
-  const pick = (el, focus) => { opts.forEach(o => { o.setAttribute('aria-checked', String(o === el)); o.tabIndex = o === el ? 0 : -1; }); if (focus) el.focus(); };
+  const pick = (el, focus) => {
+    opts.forEach(o => { o.setAttribute('aria-checked', String(o === el)); o.tabIndex = o === el ? 0 : -1; });
+    $('resolve').textContent = RES_OPTIONS[+el.dataset.i].btn;   // the button says what this choice does
+    if (focus) el.focus();
+  };
   opts.forEach((o, i) => {
     o.addEventListener('click', () => pick(o));
     o.addEventListener('keydown', e => {
@@ -233,13 +354,20 @@ if (!resolved) {
       if (e.key === ' ') { e.preventDefault(); pick(o); }
     });
   });
-  $('resolve').addEventListener('click', () => {
-    const chosen = opts.findIndex(o => o.getAttribute('aria-checked') === 'true');
-    NS.set('resolution:' + CALL, { opt: chosen, note: $('note').value });
+  /* finishing stays on this page: it reloads into the resolved state, which shows whether the calendar now matches what Maria heard */
+  const finish = (opt, msg) => {
+    NS.set('resolution:' + CALL, { opt, note: $('note').value });
     NS.resolve(CALL);
-    NS.toast('Resolved. Front desk notified.');
-    setTimeout(() => { location.href = 'c03-call-log.html'; }, 900);
-  });
+    try { sessionStorage.setItem('ns:justResolved', msg); } catch (e) {}
+    history.replaceState(null, '', '#problem'); location.reload();
+  };
+  $('resolve').addEventListener('click', () => finish(opts.findIndex(o => o.getAttribute('aria-checked') === 'true'), 'Resolved. Front desk notified.'));
+  const rvBtn = $('reviewed'), rvBox = $('rv-confirm');
+  const rvClose = () => { rvBox.hidden = true; rvBtn.setAttribute('aria-expanded', 'false'); rvBtn.focus(); };
+  rvBtn.addEventListener('click', () => { rvBox.hidden = false; rvBtn.setAttribute('aria-expanded', 'true'); $('rv-cancel').focus(); });
+  $('rv-cancel').addEventListener('click', rvClose);
+  rvBox.addEventListener('keydown', e => { if (e.key === 'Escape') rvClose(); });
+  $('rv-ok').addEventListener('click', () => finish(REVIEWED, 'Marked reviewed. The call left the queue.'));
 } else {
   res.innerHTML = `
     <div class="pn-h"><h2 class="t-headline" id="h-resolution" tabindex="-1">What Was Done</h2><p>The fix chosen for Maria.</p></div>
@@ -247,18 +375,75 @@ if (!resolved) {
       <dt>Resolution</dt><dd>${RES_OPTIONS[saved.opt].t}</dd>
       <dt>Note for audit log</dt><dd>${saved.note.replace(/</g, '&lt;')}</dd>
       <dt>Resolved by</dt><dd>Teresa Alvarez</dd>
-      <dt>Front desk</dt><dd><span class="badge badge-filled">Notified</span></dd>
+      <dt>Front desk</dt><dd>${saved.opt === REVIEWED ? '<span class="badge badge-muted">Not needed</span>' : '<span class="badge badge-filled">Notified</span>'}</dd>
     </dl></div>
     <div class="pn-f"><a class="btn btn-secondary" href="c03-call-log.html">Back To Call Log</a></div>`;
 }
 
-/* ---------- the section list ---------- */
-NS.stepNav({
-  el: $('steps'),
-  steps: [['problem', 'The Problem'], ['evidence', 'The Evidence'], ['resolution', resolved ? 'What Was Done' : 'Resolution'], ['tech', 'For Sam']],
-  sums: () => ({ problem: resolved ? 'Resolved' : 'Calendar write failed', evidence: 'Wrong turn at 01:51', resolution: resolved ? RES_OPTIONS[saved.opt].short : 'Choose how to fix it', tech: '2 calls affected this week' }),
-  warn: () => resolved ? null : 'problem'
+/* ---------- function calls, audit log, identity, quality ---------- */
+const FN = [
+  ['00:14', 'verify_identity', 200, '212 ms', '{ verified: true }'],
+  ['00:16', 'get_appointment', 200, '176 ms', '{ time: "2026-10-15T09:30", provider: "dr_okafor" }'],
+  ['00:29', 'check_availability', 200, '388 ms', '3 slots: Tue 20 14:15 · Tue 20 15:00 · Wed 21 08:45'],
+  ['01:53', 'reschedule_appointment', 409, '402 ms', '{ error: "slot_unavailable", booked_by: "front_desk" }']
+];
+$('fnrows').innerHTML = FN.map(r => `<tr><td><button type="button" class="action sm mono num" data-fnt="${sec(r[0])}">${r[0]}</button></td><td class="mono strong">${r[1]}()</td><td><span class="badge ${r[2] === 200 ? 'badge-filled' : 'badge-alert'}">${r[2]}</span></td><td class="mono num">${r[3]}</td><td class="mono muted">${r[4]}</td></tr>`).join('');
+$('fnrows').addEventListener('click', e => { const b = e.target.closest('[data-fnt]'); if (b) goT(+b.dataset.fnt); });
+$('seeverify').addEventListener('click', () => goTo('fn-verify', 14));
+$('lcword').addEventListener('click', () => goTo('turn-pick', 104));
+$('jumpword').addEventListener('click', () => goTo('turn-pick', 104));
+
+/* audit log (wall clock, call started 10:04:00 AM) */
+const AU = [   // [time, event, detail, who]
+  ['10:04:00 AM', 'Call placed', 'to •••• 4471', 'System'],
+  ['10:04:14 AM', 'Identity verified', 'by date of birth', 'Agent'],
+  ['10:05:52 AM', 'Slot booked', 'Tue Oct 20, 2:15 PM for another patient', 'Front desk'],
+  ['10:05:53 AM', 'Calendar write failed', 'slot unavailable (409)', 'Agent'],
+  ['10:06:12 AM', 'Call ended', 'outcome Needs review', 'System']
+];
+if (resolved) AU.push(['Today', saved.opt === REVIEWED ? 'Marked reviewed' : 'Resolved', saved.opt === REVIEWED ? 'patient not affected' : RES_OPTIONS[saved.opt].short + ', front desk notified', 'Teresa Alvarez']);
+let nav, auExtra = 0;
+const renderAu = (extra) => {
+  $('aurows').innerHTML = AU.concat(extra || []).map((r, i) => `<li class="${i >= AU.length ? 'newrow' : ''}"><div><div class="ev"><b>${r[1]}</b>${r[2] ? ' · ' + r[2] : ''}${i >= AU.length ? '<span class="badge badge-muted">New</span>' : ''}</div><div class="by t-caption">${r[3]}</div></div><span class="when">${r[0]}</span></li>`).join('');
+  auExtra = extra ? extra.length : 0; if (nav) nav.render();
+};
+
+/* showing the full number asks first, then writes to the audit log */
+const reveal = $('reveal'), confirmBox = $('confirm'), phone = $('phone');
+let revealed = false;
+const closeConfirm = () => { confirmBox.hidden = true; reveal.setAttribute('aria-expanded', 'false'); reveal.focus(); };
+reveal.addEventListener('click', () => {
+  if (revealed) { revealed = false; phone.textContent = '•••• 4471'; reveal.textContent = 'Show Full Details (Logged)'; nav.render(); return; }
+  confirmBox.hidden = false; reveal.setAttribute('aria-expanded', 'true'); $('cf-cancel').focus();
 });
+$('cf-cancel').addEventListener('click', closeConfirm);
+confirmBox.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
+$('cf-ok').addEventListener('click', () => {
+  revealed = true; phone.textContent = '(555) 010-4471'; reveal.textContent = 'Hide Details';
+  confirmBox.hidden = true; reveal.setAttribute('aria-expanded', 'false'); reveal.focus();
+  renderAu([['Just now', 'PHI viewed', 'full phone number', 'Teresa Alvarez']]);
+  NS.toast('Phone number shown. This view was written to the audit log.');
+});
+
+
+/* the player is docked at the bottom once the transcript comes into view, so you can scrub while you read */
+const dockEl = $('dock'), dockTarget = $('evidence');
+const showDock = () => {
+  dockEl.classList.toggle('on', dockTarget.getBoundingClientRect().top < innerHeight - 120);
+  dockEl.classList.toggle('rest', dockEl.getBoundingClientRect().bottom < innerHeight - 1);   // resting at the end of the page, not pinned to the bottom
+};
+window.addEventListener('scroll', showDock, { passive: true }); window.addEventListener('resize', showDock); showDock();
+
+/* ---------- the section list ---------- */
+nav = NS.stepNav({
+  el: $('steps'),
+  steps: [['problem', 'The Problem'], ['checks', 'Checks'], ['evidence', 'The Evidence'], ['resolution', resolved ? 'What Was Done' : 'Resolution'], ['identity', 'Identity'], ['functions', 'Function Calls'], ['audit', 'Audit Log'], ['quality', 'Call Quality'], ['tech', 'For Sam']],
+  sums: () => ({ problem: resolved ? (end[4] ? 'Calendar matches' : 'Waiting for Maria') : 'Calendar write failed', checks: $('ck-sum').textContent, evidence: 'From 01:44, wrong turn at 01:51', resolution: resolved ? RES_OPTIONS[saved.opt].short : 'Choose how to fix it', identity: revealed ? 'Full phone shown' : 'Verified by DOB, phone masked', functions: '4 calls, 1 failed', audit: (AU.length + auExtra) + ' events', quality: '0.93 average confidence', tech: '2 calls affected this week' }),
+  warn: () => resolved ? null : 'problem',
+  groups: { problem: 'For Teresa', identity: 'Details' }
+});
+renderAu();
+try { const m = sessionStorage.getItem('ns:justResolved'); if (m) { sessionStorage.removeItem('ns:justResolved'); NS.toast(m); } } catch (e) {}
 </script>
 </body>
 </html>

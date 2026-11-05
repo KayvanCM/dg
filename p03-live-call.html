@@ -11,10 +11,12 @@
 .main{padding-bottom:152px}
 .tr{list-style:none}
 .badge-live{border:1px solid var(--alert);color:var(--alert);background:var(--alert-bg)}
-[data-fi="low"] .badge-live{border-color:var(--ink);color:var(--ink)}
 .clock{font-size:28px;line-height:32px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .turn,.fn{scroll-margin-bottom:152px}
 .flash{animation:flash 1.4s ease-out}
+/* inline function calls: Read or Writes, as on P01 and P02, and a link to the turn that used the result */
+.fn .fn-rw{margin-left:auto;font-family:var(--sans)}
+.fn-use{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-family:var(--sans);font-size:12px;line-height:16px;color:var(--muted)}
 @keyframes flash{0%{outline:3px solid var(--focus);outline-offset:4px}100%{outline:3px solid transparent;outline-offset:4px}}
 @media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--focus);outline-offset:4px}}
 
@@ -58,9 +60,10 @@
 .convhead{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-height:36px}
 .convhead h2{margin-right:auto}
 .findbar{width:0;padding:0;overflow:hidden;opacity:0;margin-right:0;transition:width .28s cubic-bezier(.2,.7,.2,1),padding .28s,opacity .2s,margin .28s}
-.findbar.open{width:330px;padding:2px;opacity:1;margin-right:8px}
+.findbar.open{width:330px;padding:0 2px;opacity:1;margin-right:8px}   /* side padding only, so the 36px field never makes the header row taller */
 @media (prefers-reduced-motion:reduce){.findbar{transition:none}}
 .findbar .input{height:36px;justify-content:flex-start;gap:8px;flex-wrap:nowrap}
+.findbar .input:focus-within{outline:none;border-color:var(--field-focus)}   /* one even 1px line all the way round; the shared 2px ring was clipped top and bottom inside the sliding bar */
 .findbar .input svg{width:14px;height:14px;color:var(--muted);flex-shrink:0}
 .findbar input{min-width:0;flex:1}
 input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;display:none}
@@ -70,15 +73,12 @@ input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit
 .fx svg{width:12px;height:12px;color:inherit}
 mark{background:#D3E8E5;color:inherit;border-radius:2px;padding:0 1px}
 mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
-[data-fi="low"] mark{background:var(--fill)}
-[data-fi="low"] mark.on{background:var(--line)}
 
 /* dock: live controls while the call runs, a player once it has ended */
 .dock{position:fixed;left:calc(var(--side) + 320px);right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:12px 48px}
 .dock-in{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .dock-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .dock .clock{min-width:76px;margin-left:4px}
-#dbadge,#tc-status{min-width:72px;justify-content:center}
 .dock .wave{position:relative;width:100%;height:54px;padding-top:6px;overflow:visible;cursor:pointer;touch-action:none}
 .ph{position:absolute;top:0;left:0;width:10px;height:54px;pointer-events:none;will-change:transform}
 .ph .knob{position:absolute;top:0;left:1px;width:8px;height:8px;border-radius:50%;background:var(--playhead)}
@@ -106,8 +106,7 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
     <h2 class="sg-h static" id="sgh1"><span class="t-heading">This Call</span></h2>
     <div class="sg-body">
       <div class="strong">Patient reschedules to an open slot</div>
-      <p class="muted" style="margin:2px 0 8px">Maria G., 59, wants early next week</p>
-      <span class="badge badge-live" id="tc-status"><span class="dot live" aria-hidden="true"></span><span>Live</span></span>
+      <p class="muted" style="margin-top:2px">Maria G., 59, wants early next week</p>
     </div>
   </section>
   <section class="sgroup card" aria-labelledby="sgh2">
@@ -116,7 +115,7 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
       <div>
       <div class="srow"><span class="muted">Intent</span><b>Reschedule</b></div>
       <div class="srow"><span class="muted">Identity</span><b>Verified (DOB)</b></div>
-      <div class="srow"><span class="muted">Appointment</span><b style="white-space:nowrap">Thu Oct 15, 9:30 AM</b></div>
+      <div class="srow"><span class="muted">Current appointment</span><b style="white-space:nowrap">Thu Oct 15, 9:30 AM</b></div>
       <div class="srow"><span class="muted">Slots offered</span><b class="num">3</b></div>
       <div class="srow"><span class="muted">Calendar writes</span><b class="pending">None yet</b></div>
     </div>
@@ -126,7 +125,7 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
     <h2 class="sg-h" id="sgh3"><button type="button" class="sg-btn" aria-expanded="true" aria-controls="sgb3"><span class="t-heading">Response Time</span><span class="sg-chev" aria-hidden="true"></span></button></h2>
     <div class="sg-body" id="sgb3">
       <div>
-      <div class="srow"><span class="muted">Median turn</span><b class="mono">610 ms</b></div>
+      <div class="srow"><span class="muted">Median turn</span><b class="mono">640 ms</b></div>
       <div class="srow"><span class="muted">p95 turn</span><b class="mono">1.1 s</b></div>
       <div class="srow wrap"><span class="muted">Slowest</span><button type="button" class="action mono" id="s-slowb">check_availability 388 ms</button></div>
     </div>
@@ -165,7 +164,8 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
   <header class="head">
     <div>
       <h1 class="t-title" id="h1">Live Test Call</h1>
-      <p>Agent <span class="mono">v7</span> draft. Simulated patient: Reschedule. Maria G., 59, wants early next week.</p>
+      <p class="t-caption" style="margin-top:8px">Simulated patient: Maria G., 59, wants early next week</p>
+      <div class="hmeta"><span class="badge badge-live" id="hstatus"><span class="dot live" aria-hidden="true"></span><span>Live · 01:42</span></span><span class="tag">Appointment Reminders <span class="mono" style="margin-left:4px">v7</span></span><span class="tag">Draft</span><span class="tag">Scenario: Reschedule</span></div>
     </div>
     <div class="actions" id="alt-action"><button type="button" class="action" id="callphone">Call My Phone Instead</button></div>
   </header>
@@ -213,17 +213,15 @@ mark.on{background:#AFD5CF;box-shadow:0 0 0 1px var(--ink)}
 
 <div class="dock" id="dock" role="region" aria-label="Call controls">
   <div class="dock-in">
-    <div class="wave" id="callwave" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="102" aria-valuenow="0" aria-valuetext="00:00 of 01:42"></div>
-    <div class="dock-bar">
-      <span class="badge badge-live" id="dbadge"><span class="dot live" aria-hidden="true"></span><span>Live</span></span>
-      <div class="clock" id="clock" role="timer" aria-label="Call time" aria-live="off">01:42</div>
-      <div class="row g4">
+    <div class="pbar">
+      <div class="pbar-tx">
         <button type="button" class="tbtn" id="back" aria-label="Back 10 seconds"><span id="back-i"></span>10</button>
         <button type="button" class="playbtn" id="pp" aria-label="Play"></button>
         <button type="button" class="tbtn" id="fwd" aria-label="Forward 10 seconds">10<span id="fwd-i"></span></button>
       </div>
-      <span class="mono" id="pos" aria-label="Playhead position" style="color:var(--muted);min-width:40px;margin-left:4px">00:00</span>
-      <div style="flex:1"></div>
+      <span class="pbar-now" id="pos" aria-label="Playhead position">00:00</span>
+      <div class="wave" id="callwave" role="slider" tabindex="0" aria-label="Call position" aria-valuemin="0" aria-valuemax="102" aria-valuenow="0" aria-valuetext="00:00 of 01:42"></div>
+      <span class="pbar-end" id="clock" role="timer" aria-label="Call time" aria-live="off">01:42</span>
       <button type="button" class="btn btn-secondary" id="mute" aria-pressed="false">Mute Agent</button>
       <button type="button" class="btn btn-primary" id="end">End Call</button>
       <a class="btn btn-primary" id="runscn" href="p04-scenarios.html" hidden>Run Test Scenarios</a>
@@ -250,26 +248,39 @@ const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math
 /* ---------- the conversation: the call as it stands at 01:42 ---------- */
 const fn = (o) => `<li class="fn ${o.slow ? 'slowfn' : ''}" ${o.id ? 'id="' + o.id + '"' : ''}>
   <div class="h"><span aria-hidden="true">{}</span><span class="nm">${o.name}()</span><span class="code">${o.code}</span><span class="ms">${o.ms} ms</span>
-  <span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span>${o.slow ? '<span class="badge badge-dashed" style="font-family:var(--sans)">Slowest function</span>' : ''}</div>
-  <div class="body">${o.args ? '<div>args: ' + o.args + '</div>' : ''}<div class="res">${o.res}</div></div></li>`;
+  <span class="dur" aria-hidden="true"><i style="width:${o.dur}%"></i></span>${o.slow ? '<span class="badge badge-dashed" style="font-family:var(--sans)">Slowest function</span>' : ''}<span class="${o.writes ? 'wr' : 'ro'} fn-rw">${o.writes ? 'Writes' : 'Read'}</span></div>
+  <div class="body">${o.args ? '<div>args: ' + o.args + '</div>' : ''}<div class="res">${o.res}</div></div>${o.used ? `<div class="fn-use">Agent used this at <button type="button" class="tj" data-go="${o.used[1]}" data-sec="${o.used[2]}">${o.used[0]}</button></div>` : ''}</li>`;
 const turn = (side, who, ts, txt, lat, id, slow) => `<li class="turn ${side}" ${id ? 'id="' + id + '"' : ''}>
-  <div class="col"><div class="who-l"><b>${who}</b><span class="mono">${ts}</span>${lat ? `<span class="lat-in ${slow ? 'slow' : ''}"><span class="v">${lat}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
+  <div class="col"><div class="who-l"><b>${who}</b><button type="button" class="tsb mono" aria-label="Play from ${ts}">${ts}</button>${lat ? `<span class="lat-in ${slow ? 'slow' : ''}"><span class="v">${lat}</span></span>` : ''}</div><div class="bub">${txt}</div></div></li>`;
 const EV = [
   { t: 2,  html: turn('ag', 'Agent', '00:02', 'Hi, this is the Northside Health assistant calling for Maria. Is this Maria?', '480 ms', 't1') },
   { t: 6,  html: turn('pt', 'Patient', '00:06', 'Yes, this is Maria.') },
-  { t: 9,  html: turn('ag', 'Agent', '00:09', 'Thanks. For your privacy, can you confirm your date of birth?', '560 ms', 't2') },
+  { t: 9,  html: turn('ag', 'Agent', '00:09', 'Thanks. For your privacy, can you confirm your date of birth?', '640 ms', 't2') },
   { t: 13, html: turn('pt', 'Patient', '00:13', 'March 3rd, 1967.') },
-  { t: 14, html: fn({ name: 'verify_identity', code: 200, ms: 212, dur: 55, res: '→ { verified: true }' }) },
+  { t: 14, html: fn({ name: 'verify_identity', code: 200, ms: 212, dur: 55, res: '→ { verified: true }', used: ['00:17', 't3', 17] }) },
   { t: 17, html: turn('ag', 'Agent', '00:17', "Thank you. I'm calling about your visit with Dr. Okafor on Thursday, October 15 at 9:30 AM. Can you make it?", '610 ms', 't3') },
   { t: 24, html: turn('pt', 'Patient', '00:24', "Actually I can't do Thursday. Do you have anything early next week?") },
-  { t: 26, html: fn({ id: 'fn-avail', name: 'check_availability', code: 200, ms: 388, dur: 100, slow: 1, args: '{ provider: "dr_okafor", from: "2026-10-19", to: "2026-10-21" }', res: '→ 3 slots: Mon 19 10:00 · Tue 20 14:15 · Wed 21 08:45' }) },
+  { t: 26, html: fn({ id: 'fn-avail', used: ['00:31', 't4', 31], name: 'check_availability', code: 200, ms: 388, dur: 100, slow: 1, args: '{ provider: "dr_okafor", from: "2026-10-19", to: "2026-10-21" }', res: '→ 3 slots: Mon 19 10:00 · Tue 20 14:15 · Wed 21 08:45' }) },
   { t: 31, html: turn('ag', 'Agent', '00:31', 'I have Monday the 19th at 10 AM, Tuesday the 20th at 2:15 PM, or Wednesday the 21st at 8:45 AM. Which works best?', '1.1 s', 't4', true) },
   { t: 44, html: turn('pt', 'Patient', '00:44', 'Let me think. What about Wednesday morning?') },
   { t: 62, html: turn('ag', 'Agent', '01:02', 'Wednesday the 21st at 8:45 AM with Dr. Okafor. Want me to book it?', '640 ms', 't5') },
-  { t: 100, html: `<li class="turn pt speaking"><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:40</span></div><div class="row g8"><div class="wave" style="height:24px;width:auto" aria-hidden="true">${NS.wave(10, 10)}</div><span class="t-caption">Speaking</span></div></div></li>` }
+  { t: 100, html: `<li class="turn pt speaking"><div class="col"><div class="who-l"><b>Patient</b><button type="button" class="tsb mono" aria-label="Play from 01:40">01:40</button></div><div class="row g8"><div class="wave" style="height:24px;width:auto" aria-hidden="true">${NS.wave(10, 10)}</div><span class="t-caption">Speaking</span></div></div></li>` }
 ];
 $('tr').innerHTML = EV.map(e => e.html).join('');
 const nodes = Array.from($('tr').children);
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  jump(+b.dataset.sec, false);
+  const el = $(b.dataset.go); if (el) { el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+});
+
+/* clicking a turn, a function block or a timestamp moves the playhead to that moment, as on the Console call pages */
+$('tr').addEventListener('click', e => {
+  if (e.target.closest('[data-go], a, .lowconf')) return;
+  if (window.getSelection && String(window.getSelection()).length) return;   // selecting text to copy is not a seek
+  const li = e.target.closest('#tr > li'); const i = nodes.indexOf(li);
+  if (i > -1) jump(EV[i].t, false);
+});
 $('scnlist').innerHTML = NS.otherCalls(1);
 NS.bindSubnav($('scnlist')); NS.initGroups($('subnav'));
 $('s-slowb').addEventListener('click', () => { const t = $('fn-avail'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); });
@@ -314,10 +325,7 @@ function draw() {
   $('clock').textContent = fmt(live); lastClock = fmt(live);   // the big clock is the call's time; scrubbing never changes it
   $('pos').textContent = fmt(pos);                              // the playhead has its own small readout
   const isLive = mode === 'live';
-  const state = isLive ? 'Live' : (playing ? 'Playing' : 'Ended');
-  const sb = (state === 'Live' ? '<span class="dot live" aria-hidden="true"></span>' : '') + '<span>' + state + '</span>';
-  $('dbadge').className = 'badge ' + (state === 'Live' ? 'badge-live' : 'badge-muted'); $('dbadge').innerHTML = sb;
-  if (isLive) { $('tc-status').className = $('dbadge').className; $('tc-status').innerHTML = sb; }
+  setHead();   // the call's status lives in one place, the page header
   $('mute').hidden = !isLive; $('end').hidden = !isLive; $('runscn').hidden = isLive;
   $('pp').innerHTML = playing ? PAUSE : NS.play;
   $('pp').setAttribute('aria-label', playing ? 'Pause' : 'Play');
@@ -325,6 +333,11 @@ function draw() {
   wave.setAttribute('aria-valuetext', fmt(pos) + ' of ' + fmt(live));
   let cur = -1; EV.forEach((e, i) => { if (e.t <= pos) cur = i; });
   nodes.forEach((n, i) => n.classList.toggle('cur', i === cur && pos > 0));
+}
+function setHead() {   // the header carries the call's status and elapsed time, as in the brief's call header
+  const isLive = mode === 'live';
+  $('hstatus').className = 'badge ' + (isLive ? 'badge-live' : 'badge-muted');
+  $('hstatus').innerHTML = (isLive ? '<span class="dot live" aria-hidden="true"></span>' : '') + '<span>' + (isLive ? 'Live' : 'Ended') + ' · ' + fmt(live) + '</span>';
 }
 function jump(newPos, scroll) {
   pos = Math.max(0, Math.min(live, newPos)); follow = mode === 'live' && pos >= live - 0.5; draw();
@@ -339,7 +352,7 @@ function frame(ts) {
     else { pos = Math.min(live, pos + dt * speed); if (pos >= live) { playing = false; draw(); } }
   }
   moveHead();
-  const ct = fmt(live); if (ct !== lastClock) { $('clock').textContent = ct; lastClock = ct; }
+  const ct = fmt(live); if (ct !== lastClock) { $('clock').textContent = ct; lastClock = ct; setHead(); }
   if (Math.floor(pos) !== lastSec) draw();
   requestAnimationFrame(frame);
 }
@@ -367,11 +380,10 @@ $('end').addEventListener('click', () => {
   mode = 'ended'; playing = false; follow = false;
   $('h1').textContent = 'Test Call Ended'; document.title = 'Test Call Ended · Northside Voice';
   $('alt-action').hidden = true;
-  $('tc-status').className = 'badge badge-muted'; $('tc-status').innerHTML = '<span>Ended, ' + fmt(live) + '</span>';
   draw();
   NS.toast('Call ended at ' + fmt(live) + '. Review it, then run the test scenarios.');
 });
-build(); window.addEventListener('resize', build);
+build(); new ResizeObserver(build).observe(wave);   // the waveform shares its row, so it rebuilds whenever its width changes
 
 /* ---------- conversation tools: search, call details, download ---------- */
 $('findbtn').innerHTML = NS.ico('magnifyingglass'); $('infobtn').innerHTML = NS.ico('info.circle'); $('dlbtn').innerHTML = NS.ico('square.and.arrow.down');

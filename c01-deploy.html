@@ -32,25 +32,37 @@
 .day i{position:absolute;top:0;bottom:0;left:37.5%;width:41.667%;border-radius:6px;background:var(--ink)}
 .day-l{display:flex;justify-content:space-between;color:var(--muted)}
 
-/* 5 review */
+/* review and deploy: a frosted modal from the header, the point of decision (annotations 3 and 4) */
+.modal-scrim{position:fixed;inset:0;background:rgba(26,26,26,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-scrim.open{opacity:1;pointer-events:auto}
+.rv{position:relative;width:600px;max-width:calc(100vw - 32px);max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:rgba(255,255,255,.96);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border:.5px solid rgba(0,0,0,.14);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 24px 70px rgba(0,0,0,.24),0 6px 18px rgba(0,0,0,.10);transform:scale(.96) translateY(6px);opacity:0;transition:transform .2s cubic-bezier(.2,.7,.2,1),opacity .2s}
+.modal-scrim.open .rv{transform:none;opacity:1}
+.rv-h{padding:24px 72px 16px 24px;border-bottom:1px solid var(--fill)}
+.rv-h p{color:var(--muted);margin-top:4px}
+.rv-b{overflow-y:auto;padding:0 24px}
+.rv-f{display:flex;align-items:center;gap:8px;padding:16px 24px;border-top:1px solid var(--fill)}
+.rv-f>*{white-space:nowrap;flex-shrink:0}   /* the footer only holds actions, so nothing in it can wrap or move */
+.ackhint{margin:8px 0 0 30px;color:var(--muted);min-height:16px}   /* sits under the checkbox; its text changes, its size does not */
+.cm-close{position:absolute;top:20px;right:20px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);color:var(--muted);display:grid;place-items:center}
+.cm-close:hover{background:rgba(0,0,0,.10);color:var(--ink)}
+.cm-close svg{width:12px;height:12px}
+@media (prefers-reduced-motion:reduce){.modal-scrim,.rv{transition:none}}
 .sub{padding:20px 0;border-bottom:1px solid var(--fill)}
-.sub:first-child{padding-top:0}
-.sub:last-child{border-bottom:0;padding-bottom:4px}
-.sub>.t-eyebrow{margin-bottom:12px}
-.rc{display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:16px;padding:8px 0;align-items:baseline}
-.rc.two{grid-template-columns:1fr auto;border-bottom:1px solid var(--fill)}
-.rc.two:last-child{border-bottom:0}
+.sub:last-child{border-bottom:0}
+.sub>.t-eyebrow{margin-bottom:8px}
+.rc{display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:16px;padding:8px 0;align-items:baseline}
+.rc.two{grid-template-columns:1fr auto}
 .rc dt{color:var(--muted)}
 .rc dd{margin:0}
 .gate-t{font-weight:600}
-[data-fi="low"] .gate-t{color:var(--ink)}
 .phi{display:flex;gap:8px;align-items:flex-start;color:var(--muted)}
 .phi svg{width:14px;height:14px;margin-top:3px;flex-shrink:0;color:var(--ink)}
-.go{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px}
+.pn-b h2:focus{outline:none}
+.done-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 @media (max-width:1100px){.setrow,.rc{grid-template-columns:1fr}}
 </style>
 </head>
-<body data-product="cons" data-nav="c01">
+<body data-product="cons" data-nav="c01" data-keep-person>
 <div class="app">
 <aside class="side" id="side"></aside>
 <main class="main" id="main">
@@ -62,10 +74,10 @@
     <div>
       <h1 class="t-title">Deploy Appointment Reminders</h1>
       <p>Calls go out automatically for appointments that match these rules.</p>
-      <div class="hmeta"><span class="tag mono">v7 (draft)</span><span class="badge badge-filled">Calendar Connected</span></div>
-      <p class="issue t-caption" id="issue"><i aria-hidden="true"></i><span><b class="strong">1 test scenario failed.</b> You will be asked to acknowledge it before you deploy. <a class="action sm" href="#review">Review And Deploy</a></span></p>
+      <div class="hmeta"><span class="tag mono" id="vtag">v7 (draft)</span><span class="badge badge-filled">Calendar Connected</span></div>
+      <p class="issue t-caption" id="issue"></p>
     </div>
-    <div class="actions"><a class="btn btn-secondary" href="p04-scenarios.html">Cancel</a></div>
+    <div class="actions"><a class="btn btn-secondary" id="cancel" href="p04-scenarios.html">Cancel</a><button type="button" class="btn btn-primary" id="openrv" aria-haspopup="dialog" aria-controls="rvScrim">Review And Deploy</button><a class="btn btn-secondary" id="toconsole-h" href="c02-overview.html" hidden>Open Console Overview</a></div>
   </div>
   <hr class="div">
 
@@ -81,6 +93,10 @@
     <nav class="steps" aria-label="Deploy steps" id="steps"></nav>
 
     <div id="panels">
+
+      <section class="card pn" id="done" aria-labelledby="h-done" hidden>
+        <div class="pn-b pad"><div class="done-row"><div><h2 class="t-headline" id="h-done" tabindex="-1">v7 Is Live</h2><p class="muted" style="margin-top:4px" id="done-d"></p></div><span class="badge badge-filled badge-lg">Deployed</span></div></div>
+      </section>
 
       <section class="card pn live" id="source" aria-labelledby="h-source">
         <div class="pn-h"><h2 class="t-headline" id="h-source" tabindex="-1">Calendar Source</h2><p>Where the agent reads and writes appointments.</p></div>
@@ -136,24 +152,6 @@
         </div>
       </section>
 
-      <section class="card pn" id="review" aria-labelledby="h-review">
-        <div class="pn-h"><h2 class="t-headline" id="h-review" tabindex="-1">Review And Deploy</h2><p>Check the rules, then deploy.</p></div>
-        <div class="pn-b pad">
-          <div class="sub"><h3 class="t-eyebrow">Summary</h3>
-            <dl>
-              <div class="rc two"><dt>Agent version</dt><dd class="mono">v7 (draft)</dd></div>
-              <div class="rc two"><dt>Appointments tomorrow</dt><dd class="num">412</dd></div>
-              <div class="rc two"><dt>Calls in first 24 h</dt><dd class="num">~640 incl. retries</dd></div>
-              <div class="rc two"><dt>Est. cost / day</dt><dd class="num">$38–52</dd></div>
-            </dl></div>
-          <div class="sub"><h3 class="t-eyebrow">Before You Deploy</h3>
-            <div class="gate-t" id="warn-h">1 Test Scenario Failed</div>
-            <p class="t-caption" style="margin-top:4px">"Requested slot is taken during the call" failed on Oct 12. Patients may be told a time that isn't booked. <a class="action sm" href="p04-scenarios.html">See the failure</a></p>
-            <label class="check" style="margin-top:16px"><input type="checkbox" id="ack" aria-describedby="why"><span>I understand and want to deploy anyway</span></label></div>
-          <div class="sub"><p class="phi t-caption" id="phi"><span id="phiico" aria-hidden="true"></span><span><b class="strong">PHI policy.</b> Calls share appointment details only after the patient's identity is verified. Voicemails never include them.</span></p>
-            <div class="go"><button type="button" class="btn btn-primary" id="dep" aria-disabled="true" aria-describedby="why">Deploy v7</button><span class="t-caption" id="why">Check the box above to enable Deploy.</span><a class="btn-tertiary" href="p04-scenarios.html" style="margin-left:auto">Back To Tests</a></div></div>
-        </div>
-      </section>
 
     </div>
   </div>
@@ -162,8 +160,34 @@
 </main>
 </div>
 
+<div class="modal-scrim" id="rvScrim" aria-hidden="true">
+  <div class="rv" role="dialog" aria-modal="true" aria-labelledby="rv-t" aria-describedby="rv-d">
+    <button type="button" class="cm-close" id="rvX" aria-label="Close"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
+    <div class="rv-h"><h2 class="t-headline" id="rv-t">Review And Deploy v7</h2><p id="rv-d">Check the rules, then deploy. Calls go out automatically from tomorrow.</p></div>
+    <div class="rv-b">
+      <div class="sub"><h3 class="t-eyebrow">Your Rules</h3>
+        <dl id="rules"></dl></div>
+      <div class="sub"><h3 class="t-eyebrow">Summary</h3>
+        <dl>
+          <div class="rc two"><dt>Agent version</dt><dd class="mono">v7 (draft)</dd></div>
+          <div class="rc two"><dt>Appointments tomorrow</dt><dd class="num">412</dd></div>
+          <div class="rc two"><dt>Calls in first 24 h</dt><dd class="num">~640 incl. retries</dd></div>
+          <div class="rc two"><dt>Est. cost / day</dt><dd class="num">$38–52</dd></div>
+        </dl></div>
+      <div class="sub"><h3 class="t-eyebrow">Before You Deploy</h3>
+        <div class="gate-t" id="warn-h">1 Test Scenario Failed</div>
+        <p class="t-caption" style="margin-top:4px">"Requested slot is taken during the call" failed on Oct 12. Patients may be told a time that isn't booked. <a class="action sm" href="p04-scenarios.html">See the failure</a></p>
+        <p class="t-caption muted" id="notrun" style="margin-top:8px" hidden>Spanish-speaking patient has not run yet. <a class="action sm" href="p04-scenarios.html">Run it in Test Scenarios</a></p>
+        <label class="check" style="margin-top:16px"><input type="checkbox" id="ack" aria-describedby="why"><span>I understand and want to deploy anyway</span></label>
+        <p class="t-caption ackhint" id="why">Check the box to enable Deploy.</p></div>
+      <div class="sub"><p class="phi t-caption" id="phi"><span id="phiico" aria-hidden="true"></span><span><b class="strong">PHI policy.</b> Calls share appointment details only after the patient's identity is verified. Voicemails never include them.</span></p></div>
+    </div>
+    <div class="rv-f"><a class="btn-tertiary" href="p04-scenarios.html" style="margin-right:auto">Back To Tests</a><button type="button" class="btn btn-secondary" id="rvCancel">Cancel</button><button type="button" class="btn btn-primary" id="dep" aria-disabled="true" aria-describedby="why">Deploy v7</button></div>
+  </div>
+</div>
+
 <script>
-const STEPS = [['source', 'Calendar Source'], ['when', 'When To Call'], ['none', 'If No One Answers'], ['hand', 'Caller ID & Hand-Off'], ['review', 'Review And Deploy']];
+const STEPS = [['source', 'Calendar Source'], ['when', 'When To Call'], ['none', 'If No One Answers'], ['hand', 'Caller ID & Hand-Off']];
 const $ = id => document.getElementById(id);
 document.getElementById('phiico').innerHTML = NS.ico('checkmark.shield.fill');
 $('eg').innerHTML = NS.ico('info.circle') + '<span><b>Example.</b> A Thursday 9:30 AM visit gets calls on Tuesday at 9:30 AM and Wednesday at 9:30 AM.</span>';
@@ -174,24 +198,73 @@ const noText = () => { const r = +retries.value; return r ? 'Up to ' + (r + 1) +
 const xferName = () => xfer.value.replace(/ \(.*/, '');
 
 /* the step list: each step says in one line what it is set to */
+/* what Test Scenarios last showed: the failure stays until the prompt changes; the Spanish scenario may have been run since */
+const scn = NS.get('scn', {});
+const notRun = scn.s7 && scn.s7.k !== 'dashed' ? 0 : 1;
+const user = NS.user();
+$('cancel').href = user === 'Teresa Alvarez' ? 'c02-overview.html' : 'p04-scenarios.html';
+
+/* deploying shows the Live state in place. It is not kept: reloading the page starts the deploy fresh.
+   Overview (C02) still hears about it once, through the saved 'deployed' note. */
+function showDeployed(d) {
+  $('vtag').textContent = 'v7 (live)';
+  $('done').hidden = false;
+  $('done-d').textContent = 'Deployed by ' + d.by + ' at ' + d.at + '. Calls start tomorrow at 9 AM. Acknowledged 1 failed test scenario: "Requested slot is taken during the call".';
+  $('issue').innerHTML = '<i aria-hidden="true"></i><span><b class="strong">Deployed by ' + d.by + '.</b> Calls start tomorrow at 9 AM.</span>';
+  $('cancel').hidden = true; $('openrv').hidden = true; $('toconsole-h').hidden = false;
+}
+{
+  $('notrun').hidden = !notRun;
+  $('issue').innerHTML = '<i aria-hidden="true"></i><span><b class="strong">1 test scenario failed' + (notRun ? ', 1 not run' : '') + '.</b> You will be asked to acknowledge the failure before you deploy.</span>';
+}
+
 const nav = NS.stepNav({
   el: $('steps'), steps: STEPS,
-  sums: () => ({ source: 'EHR connected', when: '48 and 24 hours before', none: noText(), hand: xferName(), review: ack.checked ? 'Acknowledged' : '1 test scenario failed' }),
-  warn: () => ack.checked ? null : 'review'
+  sums: () => ({ source: 'EHR connected', when: '48 and 24 hours before', none: noText(), hand: xferName() })
 });
 [retries, gap, xfer].forEach(el => el.addEventListener('change', nav.render));
+
+/* ---------- review and deploy modal ---------- */
+const RULES = () => [
+  ['Calendar source', 'EHR scheduling API, connected', 'source'],
+  ['When to call', '48 and 24 hours before, 9 AM – 7 PM local', 'when'],
+  ['If no one answers', noText() + ', voicemail with callback only', 'none'],
+  ['Hand-off', 'Transfers to ' + xferName(), 'hand']
+];
+const renderRules = () => { $('rules').innerHTML = RULES().map(([k, v, id]) => `<div class="rc"><dt>${k}</dt><dd>${v}</dd><button type="button" class="action sm" data-change="${id}">Change</button></div>`).join(''); };
+let rvOpener = null;
+const rvInert = on => ['.main', '.side'].forEach(s => { const el = document.querySelector(s); if (el) on ? el.setAttribute('inert', '') : el.removeAttribute('inert'); });
+function openRv(from) { rvOpener = from; renderRules(); $('rvScrim').classList.add('open'); $('rvScrim').setAttribute('aria-hidden', 'false'); rvInert(true); $('rvX').focus(); }
+function closeRv(refocus) { if (!$('rvScrim').classList.contains('open')) return; $('rvScrim').classList.remove('open'); $('rvScrim').setAttribute('aria-hidden', 'true'); rvInert(false); if (refocus !== false && rvOpener) rvOpener.focus(); }
+$('openrv').addEventListener('click', e => openRv(e.currentTarget));
+$('rvX').addEventListener('click', () => closeRv()); $('rvCancel').addEventListener('click', () => closeRv());
+$('rvScrim').addEventListener('click', e => { if (e.target === $('rvScrim')) closeRv(); });
+$('rules').addEventListener('click', e => {   // Change closes the modal and goes to that rule
+  const b = e.target.closest('[data-change]'); if (!b) return;
+  closeRv(false); const s = $(b.dataset.change); s.scrollIntoView({ behavior: 'instant', block: 'start' }); $('h-' + b.dataset.change).focus({ preventScroll: true });
+});
+document.addEventListener('keydown', e => {
+  if (!$('rvScrim').classList.contains('open')) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeRv(); return; }
+  if (e.key === 'Tab') {   // keep Tab inside the modal
+    const f = Array.from($('rvScrim').querySelectorAll('button, a[href], input')).filter(x => !x.closest('[hidden]'));
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+});
 
 ack.addEventListener('change', () => {
   const on = ack.checked;
   dep.setAttribute('aria-disabled', String(!on));
-  why.textContent = on ? 'You are deploying with 1 failed test scenario. This is recorded in the audit log.' : 'Check the box above to enable Deploy.';
-  nav.render();
+  why.textContent = on ? 'Acknowledged by ' + user + '. Recorded in the audit log.' : 'Check the box to enable Deploy.';
 });
 dep.addEventListener('click', () => {
   if (dep.getAttribute('aria-disabled') === 'true') { NS.toast('Acknowledge the failed test before deploying.'); ack.focus(); return; }
-  NS.set('deployed', true);
+  const at = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  NS.set('deployed', { by: user, at, notRun, seen: false });
+  closeRv(false); showDeployed({ by: user, at });
+  window.scrollTo({ top: 0, behavior: 'instant' }); $('h-done').focus({ preventScroll: true });
   NS.toast('Deployed v7 to 3 clinics. Calls start tomorrow at 9 AM.');
-  setTimeout(() => { location.href = 'c02-overview.html'; }, 1100);
 });
 
 </script>

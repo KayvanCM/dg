@@ -46,13 +46,13 @@
       (pass.length ? '<div class="pc"><p class="pc-l">' + pass.length + ' passed</p><ul class="scn">' + pass.map(r => li(r, false)).join('') + '</ul></div>' : '');
   };
   /* A page of stacked sections with a step list on the left. A click jumps straight to the section, scrolling moves the highlight.
-     o.el the list element, o.steps [[id, label]], o.sums() a line per id, o.warn() the id to flag (or null). Section headings are #h-<id>. */
+     o.el the list element, o.steps [[id, label]], o.sums() a line per id, o.warn() the id to flag (or null), o.groups { id: 'Label' } for a small label above that item. Section headings are #h-<id>. */
   NS.stepNav = (o) => {
     const ids = o.steps.map(s => s[0]);
     let cur = ids[0];
     function render() {
       const sums = o.sums(), w = o.warn ? o.warn() : null;
-      o.el.innerHTML = o.steps.map(([id, n]) => '<a class="st' + (id === w ? ' warn' : '') + '" href="#' + id + '"' + (id === cur ? ' aria-current="location"' : '') + '><span class="n">' + n + '</span><span class="s">' + (sums[id] || '') + '</span></a>').join('');
+      o.el.innerHTML = o.steps.map(([id, n]) => (o.groups && o.groups[id] ? '<span class="st-g t-eyebrow">' + o.groups[id] + '</span>' : '') + '<a class="st' + (id === w ? ' warn' : '') + '" href="#' + id + '"' + (id === cur ? ' aria-current="location"' : '') + '><span class="n">' + n + '</span><span class="s">' + (sums[id] || '') + '</span></a>').join('');
     }
     const mark = (id) => { if (id === cur) return; cur = id; render(); };
     o.el.addEventListener('click', e => {
@@ -79,7 +79,7 @@
   NS.player = (o) => {
     const D = o.dur, wave = o.wave, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let pos = o.pos || 0, playing = false, N = 0, lastIdx = -1, ph = null, last = null;
-    const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s) % 60).padStart(2, '0');
+    const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s) % 60).padStart(2, '0');
     const PAUSE = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx="1"/><rect x="7" y="1.5" width="3" height="9" rx="1"/></svg>';
     o.back.innerHTML = '<span>' + NS.ico('arrow.trianglehead.2.counterclockwise') + '</span>10';
     o.fwd.innerHTML = '10<span>' + NS.ico('arrow.trianglehead.2.clockwise.rotate.90') + '</span>';
@@ -124,7 +124,7 @@
       if (e.key === 'Home') { e.preventDefault(); seek(0); }
       if (e.key === 'End') { e.preventDefault(); seek(D); }
     });
-    build(); window.addEventListener('resize', build);
+    build(); new ResizeObserver(build).observe(wave);   // the waveform shares its row, so it rebuilds whenever its width changes
     return { seek };
   };
   /* collapsible groups in the secondary panel */
@@ -151,15 +151,14 @@
   NS.isResolved = (id) => NS.resolved().indexOf(id) > -1;
   NS.resolve = (id) => { const r = NS.resolved(); if (r.indexOf(id) < 0) r.push(id); set('resolved', r); };
   NS.reviewCount = () => NS.BASE_REVIEW - NS.resolved().length;
-  NS.reset = () => { Object.keys(LS).filter(k => /^ns:(resolved|deployed|ack|resolution:)/.test(k)).forEach(k => LS.removeItem(k)); };
+  NS.user = () => ({ play: 'Sam Morita', cons: 'Teresa Alvarez' })[get('product', 'play')] || 'Sam Morita';
+  NS.reset = () => { Object.keys(LS).filter(k => /^ns:(resolved|deployed|ack|resolution:|scn$|fi$|ann$)/.test(k)).forEach(k => LS.removeItem(k)); };
 
   /* ---------- fidelity + annotations ---------- */
   const applyPrefs = () => {
     const q = new URLSearchParams(location.search);
-    if (q.get('fi')) set('fi', q.get('fi'));
     if (q.get('ann')) set('ann', q.get('ann') === 'on');
     const r = document.documentElement;
-    r.setAttribute('data-fi', get('fi', 'high'));
     r.setAttribute('data-ann', get('ann', false) ? 'on' : 'off');
   };
 
@@ -185,8 +184,13 @@
     const side = document.getElementById('side');
     if (!side) return;
     const body = document.body;
-    let product = body.getAttribute('data-product');
-    if (product === 'ref') product = get('product', 'play'); else set('product', product);
+    let product = body.getAttribute('data-product'), person = product;
+    /* 'ref' (Design Notes) shows the signed-in person's nav. data-keep-person (C01 Deploy, a Console page that Sam
+       reaches from P04 and Teresa signs off) shows the Console nav but keeps whoever is signed in. */
+    const keepPerson = body.hasAttribute('data-keep-person');
+    if (product === 'ref') product = person = get('product', 'play');
+    else if (keepPerson) person = get('product', 'play');
+    else set('product', product);
     const page = body.getAttribute('data-nav') || '';
     const items = NAV[product].map(([n, href, ic, id]) => {
       const cur = id === page ? ' aria-current="page"' : '';
@@ -196,7 +200,7 @@
     const refCur = body.getAttribute('data-product') === 'ref' ? ' aria-current="page"' : '';
     const sam = product === 'play';
     const USERS = { play: { n: 'Sam Morita', i: 'SM', p: 'Playground' }, cons: { n: 'Teresa Alvarez', i: 'TA', p: 'Console' } };
-    const cur = USERS[product];
+    const cur = USERS[person];
     side.setAttribute('aria-label', 'Main navigation');
     side.innerHTML =
       '<a class="brand" href="p01-templates.html">' + LOGO + 'Northside Voice</a>' +
@@ -204,12 +208,10 @@
       '<nav class="navgrp" aria-label="Reference"><span class="t-eyebrow">Reference</span>' +
         '<a class="nav-item" href="notes.html"' + refCur + '>' + NS.ico('info.circle') + '<span>Design Notes</span></a></nav>' +
       '<div class="side-foot">' +
-        '<div class="pref"><span id="fi-l">Fidelity</span><span class="seg2" role="group" aria-labelledby="fi-l"><button type="button" data-fi-set="low">Low</button><button type="button" data-fi-set="high">High</button></span></div>' +
-        '<div class="pref"><span id="an-l">Brief Annotations</span><button type="button" class="toggle" role="switch" id="annsw" aria-labelledby="an-l" aria-checked="false"><span class="trk"></span></button></div>' +
         '<button type="button" class="linkbtn" id="resetdemo">Reset Demo</button>' +
         '<div class="who" id="who"><button type="button" class="who-btn" id="whobtn" aria-haspopup="menu" aria-expanded="false" aria-controls="whomenu"><span class="av" aria-hidden="true">' + cur.i + '</span><span class="who-t"><span class="who-n">' + cur.n + '</span><span class="t-caption">' + cur.p + '</span></span><span class="who-chev" aria-hidden="true">' + NS.chev('chev') + '</span></button>' +
           '<div class="who-menu" id="whomenu" role="menu" aria-label="Switch user" hidden><div class="t-eyebrow who-mh">Switch User</div>' +
-          Object.keys(USERS).map(k => '<button type="button" class="who-item" role="menuitemradio" aria-checked="' + (k === product) + '" data-product="' + k + '"><span class="av" aria-hidden="true">' + USERS[k].i + '</span><span class="who-t"><span class="who-n">' + USERS[k].n + '</span><span class="t-caption">' + USERS[k].p + '</span></span><span class="who-ck" aria-hidden="true">' + (k === product ? NS.check : '') + '</span></button>').join('') +
+          Object.keys(USERS).map(k => '<button type="button" class="who-item" role="menuitemradio" aria-checked="' + (k === person) + '" data-product="' + k + '"><span class="av" aria-hidden="true">' + USERS[k].i + '</span><span class="who-t"><span class="who-n">' + USERS[k].n + '</span><span class="t-caption">' + USERS[k].p + '</span></span><span class="who-ck" aria-hidden="true">' + (k === person ? NS.check : '') + '</span></button>').join('') +
         '</div></div>' +
       '</div>';
 
@@ -219,9 +221,9 @@
     const closeWho = (focus) => { wm.hidden = true; wb.setAttribute('aria-expanded', 'false'); if (focus) wb.focus(); };
     wb.addEventListener('click', e => { e.stopPropagation(); const open = wm.hidden; wm.hidden = !open; wb.setAttribute('aria-expanded', String(open)); if (open) wm.querySelector('[aria-checked="true"]').focus(); });
     wm.querySelectorAll('.who-item').forEach(it => it.addEventListener('click', () => {
-      const target = it.dataset.product; if (target === product) { closeWho(true); return; }
+      const target = it.dataset.product; if (target === person) { closeWho(true); return; }
       set('product', target);
-      if (body.getAttribute('data-product') === 'ref') location.reload(); else location.href = HOME[target];
+      location.href = HOME[target];   // switching always lands on that person's home, so the nav visibly changes (Sam: Templates, Teresa: Overview)
     }));
     wm.addEventListener('keydown', e => {
       const items = Array.from(wm.querySelectorAll('.who-item')), i = items.indexOf(document.activeElement);
@@ -231,11 +233,6 @@
     document.addEventListener('click', e => { if (!e.target.closest('#who')) closeWho(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !wm.hidden) closeWho(true); });
 
-    const syncFi = () => side.querySelectorAll('[data-fi-set]').forEach(b => b.setAttribute('aria-pressed', String(get('fi', 'high') === b.dataset.fiSet)));
-    const syncAnn = () => side.querySelector('#annsw').setAttribute('aria-checked', String(!!get('ann', false)));
-    syncFi(); syncAnn();
-    side.querySelectorAll('[data-fi-set]').forEach(b => b.addEventListener('click', () => { set('fi', b.dataset.fiSet); applyPrefs(); syncFi(); }));
-    side.querySelector('#annsw').addEventListener('click', () => { set('ann', !get('ann', false)); applyPrefs(); syncAnn(); });
     side.querySelector('#resetdemo').addEventListener('click', () => { NS.reset(); try { sessionStorage.removeItem('ns:intro'); } catch (e) {} NS.toast('Demo reset. All calls are back in the queue.'); setTimeout(() => { location.href = HOME[product]; }, 700); });
   }
 
@@ -377,5 +374,5 @@
     document.dispatchEvent(new Event('ns:ready'));
     playIntro();
   });
-  applyPrefs(); /* run in <head> so Low fidelity never flashes High */
+  applyPrefs(); /* run in <head> so the annotations setting applies before the page paints */
 })();

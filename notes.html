@@ -41,7 +41,7 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
   <hr class="div">
 
   <nav class="toc" aria-label="On this page">
-    <a class="chip" href="#how">How To Review</a><a class="chip" href="#flow">User Flow</a><a class="chip" href="#type">Type Scale</a><a class="chip" href="#mono">Monospace Rule</a><a class="chip" href="#eye">Where The Eye Goes</a><a class="chip" href="#color">Color Logic</a><a class="chip" href="#kit">Kit Components</a><a class="chip" href="#qs">Brief Questions</a><a class="chip" href="#more">Open Items</a>
+    <a class="chip" href="#how">How To Review</a><a class="chip" href="#flow">User Flow</a><a class="chip" href="#type">Type Scale</a><a class="chip" href="#mono">Monospace Rule</a><a class="chip" href="#eye">Where The Eye Goes</a><a class="chip" href="#color">Color Logic</a><a class="chip" href="#kit">Kit Components</a><a class="chip" href="#qs">Brief Questions</a><a class="chip" href="#deep">P03 And C04-alt</a><a class="chip" href="#brief-dev">Brief Deviations</a><a class="chip" href="#more">Open Items</a>
   </nav>
 
   <section class="n" id="how" aria-labelledby="how-h">
@@ -52,10 +52,9 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
         <h3 class="t-heading">Left Nav Controls</h3>
         <dl class="kv ruled">
           <dt>User name, bottom of the nav</dt><dd>Switches between Sam (Playground) and Teresa (Console)</dd>
-          <dt>Fidelity: Low / High</dt><dd>Low is the kit's pure grayscale. High adds color.</dd>
-          <dt>Brief Annotations</dt><dd>Shows the numbered notes from the brief on each screen</dd>
           <dt>Reset Demo</dt><dd>Puts every resolved call back in the queue</dd>
         </dl>
+        <p class="t-caption muted">Add <span class="mono">?ann=on</span> to the address to show the brief's numbered notes on each screen. <span class="mono">?ann=off</span> or Reset Demo hides them.</p>
       </div>
       <div class="card pad stack g12">
         <h3 class="t-heading">Suggested Walkthrough Path</h3>
@@ -130,10 +129,10 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
         <div class="strong mono" role="cell">P01</div><div role="cell">Six equal cards with nothing preselected, so the choice leads</div><div role="cell">After a click, the card keeps a 2px border and a Selected check while a drawer shows four counts, then the function list</div><div role="cell">Use This Template, the only filled button, in the drawer footer</div>
         <div class="strong mono" role="cell">P02</div><div role="cell">The 6 numbered prompt rules, the most-edited thing</div><div role="cell">Functions That Write, labeled apart from read-only</div><div role="cell">Start Test Call</div>
         <div class="strong mono" role="cell">P03</div><div role="cell">The dock: Live badge and clock with Mute and End Call, only the controls a live call needs</div><div role="cell">The transcript spine, with dashed mono function blocks inset from the bubbles and the slow turn marked next to the agent name</div><div role="cell">The left panel: call state, response time and guardrail statuses</div>
-        <div class="strong mono" role="cell">P03-alt</div><div role="cell">The calm banner: Guardrail Held, Working As Intended</div><div role="cell">The riskiest turn, outlined and pinned</div><div role="cell">Withheld list: four struck-through items</div>
+        <div class="strong mono" role="cell">P03-alt</div><div role="cell">The calm banner: Guardrail Held, Working As Intended</div><div role="cell">The riskiest turn, outlined like the wrong turn on C04-alt and visible without scrolling</div><div role="cell">Checks in a drawer, opened from the banner or Scenario check in Call State</div>
         <div class="strong mono" role="cell">P04</div><div role="cell">The verdict banner: Not Ready To Deploy, with what failed in one sentence</div><div role="cell">The failed row, marked by its Failed badge and bold name, found by the filter chips</div><div role="cell">The drawer: Expected beside Actual for that row</div>
-        <div class="strong mono" role="cell">C01</div><div role="cell">Calendar source with a Connected badge</div><div role="cell">When to call: attempts on a timeline, then no-answer rules</div><div role="cell">The failed-scenario gate that holds the Deploy button</div>
-        <div class="strong mono" role="cell">C02</div><div role="cell">No-show rate, the widest tile at 40px, the number the clinic cares about</div><div role="cell">Needs Attention queue, directly beneath the metrics</div><div role="cell">Four smaller metric tiles, then the trend chart</div>
+        <div class="strong mono" role="cell">C01</div><div role="cell">Calendar source with a Connected badge</div><div role="cell">When to call: attempts on a timeline, then no-answer rules</div><div role="cell">Review And Deploy in the header: a modal with the rules, the failed-scenario gate and the PHI policy above the Deploy button</div>
+        <div class="strong mono" role="cell">C02</div><div role="cell">No-show rate at 40px, on its own 12-week trend with the Agent live marker</div><div role="cell">Four outcome tiles beneath it</div><div role="cell">Needs Attention queue, full width under the results</div>
         <div class="strong mono" role="cell">C03</div><div role="cell">Needs Review tab and the flagged rows</div><div role="cell">Outcome tabs doubling as counts</div><div role="cell">Masked phone numbers in mono</div>
         <div class="strong mono" role="cell">C04</div><div role="cell">Calendar change: before struck through, after solid</div><div role="cell">Transcript with the low-confidence word underlined</div><div role="cell">Identity and call quality</div>
         <div class="strong mono" role="cell">C04-alt</div><div role="cell">The problem in one sentence, in plain words</div><div role="cell">What Maria believes next to what the calendar says</div><div role="cell">The resolution list with a recommended option, below the evidence</div>
@@ -143,7 +142,7 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
 
   <section class="n" id="color" aria-labelledby="color-h">
     <h2 class="t-headline" id="color-h">Color Logic</h2>
-    <p class="lead">Form carries the meaning and color confirms it. Every status has text and a distinct shape, so Low fidelity reads the same story in pure grayscale. Color is used for state and for the one thing that needs a person.</p>
+    <p class="lead">Form carries the meaning and color confirms it. Every status has text and a distinct shape, so the story still reads for someone who cannot tell the colors apart. Color is used for state and for the one thing that needs a person.</p>
     <div class="card" style="overflow:hidden;margin-bottom:24px">
       <table class="tbl"><caption class="sr-only">Status forms and what color adds</caption>
         <thead><tr><th scope="col">Meaning</th><th scope="col">Form (always)</th><th scope="col">Badge</th><th scope="col">Color adds (High)</th></tr></thead>
@@ -207,10 +206,44 @@ ol.route{padding-left:20px;display:flex;flex-direction:column;gap:8px}
     <h2 class="t-headline" id="qs-h">Answers To The Brief's Questions</h2>
     <div class="stack g16">
       <div class="card pad"><h3 class="t-heading">How do speech turns, function calls and guardrail events differ in weight?</h3><p class="muted" style="margin-top:4px">Speech is the spine: bubbles at body size, agent in gray fill and patient in white. Function calls are dashed, mono and inset 16px, so they read as events beside the conversation. Guardrail events live in the rail and as a calm banner, never in the spine.</p></div>
-      <div class="card pad"><h3 class="t-heading">On C04-alt, what is read first: the mismatch, the moment in the call, or the fix?</h3><p class="muted" style="margin-top:4px">The mismatch, stated as a sentence a non-technical person can act on. The fix card is sticky beside the evidence so the decision never scrolls away.</p></div>
-      <div class="card pad"><h3 class="t-heading">Five KPIs on C02: what leads for a clinic, and what for a developer?</h3><p class="muted" style="margin-top:4px">The clinic leads: no-show rate at 40px. The developer's call outcomes step down to 28px, and the one that matters to both, writes that failed, carries an alert badge.</p></div>
-      <div class="card pad"><h3 class="t-heading">How does "what the agent did not say" (P03-alt) become legible?</h3><p class="muted" style="margin-top:4px">A short list of struck-through placeholders with "Not said" and a check, plus a banner that names what was withheld. A list is the right form because the items are discrete and the reviewer is counting.</p></div>
+      <div class="card pad"><h3 class="t-heading">On C04-alt, what is read first: the mismatch, the moment in the call, or the fix?</h3><p class="muted" style="margin-top:4px">The mismatch, stated as a sentence a non-technical person can act on, with what she believes beside what the calendar says. Then Checks shows the two steps that failed, the evidence opens at the wrong turn, and the fix follows directly below.</p></div>
+      <div class="card pad"><h3 class="t-heading">Five KPIs on C02: what leads for a clinic, and what for a developer?</h3><p class="muted" style="margin-top:4px">The clinic leads: no-show rate at 40px. The developer's call outcomes step down to 28px, and the one that matters to both, writes that failed, carries a "!" pill.</p></div>
+      <div class="card pad"><h3 class="t-heading">How does "what the agent did not say" (P03-alt) become legible?</h3><p class="muted" style="margin-top:4px">A short list of struck-through placeholders under "Withheld From This Call", each with a check, plus a banner that names what was withheld. A list is the right form because the items are discrete and the reviewer is counting.</p></div>
       <div class="card pad"><h3 class="t-heading">Where do masked PHI and low-confidence words need emphasis, and where should they recede?</h3><p class="muted" style="margin-top:4px">Masked values are mono and quiet by default, with a logged reveal. Low-confidence words get a dotted underline and a caption only on dates and times, where an error changes a calendar.</p></div>
+    </div>
+  </section>
+
+  <section class="n" id="deep" aria-labelledby="deep-h">
+    <h2 class="t-headline" id="deep-h">P03 And C04-alt, Question By Question</h2>
+    <p class="lead">The two densest screens, with an answer for each element and annotation the brief raises.</p>
+    <h3 class="t-eyebrow" style="margin:16px 0 8px">P03 Live Test Call</h3>
+    <div class="stack g16">
+      <div class="card pad"><h3 class="t-heading">Where is the call header?</h3><p class="muted" style="margin-top:4px">Status and elapsed time (Live · 01:42) sit in the page header beside Agent v7 Draft. Mute Agent and End Call are in the docked player at the bottom, so the controls stay in reach while you scroll the transcript. After End Call the same header reads Ended · 01:42.</p></div>
+      <div class="card pad"><h3 class="t-heading">Function calls sit inline between speech turns. How do they read as system events without drowning out the conversation?</h3><p class="muted" style="margin-top:4px">Speech is the spine: bubbles at body size. A function call is dashed, monospace and inset under the bubbles, with its status code, duration bar and a Read or Writes tag (the same labels as P01 and P02, because writing to the EHR is the safety line). Each one says which turn used its result, so you can check what the agent said against what the system returned.</p></div>
+      <div class="card pad"><h3 class="t-heading">Live call state summarizes what the agent knows right now.</h3><p class="muted" style="margin-top:4px">The left panel shows the state at the live edge of the call: intent, identity, current appointment, slots offered and calendar writes (None yet until a booking).</p></div>
+      <div class="card pad"><h3 class="t-heading">Where does a developer notice a slow turn?</h3><p class="muted" style="margin-top:4px">In the turn itself: every agent turn shows its response time next to the speaker, and the 1.1 s turn is bold. The slowest function is outlined and tagged, and the Response Time card in the left panel links to it.</p></div>
+    </div>
+    <h3 class="t-eyebrow" style="margin:24px 0 8px">C04-alt Needs Review</h3>
+    <div class="stack g16">
+      <div class="card pad"><h3 class="t-heading">Status: what does Teresa see first?</h3><p class="muted" style="margin-top:4px">Maria G. with the ! Needs Review badge, then the urgency in the line under it: her real visit is Thu Oct 15, in 2 days, and the link straight to the fix.</p></div>
+      <div class="card pad"><h3 class="t-heading">The banner has to explain the mismatch in one read.</h3><p class="muted" style="margin-top:4px">One plain sentence as the headline, the brief's explanation under it with each time clickable, and one line on why it happened: the agent did not re-check that the slot was still free. Below it, what she believes sits beside what the calendar says.</p></div>
+      <div class="card pad"><h3 class="t-heading">Reviewers should land on the moment the agent spoke too early without hunting.</h3><p class="muted" style="margin-top:4px">01:51 in the banner moves the player there and outlines the turn. The evidence opens at 1:44, as in the brief, with The Turn Where It Went Wrong outlined.</p></div>
+      <div class="card pad"><h3 class="t-heading">Resolution options are written as outcomes for the patient. One is recommended.</h3><p class="muted" style="margin-top:4px">Each option says what happens to Maria and what happens next (who calls her and when, and whether Thursday stays). The recommended one says why: it is closest to what she asked for. The button says what the chosen option does, such as Resolve And Schedule Callback. A quiet Mark Reviewed covers the user flow's No branch.</p></div>
+      <div class="card pad"><h3 class="t-heading">Is a key-value list strong enough for what she believes vs. what is booked?</h3><p class="muted" style="margin-top:4px">No. They are two large columns side by side, the told time struck through, the real one bold, so the gap is the first thing you see.</p></div>
+      <div class="card pad"><h3 class="t-heading">Link the production incident back to the failed test in P04.</h3><p class="muted" style="margin-top:4px">The Checks section shows the same two failures the P04 scenario shows, and For Sam links to that scenario in Playground.</p></div>
+    </div>
+  </section>
+
+  <section class="n" id="brief-dev" aria-labelledby="bdev-h">
+    <h2 class="t-headline" id="bdev-h">Deviations From The Brief</h2>
+    <div class="card pad stack g12">
+      <div class="lines">
+        <div><div class="strong">No playback speed on the call players</div><div class="muted">The C04 and C04-alt checklists list "playback position and speed". Speed was removed from the Test Call player to keep the dock to the controls a reviewer uses, and the Console players match it.</div></div>
+        <div><div class="strong">Sections with a step list, not tabs</div><div class="muted">C04's Transcript, Function Calls and Audit Log tabs are stacked sections on one page, with a sticky list on the left that jumps to each. Everything about a call stays on screen without a click.</div></div>
+        <div><div class="strong">Deploy To Console is secondary while a test fails</div><div class="muted">The P04 checklist makes Deploy To Console the primary action. While a scenario is failing, the primary job is fixing it, so Review Failure and Re-Run Failed lead and Deploy stays available as a secondary button. Run All Scenarios was added so a full pass is one click after a prompt change.</div></div>
+        <div><div class="strong">No Mute Agent or End Call on P03-alt</div><div class="muted">The P03-alt checklist lists the live call controls. This screen shows the call after it ended, so the dock carries playback and Run Test Scenarios instead. P03 shows the live controls.</div></div>
+        <div><div class="strong">Checks section on C04 and C04-alt</div><div class="muted">Not in the brief. It answers C04 annotation 2 by checking what the agent said against what the systems did.</div></div>
+      </div>
     </div>
   </section>
 

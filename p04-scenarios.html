@@ -9,10 +9,8 @@
 <script src="shell.js"></script>
 <style>
 /* verdict banner: the answer to "is the agent ready to deploy?" */
-.verdict{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 24px;margin-bottom:24px;border:1.5px solid var(--alert);background:var(--alert-bg);border-radius:var(--r-card)}
-[data-fi="low"] .verdict{background:var(--surface);border-color:var(--ink)}
+.verdict{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 24px;margin-bottom:24px;border:1.5px solid var(--alert);background:var(--alert-wash);border-radius:var(--r-card)}
 .verdict .ico{width:32px;height:32px;border-radius:16px;background:var(--alert);color:#fff;display:grid;place-items:center}
-[data-fi="low"] .verdict .ico{background:var(--ink)}
 .verdict .ico svg{width:16px;height:16px}
 .verdict p{color:var(--ink);margin-top:4px;max-width:760px}
 .verdict .acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
@@ -30,9 +28,10 @@
 .icon-btn svg{width:16px;height:16px}
 #dlbtn svg{width:14px;height:20px}
 .findbar{width:0;padding:0;overflow:hidden;opacity:0;margin-right:0;transition:width .28s cubic-bezier(.2,.7,.2,1),padding .28s,opacity .2s,margin .28s}
-.findbar.open{width:330px;padding:2px;opacity:1;margin-right:8px}
+.findbar.open{width:330px;padding:0 2px;opacity:1;margin-right:8px}   /* side padding only, so the 36px field never makes the toolbar taller */
 @media (prefers-reduced-motion:reduce){.findbar{transition:none}}
 .findbar .input{height:36px;justify-content:flex-start;gap:8px;flex-wrap:nowrap}
+.findbar .input:focus-within{outline:none;border-color:var(--field-focus)}   /* one even 1px line all the way round; the shared 2px ring was clipped top and bottom inside the sliding bar */
 .findbar .input svg{width:14px;height:14px;color:var(--muted);flex-shrink:0}
 .findbar input{min-width:0;flex:1}
 input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;display:none}
@@ -77,18 +76,22 @@ input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit
 @media (prefers-reduced-motion:reduce){.drawer,.drawer.open,.scrim{transition:none}}
 .d-ttl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .d-box{border:1px solid var(--line);border-radius:var(--r-card);padding:16px}
+/* expected and actual sit side by side as flat columns, no boxes inside the drawer */
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding-bottom:20px;border-bottom:1px solid var(--fill)}
+.cmp .t-eyebrow{margin-bottom:8px;color:var(--muted)}
+.cmp .bad p{color:var(--ink)}
 .d-box.bad{border:1.5px solid var(--alert);background:#fff}
-[data-fi="low"] .d-box.bad{background:var(--surface);border-color:var(--ink)}
 .d-box .t-eyebrow{margin-bottom:8px}
 .d-box.bad .t-eyebrow{color:var(--muted)}
-[data-fi="low"] .d-box.bad .t-eyebrow{color:var(--muted)}
 .d-box.ok .t-eyebrow{color:var(--ok)}
-[data-fi="low"] .d-box.ok .t-eyebrow{color:var(--muted)}
 .d-fn .fn{list-style:none;margin:0}
 .d-excerpt .tr{gap:12px;list-style:none}
 .d-excerpt .turn{grid-template-columns:minmax(0,1fr)}
 .d-excerpt .bub{max-width:none}
 .d-excerpt li.bad .bub{border:1.5px solid var(--alert);background:#fff}
+.d-jump{display:block;margin-top:8px;padding:0}
+.d-excerpt li.bad:focus{outline:none}
+.d-excerpt li.bad:focus-visible .bub,.d-excerpt li.bad.hit .bub{box-shadow:0 0 0 4px var(--alert-bg)}
 .d-fix{border:1px dashed var(--control);border-radius:6px;background:var(--surface);padding:16px}
 .d-fix .t-eyebrow{margin-bottom:8px}
 @media (max-width:1180px){.findbar.open{width:240px}}
@@ -105,7 +108,8 @@ input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit
   <div class="head">
     <div>
       <h1 class="t-title">Test Scenarios</h1>
-      <p><span class="mono">Agent v7</span> draft · last run Oct 12, 2026, 11:20 AM · <span id="counts-txt"></span></p>
+      <p class="t-caption" style="margin-top:8px">Last run Oct 12, 2026, 11:20 AM · <span id="counts-txt"></span></p>
+      <div class="hmeta"><span class="tag">Appointment Reminders <span class="mono" style="margin-left:4px">v7</span></span><span class="tag">Draft</span></div>
     </div>
     <div class="actions">
       <button type="button" class="btn btn-secondary" id="runall">Run All Scenarios</button>
@@ -176,6 +180,10 @@ const S = [
   { id: 's7', name: 'Spanish-speaking patient', k: 'dashed', r: 'Not run', exp: 'Switches language or transfers', dur: '', run: '',
     expFull: 'Agent switches to Spanish or transfers to a Spanish-speaking staff member.' }
 ];
+/* run results are kept for the session of the demo, so Deploy (C01) and a reload see the same results. Reset Demo clears them. */
+const SAVED = NS.get('scn', {});
+S.forEach(s => { if (SAVED[s.id]) Object.assign(s, SAVED[s.id]); });
+const saveRuns = () => { const o = {}; S.forEach(s => { o[s.id] = { k: s.k, r: s.r, dur: s.dur, run: s.run, act: s.act }; }); NS.set('scn', o); };
 const count = k => S.filter(s => s.k === k).length;
 let failed = S.find(s => s.k === 'alert');
 
@@ -264,17 +272,25 @@ const fnHtml = f => `<ul class="d-fn"><li class="fn in-card ${f.bad ? 'bad' : ''
   <div class="body"><div>${f.bad ? '→ ' : 'args: '}${f.args}</div>${f.res ? '<div class="res">' + f.res + '</div>' : ''}</div></li></ul>`;
 let opener = null, fixOpen = false;
 
+const CHECKS3 = [
+  { ok: 1, t: 'Identity verified before any details', d: 'Date of birth confirmed before the visit was mentioned.' },
+  { ok: 1, t: 'Read-back matches what was sent', d: 'Said "Tuesday at 2:15" and sent <span class="mono">2026-10-20T14:15</span>.' },
+  { ok: 0, t: 'Calendar write succeeded', d: '<span class="mono">reschedule_appointment()</span> returned <span class="mono">409</span> at <span class="mono">01:53</span>. The slot was taken during the call.' },
+  { ok: 0, t: 'Patient told only after the write', d: 'Confirmed at <span class="mono">01:51</span>, two seconds before the write at <span class="mono">01:53</span>.' }
+];
 function drawerHtml(s) {
   const bad = s.k === 'alert', nr = s.k === 'dashed';
   const badge = `<span class="badge badge-${s.k} badge-lg">${s.r}</span>`;
-  let body = `<div class="d-box"><div class="t-eyebrow">Expected</div><p>${s.expFull}</p></div>`;
-  body += nr ? `<div class="d-box"><div class="t-eyebrow">Actual</div><p class="muted">No result yet. Run this scenario before deploying.</p></div>`
-             : `<div class="d-box ${bad ? 'bad' : 'ok'}"><div class="t-eyebrow">Actual</div><p>${bad ? s.actFull : s.act}</p></div>`;
+  let body = `<div class="cmp"><div><div class="t-eyebrow">Expected</div><p>${s.expFull}</p></div>` +
+    (nr ? `<div><div class="t-eyebrow">Actual</div><p class="muted">No result yet. Run this scenario before deploying.</p></div>`
+        : `<div class="${bad ? 'bad' : ''}"><div class="t-eyebrow">Actual</div><p>${bad ? s.actFull : s.act}</p>${bad ? '<button type="button" class="linkbtn d-jump" id="d-jump">Jump To 01:51 In Transcript</button>' : ''}</div>`) + '</div>';
+  /* the failed scenario gets the same checks as the incident it predicts on C04-alt */
+  if (bad) body += `<div><div class="row between" style="margin-bottom:12px"><div class="t-eyebrow">Checks</div><span class="t-caption muted">2 of 4 failed</span></div><ul class="ck-list">${CHECKS3.map(c => `<li>${c.ok ? `<span class="okck" aria-hidden="true">${NS.check}</span>` : '<span class="xck" aria-hidden="true">!</span>'}<div><div class="nm">${c.t}</div><div class="d t-caption">${c.d}</div></div><span class="ck-s">${c.ok ? 'Passed' : 'Failed'}</span></li>`).join('')}</ul></div>`;
   if (s.fn) body += `<div><div class="t-eyebrow" style="margin-bottom:8px">Function Call</div>${fnHtml(s.fn)}</div>`;
   if (bad) {
     body += `<div class="d-excerpt"><div class="t-eyebrow" style="margin-bottom:8px">Transcript Around 01:51</div><ol class="tr">
       <li class="turn pt"><div class="col"><div class="who-l"><b>Patient</b><span class="mono">01:44</span></div><div class="bub">Tuesday at 2:15 works.</div></div></li>
-      <li class="turn ag bad"><div class="col"><div class="who-l"><b>Agent</b><span class="mono">01:51</span><span class="badge badge-alert">Wrong</span></div><div class="bub">You're all set for Tuesday at 2:15. You'll get a text confirmation shortly.</div></div></li></ol></div>`;
+      <li class="turn ag bad" id="d-t151" tabindex="-1"><div class="col"><div class="who-l"><b>Agent</b><span class="mono">01:51</span><span class="badge badge-alert">Wrong</span></div><div class="bub">You're all set for Tuesday at 2:15. You'll get a text confirmation shortly.</div></div></li></ol></div>`;
     body += `<div class="d-fix" id="fix"${fixOpen ? '' : ' hidden'}><div class="t-eyebrow">Suggested Rule 7</div><p>Before reading a chosen slot back to the patient, call <span class="mono">check_availability</span> again. If the slot is gone, say so and offer the next open time.</p><a class="btn btn-secondary btn-sm" style="margin-top:12px" href="p02-configure.html#instructions">Apply In Configure</a></div>`;
   }
   const foot = `${s.call ? `<a class="btn btn-primary" href="${s.call[1]}">${s.call[0]}</a>` : ''}
@@ -291,6 +307,7 @@ function openDrawer(id, from, withFix) {
   $('drawer').innerHTML = drawerHtml(s);
   $('d-close').addEventListener('click', closeDrawer); $('d-close2').addEventListener('click', closeDrawer);
   const fb = $('d-fixbtn'); if (fb) fb.addEventListener('click', () => { fixOpen = !fixOpen; $('fix').hidden = !fixOpen; fb.setAttribute('aria-expanded', String(fixOpen)); if (fixOpen) $('fix').scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' }); });
+  const jb = $('d-jump'); if (jb) jb.addEventListener('click', () => { const t = $('d-t151'); t.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' }); t.focus({ preventScroll: true }); t.classList.add('hit'); setTimeout(() => t.classList.remove('hit'), 1600); });
   const rn = $('d-run'); if (rn) rn.addEventListener('click', () => { closeDrawer(); runOne(s); });
   $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false'); $('scrim').classList.add('open'); setInert(true);
   $('d-close').focus();
@@ -326,7 +343,7 @@ function runList(list, runBy, resolve, done) {
   list.forEach(s => { s.running = true; s.runBy = runBy; }); render();
   const step = Math.min(350, 1200 / list.length);   // total window stays under about 2.5s however many run
   list.forEach((s, i) => setTimeout(() => {
-    s.running = false; s.runBy = null; s.landed = true; resolve(s);
+    s.running = false; s.runBy = null; s.landed = true; resolve(s); saveRuns();
     const last = list.every(x => !x.running);
     patchRow(s);   // only this row changes, so the other rows keep pulsing undisturbed
     if (last) setTimeout(() => { S.forEach(x => { x.landed = false; }); render(); done(); }, reduceMotion ? 0 : 350);

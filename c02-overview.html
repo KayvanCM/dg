@@ -12,38 +12,49 @@
 [data-ann="on"] .pin{display:inline-grid}
 .ctx{margin-top:8px;color:var(--muted)}
 .dep{display:inline-flex;align-items:center;gap:8px;margin-top:8px;color:var(--ok)}
-[data-fi="low"] .dep{color:var(--ink)}
 .dep svg{width:14px;height:14px}
 
-/* The metrics lead the page and Needs Attention sits directly beneath them. The brief asks whether the queue should
-   leave the side column: it is now a full-width block in the main column, just below the numbers. */
+/* Results lead the page: the no-show rate with its 12-week trend, then four outcome tiles. Needs Attention sits directly
+   beneath them, a full-width block in the main column (the brief asks whether the queue should leave the side column). */
 .na-list{list-style:none}
-.q-row{display:grid;grid-template-columns:24px 232px minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--fill);text-decoration:none;color:inherit}
+.q-row{display:grid;grid-template-columns:216px minmax(0,360px) minmax(0,1fr) 20px;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--fill);text-decoration:none;color:inherit}
 .na-list li:last-child .q-row{border-bottom:0;border-radius:0 0 7px 7px}
 .q-row:hover{background:var(--surface)}
 .q-row:focus-visible{outline-offset:-2px}
 .q-row.hi{background:transparent}
-[data-fi="low"] .q-row.hi{background:var(--surface)}
 .q-row.hi:hover{background:var(--surface)}
 .q-row .why{font-weight:500}
 .q-row.hi .why{font-weight:600}
-[data-fi="low"] .q-row.hi .why{color:var(--ink)}
-.q-row .ic{width:16px;height:16px;color:var(--muted)}
-.q-row.hi .ic{color:var(--ink)}
-[data-fi="low"] .q-row.hi .ic{color:var(--ink)}
+.q-row .due{color:var(--muted);font-size:12px;line-height:16px;white-space:nowrap}
+.q-row .due.soon{color:var(--ink);font-weight:600}   /* a visit within 2 days reads by weight, not color */
+.na-in{padding:0;overflow:hidden}
+.na-in .q-row{padding:14px 20px}
+.q-row .chev-go{display:grid;place-items:center;color:var(--muted)}
+.q-row .chev-go svg{width:12px;height:12px}
+.q-row:hover .chev-go{color:var(--ink)}
 .q-row .go{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--link);text-decoration:underline;text-underline-offset:3px}
 .q-row .go svg{width:12px;height:12px}
 
-.kgrid{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:16px}
+.kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:16px}
+/* the no-show rate leads: its number sits on its own 12-week trend, the four outcome tiles step down beneath it */
+.ns-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:8px}
+.ns-head .kv-n{font-size:40px;line-height:44px;font-weight:600;letter-spacing:-.025em;font-variant-numeric:tabular-nums;margin-top:4px}
+.ns-head .ns-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.ns-head .ns-def{max-width:360px;text-align:right}
 .chart-wrap{position:relative}
+.chart-wrap svg{position:relative;z-index:1}
+/* the slice of the 12 weeks the selected date range covers, so the number above can be read off the line */
+.range-band{position:absolute;z-index:0;background:var(--fill);border-radius:4px;pointer-events:none;transition:left .35s cubic-bezier(.2,.7,.2,1),width .35s cubic-bezier(.2,.7,.2,1)}
+.range-band span{position:absolute;top:6px;right:8px;font-size:12px;line-height:16px;font-weight:500;color:var(--ink);white-space:nowrap}
+.range-band.thin span{right:calc(100% + 6px)}   /* a band too narrow for its label puts it just to the left */
+@media (prefers-reduced-motion:reduce){.range-band{transition:none}}
 .chart-wrap svg text{font-family:var(--sans)}
 .legend{display:flex;gap:20px;align-items:center}
 .sw-l{display:inline-block;width:20px;height:0;border-top:2px solid var(--dash);vertical-align:middle;margin-right:8px}
 .sw-l.post{border-top-color:var(--info)}
 @media (max-width:1180px){
-  .q-row{grid-template-columns:24px 180px minmax(0,1fr) auto}
+  .q-row{grid-template-columns:180px minmax(0,1fr) 120px 20px}
   .kgrid{grid-template-columns:1fr 1fr}
-  .kgrid .kpi.lead{grid-column:1 / span 2}
 }
 </style>
 </head>
@@ -84,39 +95,38 @@
 
   <section class="sect" aria-labelledby="m-h">
     <h2 class="t-eyebrow" id="m-h">Results<span class="marker sm pin" aria-hidden="true">1</span></h2>
+  <section class="tray ns" aria-labelledby="ch-h" style="margin-top:0">
+      <div class="tray-h"><h2 class="t-eyebrow" id="ch-h">No-Show Rate, Last 12 Weeks</h2><span class="t-caption mono" id="readout" aria-hidden="true">Jul 21 to Oct 12</span></div>
+      <div class="tray-in">
+        <div class="ns-head">
+          <div><div class="t-caption muted" id="nsRange">Last 7 days</div><div class="kv-n" id="nsNum">6.2%</div>
+            <div class="ns-row"><span id="nsPill"></span><span class="t-caption muted">was 11.8% before the agent</span></div></div>
+          <p class="t-caption muted ns-def">Share of booked appointments where the patient did not show. Lower is better.</p>
+        </div>
+        <div class="chart-wrap" id="chartWrap"></div>
+        <table class="sr-only">
+          <caption>No-show rate by week, Jul 21 to Oct 12. The agent went live Sep 15.</caption>
+          <thead><tr><th scope="col">Week of</th><th scope="col">No-show rate</th></tr></thead>
+          <tbody id="chartTbl"></tbody>
+        </table>
+      </div>
+    </section>
     <div class="kgrid" id="metrics"></div>
   </section>
 
-  <section class="card na sect" aria-labelledby="na-h" id="naCard">
-    <div class="card-h">
+  <section class="tray na sect" aria-labelledby="na-h" id="naCard">
+    <div class="tray-h">
       <div class="row g12">
-        <h2 class="t-headline" id="na-h">Needs Attention</h2>
+        <h2 class="t-eyebrow" id="na-h">Needs Attention</h2>
         <span class="badge badge-alert" id="naCount">6 calls</span>
         <span class="marker sm pin" aria-hidden="true">2</span>
       </div>
-      <a class="action" href="c03-call-log.html?tab=review">View All</a>
+      <a class="action sm" href="c03-call-log.html?tab=review">View All</a>
     </div>
-    <ul class="na-list" id="naList"></ul>
+    <div class="tray-in na-in"><ul class="na-list" id="naList"></ul></div>
   </section>
 
 
-  <section class="tray" aria-labelledby="ch-h">
-    <div class="tray-h"><h2 class="t-eyebrow" id="ch-h">No-Show Rate, Last 12 Weeks</h2><span class="t-caption mono" id="readout" aria-hidden="true">Jul 21 to Oct 12</span></div>
-    <div class="tray-in">
-      <p class="t-caption" style="margin-bottom:12px">Share of booked appointments where the patient did not show. Lower is better.</p>
-      <div class="chart-wrap" id="chartWrap"></div>
-      <table class="sr-only">
-        <caption>No-show rate by week, Jul 21 to Oct 12. The agent went live Sep 15.</caption>
-        <thead><tr><th scope="col">Week of</th><th scope="col">No-show rate</th></tr></thead>
-        <tbody id="chartTbl"></tbody>
-      </table>
-      <dl class="strip">
-        <div><dt class="t-caption">Before the agent</dt><dd>11.8%</dd></div>
-        <div><dt class="t-caption">Latest week</dt><dd>6.2%</dd></div>
-        <div><dt class="t-caption">Change</dt><dd>5.6 pts lower</dd></div>
-      </dl>
-    </div>
-  </section>
 
 </div>
 </main>
@@ -134,31 +144,33 @@ const LIVE = 8; /* Sep 15 */
 /* chart wash: a left-to-right gradient (dark to light) that fades out toward the baseline, with a fine black grain at 20% */
 function wash(id, x1, x2, top, base) {
   return { defs: `<linearGradient id="${id}G" gradientUnits="userSpaceOnUse" x1="${x1}" x2="${x2}" y1="0" y2="0"><stop offset="0" style="stop-color:var(--grad-a)"/><stop offset="1" style="stop-color:var(--grad-b)"/></linearGradient>
-    <linearGradient id="${id}F" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${top}" y2="${base}"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id}F" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${top}" y2="${base}"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <mask id="${id}M" maskUnits="userSpaceOnUse" x="0" y="0" width="10000" height="10000"><rect x="0" y="0" width="10000" height="10000" fill="url(#${id}F)"/></mask>
     <filter id="${id}N" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.6 0 0 0 -.35"/></filter>`,
-    area: (d) => `<clipPath id="${id}C"><path d="${d}"/></clipPath><path d="${d}" fill="url(#${id}G)" mask="url(#${id}M)"/><g clip-path="url(#${id}C)"><g mask="url(#${id}M)" opacity=".2"><rect x="${x1}" y="${top}" width="${Math.abs(x2 - x1)}" height="${base - top}" filter="url(#${id}N)"/></g></g>` };
+    area: (d) => `<clipPath id="${id}C"><path d="${d}"/></clipPath><path d="${d}" fill="url(#${id}G)" mask="url(#${id}M)"/><g clip-path="url(#${id}C)"><g mask="url(#${id}M)" opacity=".1"><rect x="${x1}" y="${top}" width="${Math.abs(x2 - x1)}" height="${base - top}" filter="url(#${id}N)"/></g></g>` };
 }
 let cur = '7d';
+let bandGeo = null;   // set by the trend chart, read by the range band (declared early: the range runs before the chart draws)
 
 const MARIA = 'call_3c71d0';
 const done = NS.isResolved(MARIA);
 
 /* ---------- Needs Attention ---------- */
 const NA = [
-  { id: MARIA, why: 'Calendar write failed', who: 'Maria G.', meta: 'Tue Oct 20, 2:15 PM', href: 'c04-alt-needs-review.html', alert: 1, ic: 'exclamationmark.triangle.fill', pin: 3 },
-  { id: 'james', why: 'Calendar write failed', who: 'James T.', meta: 'Wed Oct 21, 8:45 AM', href: 'c03-call-log.html?tab=review', alert: 1, ic: 'exclamationmark.triangle.fill' },
-  { id: 'linh', why: 'Asked for a person', who: 'Linh P.', meta: 'Transfer not answered', href: 'c03-call-log.html?tab=review', ic: 'person.2' },
-  { id: 'robert', why: 'Identity not verified', who: 'Robert K.', meta: '3 attempts', href: 'c03-call-log.html?tab=review', ic: 'exclamationmark.circle' },
-  { id: 'ana', why: 'Low-confidence date', who: 'Ana S.', meta: '"the fifteenth or fiftieth"', href: 'c03-call-log.html?tab=review', ic: 'calendar' },
-  { id: 'devon', why: 'Opted out of calls', who: 'Devon M.', meta: '', href: 'c03-call-log.html?tab=review', ic: 'bell' }
+  /* days = how soon the patient's real visit is, counted from today, Oct 13 */
+  { id: MARIA, why: 'Calendar write failed', who: 'Maria G.', meta: 'Told Tue Oct 20, 2:15 PM', href: 'c04-alt-needs-review.html', alert: 1, pin: 3, days: 2 },
+  { id: 'james', why: 'Calendar write failed', who: 'James T.', meta: 'Told Wed Oct 21, 8:45 AM', href: 'c03-call-log.html?tab=review&open=call_a1d4f7', alert: 1, days: 3 },
+  { id: 'linh', why: 'Asked for a person', who: 'Linh P.', meta: 'Transfer not answered', href: 'c03-call-log.html?tab=review&open=call_b6c230', days: 2 },
+  { id: 'robert', why: 'Identity not verified', who: 'Robert K.', meta: '3 attempts', href: 'c03-call-log.html?tab=review&open=call_d94e08', days: 3 },
+  { id: 'ana', why: 'Low-confidence date', who: 'Ana S.', meta: '"the fifteenth or fiftieth"', href: 'c03-call-log.html?tab=review&open=call_f27a19', days: 6 },
+  { id: 'devon', why: 'Opted out of calls', who: 'Devon M.', meta: '', href: 'c03-call-log.html?tab=review&open=call_0be851', days: 2 }
 ].filter(r => !(r.id === MARIA && done));
 
 document.getElementById('naList').innerHTML = NA.map(r => `<li><a class="q-row ${r.alert ? 'hi' : ''}" href="${r.href}">
-  ${NS.ico(r.ic, 'ic')}
   <span class="why">${r.why}</span>
   <span><b style="font-weight:500">${r.who}</b>${r.meta ? ' <span class="muted">· ' + r.meta + '</span>' : ''}${r.pin ? '<span class="marker sm pin" aria-hidden="true">' + r.pin + '</span>' : ''}</span>
-  <span class="go">Open${NS.chev()}</span></a></li>`).join('');
+  <span class="due ${r.days <= 2 ? 'soon' : ''}">Visit in ${r.days} days</span>
+  <span class="chev-go" aria-hidden="true">${NS.chev()}</span></a></li>`).join('');
 const n = NA.length;
 document.getElementById('naCount').textContent = n + (n === 1 ? ' call' : ' calls');
 
@@ -166,6 +178,12 @@ document.getElementById('naCount').textContent = n + (n === 1 ? ' call' : ' call
 function failedCount() { return Math.max(0, RANGES[cur].failed - (done ? 1 : 0)); }
 /* Each tile is an inner card with the number and a small picture of it, plus a footer that says how it moved.
    The change figures other than No-Show Rate are placeholders (invented), not from the brief. */
+/* per range: calls per day (sums to Calls Placed), and how far calls got before someone answered (Unreached is the last step) */
+const VIZ = {
+  today: { calls: [12, 18, 31, 34, 29, 33, 29], callsLbl: 'Calls by hour, 9 AM to 4 PM', funnel: [100, 40, 23, 16] },
+  '7d':  { calls: [168, 181, 176, 190, 187, 192, 190], callsLbl: 'Calls per day, Oct 7 to Oct 13', funnel: [100, 41, 24, 16] },
+  '30d': { calls: [1180, 1214, 1236, 1282], callsLbl: 'Calls per week, last 4 weeks', funnel: [100, 44, 27, 18] }
+};
 const DELTAS = {
   today: { prev: 'vs yesterday', ns: '5.9 pts', calls: '+4%', conf: '+1 pt', unr: '1 pt' },
   '7d':  { prev: 'vs last week', ns: '5.6 pts', calls: '+8%', conf: '+2 pts', unr: '1 pt' },
@@ -174,22 +192,40 @@ const DELTAS = {
 const ARW = { up: 'M3.5 8.5l5-5M4.5 3.5h4v4', down: 'M3.5 3.5l5 5M8.5 4.5v4h-4' };
 const pill = (dir, txt) => `<span class="dp"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ARW[dir]}"/></svg>${txt}</span>`;
 const pct = s => parseFloat(s);
-const spark = (w, h) => {
-  const lo = 5, hi = 12.5, X = i => 2 + i * (w - 4) / (PTS.length - 1), Y = v => 2 + (hi - v) / (hi - lo) * (h - 4);
-  const d = PTS.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X(PTS.length - 1)}" cy="${Y(PTS[PTS.length - 1])}" r="3" fill="var(--ink)"/></svg>`;
+const GRAD = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--grad-a)"/><stop offset="1" style="stop-color:var(--grad-b)"/></linearGradient></defs>`;
+/* calls: the kit's gradient bars, one per day (or hour, or week) */
+const callBars = (vals, label) => {
+  const w = 12, g = 4, H = 56, max = Math.max(...vals), min = Math.min(...vals), W = vals.length * w + (vals.length - 1) * g;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">${GRAD('gCalls')}${vals.map((v, i) => { const h = Math.round(H * (.35 + .65 * (max === min ? 1 : (v - min) / (max - min)))); return `<rect x="${i * (w + g)}" y="${H - h}" width="${w}" height="${h}" rx="2" fill="url(#gCalls)"/>`;   /* the baseline starts above zero so day-to-day change is visible */ }).join('')}</svg>`;
 };
-const bars = (hs) => `<svg width="52" height="32" viewBox="0 0 52 32" aria-hidden="true">${hs.map((v, i) => `<rect x="${i * 8}" y="${32 - v * 32 / 100}" width="4" height="${v * 32 / 100}" rx="1" fill="${i === hs.length - 1 ? 'var(--ink)' : 'var(--line)'}"/>`).join('')}</svg>`;
-const ring = (p, tone) => `<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="var(--fill)" stroke-width="5"/><circle cx="20" cy="20" r="16" fill="none" stroke="${tone}" stroke-width="5" stroke-linecap="butt" stroke-dasharray="${(p * 100.53 / 100).toFixed(1)} 100.53" transform="rotate(-90 20 20)"/></svg>`;
-const BARS = { today: [40, 56, 48, 64, 52, 60, 72], '7d': [52, 44, 60, 56, 68, 48, 64], '30d': [44, 52, 48, 60, 56, 64, 72] };
-const tile = (cls, label, value, note, viz, foot) => `<article class="kpi ${cls}"><div class="kpi-in"><div class="t-eyebrow">${label}</div><div class="kpi-row"><div class="kv-n">${value}</div><div class="kpi-viz">${viz}</div></div>${note ? `<div class="t-caption muted kpi-note">${note}</div>` : ''}</div><div class="kpi-ft">${foot}</div></article>`;
+/* confirmed: a ring drawn in the same gradient */
+const ring = (p, label) => {
+  const r = 22, c = 2 * Math.PI * r;
+  return `<svg width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="${label}"><defs><linearGradient id="gRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--grad-a)"/><stop offset="1" style="stop-color:var(--grad-b)"/></linearGradient></defs><circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--fill)" stroke-width="8"/><circle cx="28" cy="28" r="${r}" fill="none" stroke="url(#gRing)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(p / 100 * c).toFixed(1)} ${c.toFixed(1)}" data-c="${c.toFixed(1)}" transform="rotate(-90 28 28)"/></svg>`;
+};
+/* rescheduled: one square per call; the ones that failed to write are outlined in rust, so they read without color too */
+const waffle = (ok, bad) => {
+  const per = ok + bad > 84 ? Math.ceil((ok + bad) / 84) : 1, nb = bad ? Math.max(1, Math.round(bad / per)) : 0, n = Math.round((ok + bad) / per), s = 6, g = 2, cols = 12;   // 12 x 7 squares, 56px tall like the other pictures
+  const W = cols * s + (cols - 1) * g, H = 7 * s + 6 * g;
+  let out = '';
+  for (let i = 0; i < n; i++) { const x = (i % cols) * (s + g), y = H - (Math.floor(i / cols) + 1) * s - Math.floor(i / cols) * g, failed = i >= n - nb;
+    out += failed ? `<rect x="${x + .75}" y="${y + .75}" width="${s - 1.5}" height="${s - 1.5}" rx="1" fill="#fff" stroke="var(--alert)" stroke-width="1.5"/>` : `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="1" fill="var(--grad-a)"/>`; }
+  return { svg: `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${ok} booked, ${bad} failed to write">${out}</svg>`, per };
+};
+/* unreached: how far calls got. First try, first retry, second retry, then unreached (dashed, because no one answered) */
+const funnel = (vals, label) => {
+  const w = 12, g = 4, H = 56, W = 4 * w + 3 * g;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">${GRAD('gFun')}${vals.map((v, i) => { const last = i === vals.length - 1; const h = Math.max(last ? 16 : 4, Math.round(v / 100 * H));
+    return last ? `<rect x="${i * (w + g) + .75}" y="${H - h + .75}" width="${w - 1.5}" height="${h - 1.5}" rx="2" fill="#fff" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 2"/>` : `<rect x="${i * (w + g)}" y="${H - h}" width="${w}" height="${h}" rx="2" fill="url(#gFun)"/>`; }).join('')}</svg>`;
+};
+const tile = (cls, label, value, note, viz, foot) => `<article class="kpi ${cls}"><div class="kpi-in"><div class="t-eyebrow">${label}</div><div class="kpi-row"><div class="kpi-num"><div class="kv-n">${value}</div>${note ? `<div class="t-caption muted kpi-note">${note}</div>` : ''}</div><div class="kpi-viz">${viz}</div></div></div><div class="kpi-ft">${foot}</div></article>`;
 /* switching the range: numbers count to their new value, bars grow, rings draw, the rest fades in. About 0.3s in all. */
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const parseVal = s => ({ n: parseFloat(s.replace(/,/g, '')), dec: (s.split('.')[1] || '').replace(/\D/g, '').length, pct: s.includes('%'), comma: s.includes(',') });
 const fmtVal = (n, m) => (m.comma ? n.toLocaleString('en-US', { minimumFractionDigits: m.dec, maximumFractionDigits: m.dec }) : n.toFixed(m.dec)) + (m.pct ? '%' : '');
 function playMetrics(before) {
   const ease = 'cubic-bezier(0.2, 0.7, 0.2, 1)', DUR = 320;
-  document.querySelectorAll('#metrics .kv-n').forEach((el, i) => {
+  document.querySelectorAll('#nsNum, #metrics .kv-n').forEach((el, i) => {
     const to = el.textContent, a = parseVal(before[i] || to), b = parseVal(to);
     if (isNaN(a.n) || isNaN(b.n)) return;
     const t0 = performance.now();
@@ -200,22 +236,27 @@ function playMetrics(before) {
       if (k < 1) requestAnimationFrame(step);
     })(t0);
   });
-  document.querySelectorAll('#metrics .kpi-viz svg > rect').forEach((r, i) => r.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: DUR, delay: (i % 7) * 20, easing: ease, fill: 'backwards' }));
-  document.querySelectorAll('#metrics .kpi-viz svg > circle[stroke-dasharray]').forEach(c => { const full = c.getAttribute('stroke-dasharray'); c.animate([{ strokeDasharray: '0 100.53' }, { strokeDasharray: full }], { duration: DUR, easing: ease, fill: 'backwards' }); });
+  document.querySelectorAll('#metrics .kpi-viz svg > rect').forEach((r, i, all) => r.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: DUR, delay: Math.min(i, 20) * 12, easing: ease, fill: 'backwards' }));
+  
+  document.querySelectorAll('#metrics .kpi-viz svg > circle[data-c]').forEach(c => { const full = c.getAttribute('stroke-dasharray'); c.animate([{ strokeDasharray: '0 ' + c.dataset.c }, { strokeDasharray: full }], { duration: DUR, easing: ease, fill: 'backwards' }); });
   document.querySelectorAll('#metrics .kpi-viz svg > path').forEach(p => p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: DUR, easing: ease, fill: 'backwards' }));
   document.querySelectorAll('#metrics .kpi-ft > *, #metrics .kpi-note').forEach(el => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 60, easing: 'ease-out', fill: 'backwards' }));
 }
 function renderMetrics(animate) {
   const d = RANGES[cur], dl = DELTAS[cur];
-  const before = Array.from(document.querySelectorAll('#metrics .kv-n')).map(e => e.textContent);
+  const before = Array.from(document.querySelectorAll('#nsNum, #metrics .kv-n')).map(e => e.textContent);
   const f = failedCount();
+  const v = VIZ[cur], wf = waffle(d.resch - f, f);
   document.getElementById('metrics').innerHTML =
-    tile('lead', 'No-Show Rate', d.noshow, 'was 11.8% before the agent', spark(112, 40), `${pill('down', dl.ns)}<span class="t-caption muted">vs before the agent</span>`) +
-    tile('', 'Calls Placed', d.calls, 'across ' + d.appts, bars(BARS[cur]), `${pill('up', dl.calls)}<span class="t-caption muted">${dl.prev}</span>`) +
-    tile('', 'Confirmed', d.conf, d.confN, ring(pct(d.conf), 'var(--ink)'), `${pill('up', dl.conf)}<span class="t-caption muted">${dl.prev}</span>`) +
-    tile('', 'Rescheduled', d.resch, f ? 'incl. failed writes' : 'All calendar writes succeeded', bars(BARS[cur].slice().reverse()),
+    tile('', 'Calls Placed', d.calls, 'across ' + d.appts, callBars(v.calls, v.callsLbl), `${pill('up', dl.calls)}<span class="t-caption muted">${dl.prev}</span>`) +
+    tile('', 'Confirmed', d.conf, d.confN, ring(pct(d.conf), d.conf + ' of appointments confirmed'), `${pill('up', dl.conf)}<span class="t-caption muted">${dl.prev}</span>`) +
+    tile('', 'Rescheduled', d.resch, (d.resch - f) + ' booked' + (wf.per > 1 ? ', each square ' + wf.per + ' calls' : ''), wf.svg,
       f ? `<span class="dp bad"><b aria-hidden="true">!</b>${f} failed to write</span>` : `<span class="t-caption muted">No failed writes</span>`) +
-    tile('', 'Unreached', d.unr, d.unrN, ring(pct(d.unr), 'var(--control)'), `${pill('down', dl.unr)}<span class="t-caption muted">${dl.prev}</span>`);
+    tile('', 'Unreached', d.unr, d.unrN, funnel(v.funnel, 'Reached on the first try, the first retry, the second retry, then unreached'), `${pill('down', dl.unr)}<span class="t-caption muted">${dl.prev}</span>`);
+  document.getElementById('nsNum').textContent = d.noshow;
+  document.getElementById('nsRange').textContent = d.lbl.replace(/^./, c => c.toUpperCase());
+  document.getElementById('nsPill').innerHTML = pill('down', dl.ns);
+  placeBand();
   if (animate && !reduceMotion) playMetrics(before);
   document.getElementById('rangeLbl').textContent = d.lbl;
   document.getElementById('live').textContent = 'Showing results for ' + d.lbl + '.';
@@ -231,9 +272,11 @@ document.querySelectorAll('#range button').forEach(b => b.addEventListener('clic
 }));
 document.getElementById('export').addEventListener('click', () => NS.toast('Exporting ' + RANGES[cur].total.toLocaleString('en-US') + ' calls as CSV.'));
 
-if (NS.get('deployed')) {
+const dep = NS.get('deployed');
+if (dep && !dep.seen) {
   const l = document.getElementById('depLine'); l.hidden = false;
-  l.innerHTML = NS.check.replace('<svg ', '<svg width="14" height="14" ') + '<span>Agent v7 deployed just now</span>';
+  l.innerHTML = NS.check.replace('<svg ', '<svg width="14" height="14" ') + '<span>Agent v7 deployed just now by ' + (dep.by || 'Sam Morita') + '</span>';
+  NS.set('deployed', Object.assign({}, dep, { seen: true }));   // the next visit reads only "deployed Oct 13" in the line above
 }
 
 /* ---------- trend chart: 12 weekly points, Jul 21 to Oct 12 ---------- */
@@ -242,6 +285,18 @@ document.getElementById('chartTbl').innerHTML = PTS.map((v, i) => `<tr><th scope
 
 const wrap = document.getElementById('chartWrap');
 const readout = document.getElementById('readout');
+/* where each range starts on the weekly line: Today is the last point, 7 Days the last week, 30 Days back to mid-September */
+const BAND_FROM = { today: 10.85, '7d': 10, '30d': 7.6 };
+function placeBand() {
+  if (!bandGeo) return;
+  let b = document.getElementById('rangeBand');
+  if (!b) { b = document.createElement('div'); b.id = 'rangeBand'; b.className = 'range-band'; b.setAttribute('aria-hidden', 'true'); b.innerHTML = '<span></span>'; }
+  if (b.parentNode !== wrap) wrap.prepend(b);   // the chart redraw replaces the svg, the band stays so it can slide
+  const { X, T, base, last } = bandGeo, x0 = X(BAND_FROM[cur]), x1 = X(last) + 8;
+  b.style.left = x0 + 'px'; b.style.width = (x1 - x0) + 'px'; b.style.top = (T - 12) + 'px'; b.style.height = (base - T + 12) + 'px';
+  b.classList.toggle('thin', x1 - x0 < 88);
+  b.querySelector('span').textContent = RANGES[cur].lbl.replace(/^./, c => c.toUpperCase());
+}
 function draw() {
   const W = Math.max(wrap.clientWidth, 320), H = 248;
   const L = 44, R = 56, T = 40, B = 36, pw = W - L - R, ph = H - T - B, MAX = 14;
@@ -253,7 +308,8 @@ function draw() {
   const last = PTS.length - 1;
   const wsh = wash('tr', X(0), X(PTS.length - 1), T, Y(0));
   const areaD = seg(0, PTS.length - 1) + `L${X(PTS.length - 1)} ${Y(0)}L${X(0)} ${Y(0)}Z`;
-  document.getElementById('chartWrap').innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart. The no-show rate was about 11.8 percent in the week of Jul 21, held near 11 to 12 percent until the agent went live on Sep 15, then fell to 6.2 percent by the week of Oct 6.">
+  wrap.querySelectorAll('svg').forEach(s => s.remove());
+  wrap.insertAdjacentHTML('beforeend', `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart. The no-show rate was about 11.8 percent in the week of Jul 21, held near 11 to 12 percent until the agent went live on Sep 15, then fell to 6.2 percent by the week of Oct 6.">
     <defs>${wsh.defs}</defs>
     ${grid}
     ${wsh.area(areaD)}
@@ -261,7 +317,7 @@ function draw() {
     <path d="${seg(0, LIVE)}" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="${seg(LIVE, last)}" fill="none" stroke="var(--info)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     <line x1="${ex}" x2="${ex}" y1="${T - 12}" y2="${Y(0)}" stroke="#1A1A1A" stroke-dasharray="3 3"/>
-    <text x="${ex + 8}" y="${T - 4}" font-size="12" font-weight="500" fill="#1A1A1A">Agent live, Sep 15</text>
+    <text x="${ex + 8}" y="${T + 6}" font-size="12" font-weight="500" fill="#1A1A1A">Agent live, Sep 15</text>
     <circle cx="${ex}" cy="${Y(PTS[LIVE])}" r="5" fill="#fff" stroke="#1A1A1A" stroke-width="2"/>
     <circle cx="${X(last)}" cy="${Y(PTS[last])}" r="5" fill="#1A1A1A"/>
     <text x="${X(0)}" y="${Y(PTS[0]) - 10}" font-size="12" font-weight="600" fill="#1A1A1A" ${halo}>11.8%</text>
@@ -270,7 +326,9 @@ function draw() {
     <text x="${W - R}" y="${H - 10}" font-size="12" fill="#626262" text-anchor="end">Oct 12</text>
     <g id="hov" hidden><line id="hl" y1="${T - 12}" y2="${Y(0)}" stroke="#6B6B6B"/><circle id="hd" r="4" fill="#fff" stroke="#1A1A1A" stroke-width="2"/></g>
     <rect id="hit" x="${L}" y="${T - 12}" width="${pw}" height="${ph + 12}" fill="transparent"/>
-  </svg>`;
+  </svg>`);
+  bandGeo = { X, T, base: Y(0), last };
+  placeBand();
   const hit = document.getElementById('hit'), hov = document.getElementById('hov');
   hit.addEventListener('mousemove', e => {
     const r = hit.getBoundingClientRect();

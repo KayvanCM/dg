@@ -2,7 +2,6 @@
    Northside Voice: Playground and Console
    Components come from the Wireframe Kit (exact borders, radii, fills).
    Layout and UX patterns come from ChatKit.
-   Fidelity: [data-fi="high"] adds color. [data-fi="low"] is the kit's grayscale.
    ===================================================================== */
 
 @font-face{font-family:"Roboto Mono";src:url("fonts/RobotoMono-Variable.ttf") format("truetype");font-weight:100 700;font-style:normal;font-display:swap}
@@ -25,6 +24,7 @@
   --ok:#1D6A4E;     --ok-bg:#E2F1EA;      /* go */
   --info:#2E5873;   --info-bg:#E1E9F0;    /* soon */
   --alert:#8A3A22;  --alert-bg:#FAF1EC;  --alert-line:#B78A72;  /* stop, with mauve for dividers */
+  --alert-wash:linear-gradient(180deg,color-mix(in srgb,#8A3A22 12%,#fff) 0%,color-mix(in srgb,#8A3A22 7%,#fff) 50%,color-mix(in srgb,#8A3A22 2%,#fff) 100%);   /* the page's one warning surface: rust spread evenly top to bottom */
   --warn:#173F43;   --warn-bg:#E6F2EF;    /* forest on keylime: emphasis for slow, not an error */
   --link:#146F6A;
   --focus:#146F6A;
@@ -40,15 +40,6 @@
   /* Kit radii */
   --r-btn:6px; --r-field:6px; --r-card:8px; --r-badge:4px; --r-pill:999px;
   --side:240px;
-}
-[data-fi="low"]{
-  --ok:#1A1A1A; --ok-bg:#FFFFFF;
-  --info:#1A1A1A; --info-bg:#FFFFFF;
-  --alert:#1A1A1A; --alert-bg:#FFFFFF; --alert-line:#1A1A1A;
-  --warn:#1A1A1A; --warn-bg:#F7F7F7;
-  --link:#1A1A1A; --focus:#1A1A1A;
-  --grad-a:#1A1A1A; --grad-b:#A6A6A6;
-  --sel:#1A1A1A; --sel-bg:#FFFFFF; --playhead:#1A1A1A;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -91,9 +82,7 @@ svg{display:block}
 .nav-item:hover{background:var(--fill);color:var(--ink)}
 .nav-item[aria-current="page"]{background:var(--fill);color:var(--ink);font-weight:500}
 .nav-item .cnt{margin-left:auto;min-width:20px;height:20px;border-radius:10px;padding:0 6px;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--fill);color:var(--ink)}
-[data-fi="low"] .nav-item .cnt{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
 .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
-.pref{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px;font-size:12px;color:var(--muted)}
 .seg2{display:inline-grid;grid-auto-flow:column;gap:2px;background:var(--fill);border-radius:var(--r-btn);padding:2px}
 .seg2 button{height:24px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:500;color:var(--muted)}
 .seg2 button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
@@ -143,7 +132,6 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .btn-block{width:100%}
 .btn svg{width:14px;height:14px}
 .btn-ext{background:var(--info);color:#fff}
-[data-fi="low"] .btn-ext{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .btn-tertiary{height:38px;padding:0 16px;display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:var(--ink);text-decoration:underline;text-underline-offset:3px;border-radius:var(--r-btn)}
 .btn-tertiary:hover{background:var(--fill)}
 .action{font-size:14px;color:var(--link);text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:0;padding:0}
@@ -231,7 +219,6 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .marker.sm{width:20px;height:20px;border-radius:10px}
 .marker.hollow{background:#fff;color:var(--ink);border:2px solid var(--ink)}
 .marker.bad{background:var(--alert)}
-[data-fi="low"] .marker.bad{background:#fff;color:var(--ink);border:2px solid var(--ink)}
 .annot{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px dashed var(--line);border-radius:6px;background:var(--surface);font-size:14px}
 .annots{display:none;margin-bottom:24px;flex-direction:column;gap:8px}
 [data-ann="on"] .annots{display:flex}
@@ -265,7 +252,6 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .fn.in-card{margin-left:0}
 .fn.bad{border:1.5px solid var(--alert);background:#fff}
 .fn.bad .code{color:#fff;background:var(--alert);padding:0 6px;border-radius:var(--r-badge)}
-[data-fi="low"] .fn.bad .code{color:var(--ink);background:#fff;border:1.5px solid var(--ink)}
 .fn.slowfn{border-style:solid;border-color:var(--ink)}
 .dur{height:4px;background:var(--fill);border-radius:2px;width:120px;position:relative;display:inline-block}
 .dur i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:2px}
@@ -290,10 +276,8 @@ hr.div{border:0;border-top:1px solid var(--line);margin:0 0 24px}
 .banner .ico{width:32px;height:32px;border-radius:16px;background:var(--ink);color:#fff;display:grid;place-items:center}
 .banner .ico svg{width:16px;height:16px}
 .banner.calm .ico{background:var(--ok)}
-[data-fi="low"] .banner.calm .ico{background:var(--ink)}
 .callout-alert{border:1.5px solid var(--alert);background:var(--alert-bg);border-radius:var(--r-card)}
 .callout-alert .t-eyebrow{color:var(--alert)}
-[data-fi="low"] .callout-alert .t-eyebrow{color:var(--muted)}
 
 /* ============ DERIVED: OPTION CARD (radio) ============ */
 .opt{display:grid;grid-template-columns:18px 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r-card);cursor:pointer;background:#fff;text-align:left;width:100%}
@@ -319,7 +303,6 @@ details.disc .in{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block}
 .dot.live{background:var(--alert);animation:pulse 1.6s ease-in-out infinite}
-[data-fi="low"] .dot.live{background:var(--ink)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
 .ico16{width:16px;height:16px}
@@ -434,11 +417,11 @@ body.sub-off .dock{left:var(--side)}
 .strip dt{color:var(--muted)}
 .strip dd{margin:0;font-size:16px;line-height:24px;font-weight:600}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:4px;display:flex;flex-direction:column}
-.kpi-in{flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.06);padding:16px}
-.kpi-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:12px}
-.kpi-note{margin-top:8px}
+.kpi-in{flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.06);padding:16px 20px;display:flex;flex-direction:column}
+.kpi-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:auto;padding-top:16px}
+.kpi-num{min-width:0}
+.kpi-note{margin-top:4px}
 .kpi .kv-n{font-size:28px;line-height:32px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.kpi.lead .kv-n{font-size:40px;line-height:44px;letter-spacing:-.025em}
 .kpi-viz{flex-shrink:0;display:flex;align-items:flex-end}
 .kpi-ft{display:flex;align-items:center;gap:8px;padding:8px 12px 6px;min-height:36px;white-space:nowrap}
 .dp{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:var(--r-badge);background:var(--ok-bg);color:var(--ok);font-size:12px;line-height:16px;font-weight:600}
@@ -446,13 +429,13 @@ body.sub-off .dock{left:var(--side)}
 .kpi-viz rect{transform-box:fill-box;transform-origin:50% 100%}
 .dp.bad{background:var(--fill);color:var(--ink)}
 .dp.bad b{font-weight:700}
-[data-fi="low"] .dp.bad{background:var(--fill);color:var(--ink)}
 
 /* header: version and connection on one line, then the one thing that needs a decision */
 .hmeta{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .issue{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--ink)}
 .issue i{width:8px;height:8px;border-radius:50%;background:var(--ink);flex-shrink:0}
-[data-fi="low"] .issue i{background:var(--ink)}
+.head p.issue{max-width:none}   /* the one line that needs a decision can run the full header width */
+.issue .action{white-space:nowrap}   /* a link at the end of the line moves down whole, never splits across two lines */
 
 /* a step list on the left, one step on the right */
 .dep-cols{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start}
@@ -464,7 +447,6 @@ body.sub-off .dock{left:var(--side)}
 .st[aria-current="location"] .n{font-weight:600}
 .st .s{display:block;font-size:12px;line-height:16px;margin-top:2px;color:var(--muted)}
 .st.warn .s{color:var(--ink);font-weight:600}
-[data-fi="low"] .st.warn .s{color:var(--ink)}
 
 .pn{margin-bottom:24px;scroll-margin-top:24px}
 .pn:last-child{margin-bottom:0}
@@ -497,3 +479,58 @@ body.sub-off .dock{left:var(--side)}
 .pl .playbtn{width:40px;height:40px;border-radius:20px}
 .pl .playbtn:hover{background:#4A4A4A}
 .pl .playbtn svg{width:14px;height:14px}
+
+/* the call player sticks to the bottom of the content column, as wide as the cards above it; it slides in once the transcript is on screen */
+.dockp{position:sticky;bottom:0;z-index:40;background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:var(--r-card) var(--r-card) 0 0;padding:12px 24px;transform:translateY(100%);visibility:hidden;transition:transform .2s,visibility 0s .2s}
+.dockp.on{transform:none;visibility:visible;transition:transform .2s}
+.dockp-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dockp .clock{font-size:28px;line-height:32px;min-width:76px;margin-left:4px}
+.dockp #dbadge{min-width:72px;justify-content:center}
+@media (prefers-reduced-motion:reduce){.dockp,.dockp.on{transition:none}}
+
+/* checks: what the agent said, checked against what the clinic's systems did (C04, C04-alt). Pass is a filled check, fail is an outlined "!" */
+.ck-list{list-style:none}
+.ck-list li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:start;padding:14px 0;border-bottom:1px solid var(--fill)}
+.ck-list li:first-child{padding-top:0}
+.ck-list li:last-child{border-bottom:0;padding-bottom:0}
+.ck-list .okck{width:20px;height:20px}
+.ck-list .okck svg{width:12px;height:12px}
+.xck{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--alert);color:var(--alert);background:#fff;display:grid;place-items:center;font-size:12px;line-height:1;font-weight:700}
+.ck-list .nm{font-weight:500}
+.ck-list .d{margin-top:2px;color:var(--muted)}
+.ck-list .ck-s{font-size:12px;line-height:20px;font-weight:600;white-space:nowrap}
+/* a call time inside a sentence that moves the playhead and scrolls to that moment */
+.tj{font:inherit;font-family:var(--mono);font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;border-radius:2px;padding:0;background:none}
+.tj:hover{color:var(--link)}
+
+/* audit log as an activity feed: the event in bold with its detail, who did it underneath, the time on the right */
+.feed{list-style:none}
+.feed li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--fill)}
+.feed li:last-child{border-bottom:0}
+.feed .ev b{font-weight:600}
+.feed .ev .badge{margin-left:8px}
+.feed .by{margin-top:2px;color:var(--muted)}
+.feed .when{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--muted);white-space:nowrap}
+.feed li.newrow{background:var(--surface);margin:0 -24px;padding:14px 24px}
+/* step list group labels (C04-alt) */
+.st-g{display:block;padding:16px 12px 4px;color:var(--muted)}
+.st-g:first-child{padding-top:0}
+/* the docked player gets a full border when it is resting at the end of the page, not pinned */
+.dockp.rest{border-bottom:1px solid var(--line);border-radius:var(--r-card)}
+@media (max-width:1100px){.st-g{display:none}}
+
+/* call player row, after ChatKit's: transport on the left, the playhead time, the waveform, the total, then any call actions.
+   Used by every dock (P03, P03-alt, C04, C04-alt). The waveform takes whatever width is left. */
+.pbar{display:flex;align-items:center;gap:12px}
+.pbar-tx{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pbar-now,.pbar-end{font-family:var(--mono);font-size:12px;line-height:16px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:40px;flex-shrink:0}
+.pbar-now{color:var(--muted);text-align:right}
+.pbar-end{color:var(--ink);font-weight:600}
+.pbar .wave{flex:1 1 0;width:auto;min-width:0}
+.pbar>.btn,.pbar>.badge{flex-shrink:0}
+.pbar>.badge{min-width:72px;justify-content:center}
+
+/* a transcript timestamp is a button that moves the playhead; clicking a turn or a function block does the same (P03, P03-alt, C04, C04-alt) */
+.tsb{color:var(--muted);font-size:12px;line-height:16px;border-radius:4px}
+.tsb:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.tr .turn .bub,.tr .fn,.tr .riskx,.tr .wrong{cursor:pointer}
