@@ -13,7 +13,7 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies. Open `p01-templa
 | File | What it is |
 |---|---|
 | `p01-templates.html` | Choose a template. Card grid, details drawer. |
-| `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). |
+| `p02-configure.html` | Edit instructions, models, functions, variables, guardrails (5 tabs). On Instructions every line is its own field: the greeting, the role line and each numbered rule. Click the text to edit it in place (Enter saves, Esc cancels, Insert Variable chips under the open field); one field is open at a time. Rules reorder by the grip (drag, or arrow keys on the grip), and Add Rule appends one. |
 | `p03-live-call.html` | Test call in two states on one page. While live, the bottom dock holds only the Live badge, clock, waveform, Mute Agent and End Call. End Call flips the same page to Ended: the dock becomes a scrubber (play, skip 10 seconds) with a Run Test Scenarios button. The left panel shows call state, response time and guardrail statuses. |
 | `p03-alt-wrong-person.html` | The same template, already ended: a call where a guardrail held (wrong person answered). |
 | `p04-scenarios.html` | Test scenarios and results. Run All Scenarios and Re-Run Failed animate the Result column. A verdict banner (Not Ready To Deploy) leads, then filter chips, search and CSV download, then the table. A scenario name opens a detail drawer (expected, actual, function call, transcript excerpt, prompt fix). One scenario fails by design. |

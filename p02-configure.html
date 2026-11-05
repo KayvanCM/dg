@@ -8,16 +8,39 @@
 <script src="icons.js"></script>
 <script src="shell.js"></script>
 <style>
-.editor{border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;background:#fff}
-.editor .bar{padding:12px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--surface)}
-.greet{padding:16px 20px;line-height:28px}
-.rule{display:grid;grid-template-columns:32px 1fr;padding:12px 20px;border-bottom:1px solid var(--fill);line-height:28px}
-.rule:last-child{border-bottom:0}
-.rule .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.editor textarea.textarea{border:0;border-radius:0;min-height:160px;display:block;line-height:24px;padding:16px 20px}
-.editor textarea.textarea:focus{outline:none}
-.editor:focus-within{border-color:var(--field-focus);box-shadow:0 0 0 1px var(--field-focus)} /* the ring follows the editor's rounded corners */
-.ed-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface)}
+.editor{border:1px solid var(--line);border-radius:var(--r-card);background:#fff}
+/* each line of the prompt is its own field: click the text to edit it in place */
+.blk{position:relative}
+.blk-t{display:block;width:100%;text-align:left;padding:16px 48px 16px 20px;line-height:24px;border-radius:var(--r-card);cursor:text}
+.blk-t:hover{background:var(--surface)}
+.blk-t .pen{position:absolute;top:18px;right:20px;width:16px;height:16px;color:var(--muted);opacity:0;transition:opacity .15s}
+.blk-t .pen svg{width:16px;height:16px}
+.blk-t:hover .pen,.blk-t:focus-visible .pen{opacity:1}
+.pre{border-bottom:1px solid var(--line)}
+.pre .blk-t{color:var(--muted);border-radius:var(--r-card) var(--r-card) 0 0}
+.rules{list-style:none}
+.rule{display:grid;grid-template-columns:28px 20px minmax(0,1fr);align-items:start;padding:0 0 0 8px;border-bottom:1px solid var(--fill);position:relative}
+.rules .rule:last-child{border-bottom:0}
+.rule .n{font-family:var(--mono);font-size:12px;line-height:24px;color:var(--muted);padding-top:12px}
+.rule .blk-t{padding:12px 48px 12px 4px;border-radius:0}
+.rule .blk-t:hover{background:none}
+.rule:hover{background:var(--surface)}
+.rule .blk-t .pen{top:16px}
+.grip{width:24px;height:24px;margin-top:12px;display:grid;place-items:center;border-radius:4px;color:var(--control);cursor:grab;opacity:0;transition:opacity .15s}
+.grip svg{width:10px;height:16px}
+.rule:hover .grip,.grip:focus-visible{opacity:1}
+.grip:active{cursor:grabbing}
+.rule.dragging{opacity:.4}
+.rule.drop-before::before,.rule.drop-after::after{content:"";position:absolute;left:0;right:0;height:2px;background:var(--ink);z-index:1}
+.rule.drop-before::before{top:-1px}
+.rule.drop-after::after{bottom:-1px}
+.ed-add{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface);border-radius:0 0 var(--r-card) var(--r-card)}
+.blk-e{padding:12px 20px 0}
+.rule .blk-e{grid-column:3;padding:8px 20px 0 0}
+.blk-e textarea.textarea{font-family:var(--sans);font-size:14px;line-height:24px;padding:8px 12px;resize:vertical;overflow:auto;min-height:44px}
+.blk-e .vbar{padding:12px 0;border-top:0}
+.blk-e .ed-foot{display:flex;align-items:center;gap:8px;padding:0 0 16px}
+.blk-e .ed-foot .t-caption{margin-right:auto}
 /* Instructions starts with a label row; the other tabs start with a card, so push them down 32px (16px label + 16px gap) to line up with the Instructions card and the Agent Summary cards */
 .tabpanel:not(#panel-instructions):not(#panel-guardrails):not(#panel-models){padding-top:32px}
 .opts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
@@ -107,25 +130,16 @@
       <!-- Instructions -->
       <div role="tabpanel" class="tabpanel" id="panel-instructions" aria-labelledby="tab-instructions" tabindex="0">
         <section class="sect" aria-labelledby="greet-h">
-          <div class="sect-h"><h2 class="t-eyebrow" id="greet-h">Greeting, the First Thing the Agent Says</h2><button type="button" class="action sm" id="greet-edit">Edit</button></div>
-          <div class="editor">
-            <div class="greet" id="greet-view"></div>
-            <div id="greet-edit-wrap" hidden>
-              <textarea class="textarea" id="greet-ta" aria-label="Greeting text. Use the Insert Variable buttons below, or wrap a variable name in curly braces." rows="3"></textarea>
-              <div class="ed-foot"><button type="button" class="btn btn-secondary btn-sm" id="greet-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="greet-done">Done</button></div>
-            </div>
-          </div>
+          <div class="sect-h"><h2 class="t-eyebrow" id="greet-h">Greeting, the First Thing the Agent Says</h2></div>
+          <div class="editor"><div class="blk" id="blk-greet"></div></div>
         </section>
 
         <section class="sect" aria-labelledby="prompt-h">
-          <div class="sect-h"><h2 class="t-eyebrow" id="prompt-h">System Prompt</h2><span class="row g12"><span class="t-caption" id="edited">Edited 12 min ago</span><button type="button" class="action sm" id="prompt-edit">Edit</button></span></div>
+          <div class="sect-h"><h2 class="t-eyebrow" id="prompt-h">System Prompt</h2><span class="t-caption" id="edited">Edited 12 min ago</span></div>
           <div class="editor">
-            <div class="bar"><span class="t-caption" id="preamble">You are a friendly scheduling assistant for Northside Health. Follow these rules in order.</span></div>
-            <ol id="rules" style="list-style:none"></ol>
-            <div id="prompt-edit-wrap" hidden>
-              <textarea class="textarea" id="prompt-ta" aria-label="System prompt rules. One rule per line. Use the Insert Variable buttons below, or wrap a variable name in curly braces." rows="8"></textarea>
-              <div class="ed-foot"><span class="t-caption" style="margin-right:auto">One rule per line. Numbers are added for you.</span><button type="button" class="btn btn-secondary btn-sm" id="prompt-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="prompt-done">Done</button></div>
-            </div>
+            <div class="blk pre" id="blk-pre"></div>
+            <ol class="rules" id="rules" aria-label="Rules, in the order the agent follows them"></ol>
+            <div class="ed-add"><button type="button" class="action sm" id="addrule">Add Rule</button><span class="t-caption">Drag a rule to change its order. The agent follows them in order.</span></div>
           </div>
         </section>
 
@@ -135,6 +149,7 @@
           <p class="warnline" id="varwarn" hidden><span class="badge badge-alert" id="varwarn-b">Not defined</span><span class="t-caption" id="varwarn-t"></span></p>
           <p class="t-caption" style="margin-top:8px">Filled from the clinic calendar for each call.</p>
         </section>
+        <p class="sr-only" aria-live="polite" id="live"></p>
       </div>
 
       <!-- Voice & Models -->
@@ -236,6 +251,7 @@ const DEFINED = {
 };
 const S = {
   greeting: 'Hi, this is the Northside Health assistant calling for {patient_first_name}.',
+  pre: 'You are a friendly scheduling assistant for Northside Health. Follow these rules in order.',
   rules: [
     'Confirm you are speaking with the patient before saying anything else.',
     'Verify identity with date of birth before sharing the provider, time or {location}.',
@@ -262,16 +278,36 @@ const FNS = [
 
 const chipify = (t) => esc(t).replace(/\{([a-z_]+)\}/g, (m, n) => `<span class="var">{${n}}</span>`);
 const usedVars = () => {
-  const all = [S.greeting].concat(S.rules).join(' ');
+  const all = [S.greeting, S.pre].concat(S.rules).join(' ');
   const seen = [];
   (all.match(/\{([a-z_]+)\}/g) || []).forEach(m => { const n = m.slice(1, -1); if (seen.indexOf(n) < 0) seen.push(n); });
   return seen;
 };
+const PEN = '<span class="pen" aria-hidden="true">' + NS.ico('pencil') + '</span>';
+const GRIP = '<svg viewBox="0 0 10 16" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13" r="1.5"/><circle cx="7.5" cy="13" r="1.5"/></svg>';
 
-/* ---------- instructions ---------- */
+/* ---------- instructions: each line is its own field, one open at a time ---------- */
+let ed = null;   // { kind: 'greet' | 'pre' | 'rule', i, draft, fresh }
+const textOf = (kind, i) => kind === 'greet' ? S.greeting : kind === 'pre' ? S.pre : S.rules[i];
+
+function editorHtml(kind, i) {
+  const label = kind === 'greet' ? 'Greeting' : kind === 'pre' ? 'Role and instructions' : 'Rule ' + (i + 1);
+  return `<div class="blk-e">
+    <textarea class="textarea" id="ed-ta" rows="1" aria-label="${label}. Enter saves, Escape cancels. Use the Insert Variable buttons, or wrap a variable name in curly braces."></textarea>
+    <div class="vbar" role="group" aria-label="Insert a variable"><span class="t-caption">Insert Variable</span>${Object.keys(DEFINED).map(k => `<button type="button" class="var" data-ins="${k}" aria-label="Insert ${DEFINED[k][0]}, {${k}}">{${k}}</button>`).join('')}<button type="button" class="action sm" id="ed-all">See All Variables</button></div>
+    <div class="ed-foot"><span class="t-caption">Enter to save, Esc to cancel</span><button type="button" class="btn btn-secondary btn-sm" id="ed-cancel">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="ed-done">Done</button></div>
+  </div>`;
+}
+const viewBtn = (kind, i, label) => `<button type="button" class="blk-t" data-edit="${kind}" ${kind === 'rule' ? `data-i="${i}"` : ''}><span class="sr-only">Edit ${label}. </span>${chipify(textOf(kind, i))}${PEN}</button>`;
+const ruleHtml = (r, i) => `<li class="rule" data-i="${i}">
+    <button type="button" class="grip" draggable="true" data-i="${i}" aria-label="Move rule ${i + 1}. Use the up and down arrow keys.">${GRIP}</button>
+    <span class="n" aria-hidden="true">${i + 1}</span>${ed && ed.kind === 'rule' && ed.i === i ? editorHtml('rule', i) : `<div>${viewBtn('rule', i, 'rule ' + (i + 1))}</div>`}
+  </li>`;
+
 function renderInstr() {
-  $('greet-view').innerHTML = chipify(S.greeting);
-  $('rules').innerHTML = S.rules.map((r, i) => `<li class="rule"><span class="n" aria-hidden="true">${i + 1}</span><span><span class="sr-only">Rule ${i + 1}. </span>${chipify(r)}</span></li>`).join('');
+  $('blk-greet').innerHTML = ed && ed.kind === 'greet' ? editorHtml('greet') : viewBtn('greet', 0, 'greeting');
+  $('blk-pre').innerHTML = ed && ed.kind === 'pre' ? editorHtml('pre') : viewBtn('pre', 0, 'role and instructions');
+  $('rules').innerHTML = S.rules.map(ruleHtml).join('');
   const used = usedVars();
   $('varcount').textContent = used.length;
   $('varsin').innerHTML = used.map(v => `<li><span class="var">{${v}}</span></li>`).join('');
@@ -279,49 +315,104 @@ function renderInstr() {
   $('varwarn').hidden = !unknown.length;
   if (unknown.length) $('varwarn-t').textContent = unknown.map(v => '{' + v + '}').join(', ') + ' is not a defined variable. Calls would read it aloud as written.';
   renderVarRows();
+  if (ed) {
+    const ta = $('ed-ta'); ta.value = ed.draft; fit(ta);
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  }
 }
-const toggleEdit = (kind, on) => {
-  const isG = kind === 'greet';
-  $(isG ? 'greet-edit-wrap' : 'prompt-edit-wrap').hidden = !on;
-  $(isG ? 'greet-view' : 'rules').hidden = on;
-  $(kind + '-edit').textContent = on ? 'Editing' : 'Edit';
-  $(kind + '-edit').disabled = on;
-  $(kind + '-edit').setAttribute('aria-disabled', String(on));
-  if (on) {
-    $(isG ? 'greet-ta' : 'prompt-ta').value = isG ? S.greeting : S.rules.join('\n');
-    $(isG ? 'greet-ta' : 'prompt-ta').focus();
-  } else $(kind + '-edit').focus();
-};
-/* insert-variable row under each editor: click a chip to drop it at the cursor */
-['greet-ta', 'prompt-ta'].forEach(id => {
-  const ta = $(id);
-  const bar = document.createElement('div');
-  bar.className = 'vbar'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', 'Insert a variable');
-  bar.innerHTML = '<span class="t-caption">Insert Variable</span>' +
-    Object.keys(DEFINED).map(k => `<button type="button" class="var" data-v="${k}" aria-label="Insert ${DEFINED[k][0]}, {${k}}">{${k}}</button>`).join('') +
-    '<button type="button" class="action sm">See All Variables</button>';
-  ta.insertAdjacentElement('afterend', bar);
-  bar.addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (b.classList.contains('action')) { openTab('variables'); $('tab-variables').focus(); return; }
-    const s = ta.selectionStart, end = ta.selectionEnd, txt = '{' + b.dataset.v + '}';
-    ta.setRangeText(txt, s, end, 'end'); ta.focus();
-  });
+const fit = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; };
+/* while typing, only grow: a height the person dragged with the resize handle is never shrunk back */
+const grow = (ta) => { if (ta.scrollHeight > ta.clientHeight) ta.style.height = ta.scrollHeight + 2 + 'px'; };
+const focusBlock = (kind, i) => { const b = kind === 'rule' ? document.querySelector(`.blk-t[data-i="${i}"]`) : document.querySelector(`.blk-t[data-edit="${kind}"]`); if (b) b.focus(); return b; };
+
+function startEdit(kind, i) {
+  if (ed && !commit()) return;
+  ed = { kind, i, draft: textOf(kind, i) };
+  renderInstr();
+}
+function commit() {
+  const v = ed.draft.replace(/\s*\n\s*/g, ' ').trim();
+  if (!v) {
+    if (ed.kind === 'rule' && ed.fresh) { S.rules.splice(ed.i, 1); ed = null; renderInstr(); return true; }
+    NS.toast(ed.kind === 'greet' ? 'The greeting cannot be empty.' : 'Add some text, or press Esc to cancel.'); $('ed-ta').focus(); return false;
+  }
+  const kind = ed.kind, i = ed.i;
+  if (v !== textOf(kind, i)) $('edited').textContent = 'Edited just now';
+  if (kind === 'greet') S.greeting = v; else if (kind === 'pre') S.pre = v; else S.rules[i] = v;
+  ed = null; renderInstr(); focusBlock(kind, i);
+  return true;
+}
+function cancel() {
+  const kind = ed.kind, i = ed.i;
+  if (kind === 'rule' && ed.fresh) S.rules.splice(i, 1);
+  ed = null; renderInstr();
+  if (!focusBlock(kind, i)) $('addrule').focus();
+}
+
+$('panel-instructions').addEventListener('click', e => {
+  const v = e.target.closest('.blk-t'); if (v) { startEdit(v.dataset.edit, v.dataset.i != null ? +v.dataset.i : undefined); return; }
+  const ins = e.target.closest('[data-ins]');
+  if (ins) { const ta = $('ed-ta'); ta.setRangeText('{' + ins.dataset.ins + '}', ta.selectionStart, ta.selectionEnd, 'end'); ta.focus(); ed.draft = ta.value; grow(ta); return; }
+  if (e.target.closest('#ed-all')) { openTab('variables'); $('tab-variables').focus(); return; }
+  if (e.target.closest('#ed-cancel')) { cancel(); return; }
+  if (e.target.closest('#ed-done')) { commit(); return; }
 });
-$('greet-edit').addEventListener('click', () => toggleEdit('greet', true));
-$('prompt-edit').addEventListener('click', () => toggleEdit('prompt', true));
-$('greet-cancel').addEventListener('click', () => toggleEdit('greet', false));
-$('prompt-cancel').addEventListener('click', () => toggleEdit('prompt', false));
-$('greet-done').addEventListener('click', () => {
-  const v = $('greet-ta').value.trim();
-  if (!v) { NS.toast('The greeting cannot be empty.'); return; }
-  S.greeting = v; $('edited').textContent = 'Edited just now'; renderInstr(); toggleEdit('greet', false);
+$('panel-instructions').addEventListener('input', e => { if (e.target.id !== 'ed-ta') return; ed.draft = e.target.value; grow(e.target); });
+$('panel-instructions').addEventListener('keydown', e => {
+  if (e.target.id === 'ed-ta') {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    return;
+  }
+  const g = e.target.closest('.grip'); if (!g) return;
+  const d = { ArrowUp: -1, ArrowDown: 1 }[e.key]; if (!d) return;
+  e.preventDefault();
+  const from = +g.dataset.i, to = from + d;
+  if (to < 0 || to >= S.rules.length) return;
+  move(from, to);
+  document.querySelector(`.grip[data-i="${to}"]`).focus();
 });
-$('prompt-done').addEventListener('click', () => {
-  const lines = $('prompt-ta').value.split('\n').map(l => l.replace(/^\s*\d+[.)]\s*/, '').trim()).filter(Boolean);
-  if (!lines.length) { NS.toast('Add at least one rule.'); return; }
-  S.rules = lines; $('edited').textContent = 'Edited just now'; renderInstr(); toggleEdit('prompt', false);
+$('addrule').addEventListener('click', () => {
+  if (ed && !commit()) return;
+  S.rules.push('');
+  ed = { kind: 'rule', i: S.rules.length - 1, draft: '', fresh: true };
+  renderInstr();
 });
+
+function move(from, to) {
+  if (ed && !commit()) return;
+  const [r] = S.rules.splice(from, 1); S.rules.splice(to, 0, r);
+  $('edited').textContent = 'Edited just now';
+  renderInstr();
+  $('live').textContent = 'Rule moved to position ' + (to + 1) + ' of ' + S.rules.length + '.';
+}
+
+/* drag to reorder, by the grip */
+let dragFrom = null;
+const clearDrop = () => document.querySelectorAll('.rule').forEach(li => li.classList.remove('drop-before', 'drop-after', 'dragging'));
+$('rules').addEventListener('dragstart', e => {
+  const g = e.target.closest('.grip'); if (!g) return;
+  dragFrom = +g.dataset.i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(dragFrom));
+  const li = g.closest('.rule'); e.dataTransfer.setDragImage(li, 16, 20); requestAnimationFrame(() => li.classList.add('dragging'));
+});
+$('rules').addEventListener('dragover', e => {
+  if (dragFrom == null) return;
+  const li = e.target.closest('.rule'); if (!li) return;
+  e.preventDefault();
+  const r = li.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+  document.querySelectorAll('.rule').forEach(x => { if (x !== li) x.classList.remove('drop-before', 'drop-after'); });
+  li.classList.toggle('drop-after', after); li.classList.toggle('drop-before', !after);
+});
+$('rules').addEventListener('drop', e => {
+  if (dragFrom == null) return;
+  const li = e.target.closest('.rule'); if (!li) return;
+  e.preventDefault();
+  let to = +li.dataset.i + (li.classList.contains('drop-after') ? 1 : 0);
+  if (to > dragFrom) to--;
+  const from = dragFrom; dragFrom = null; clearDrop();
+  if (to !== from) move(from, to);
+});
+$('rules').addEventListener('dragend', () => { dragFrom = null; clearDrop(); });
 
 /* ---------- models + summary ---------- */
 const STT = [['Nova-3 Medical', 'Tuned for clinical vocabulary: drug names, procedures and provider names.'], ['Nova-3 General', 'Everyday vocabulary. Faster, but less accurate on medical terms.'], ['Whisper Large', 'Strong with accents and noisy lines. Slower to respond.']];

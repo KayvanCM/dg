@@ -260,7 +260,7 @@
   };
 
   /* First-launch intro: a black screen with a percent counter, then a grid of square tiles dissolves from the top left
-     to the bottom right and the page reveals in stages. Plays once per browser session on the two home screens, and
+     to the bottom right (the counter's dot grid fades out first) and the page reveals in stages. Plays once per browser session on the two home screens, and
      again after Reset Demo. Skipped for people who prefer reduced motion. */
   function playIntro() {
     const page = document.body.dataset.nav;
@@ -271,14 +271,14 @@
       sessionStorage.setItem('ns:intro', 'seen');
     } catch (e) { return; }
 
-    const PITCH = 44, COUNT_MS = 1100, WIPE_MS = 760, TILE_MS = 280;
+    const PITCH = 44, COUNT_MS = 1100, DOTS_MS = 200, WIPE_MS = 760, TILE_MS = 280;
     const cols = Math.ceil(innerWidth / PITCH), rows = Math.ceil(innerHeight / PITCH);
     const paper = getComputedStyle(document.body).backgroundColor;
 
     const splash = document.createElement('div');
     splash.className = 'launch-intro';
     splash.setAttribute('aria-hidden', 'true');
-    splash.innerHTML = '<div class="launch-tiles"></div><span class="launch-counter">.. <span>0%</span></span>';
+    splash.innerHTML = '<div class="launch-tiles"></div><div class="launch-dots"></div><span class="launch-counter">.. <span>0%</span></span>';
     const grid = splash.querySelector('.launch-tiles');
     grid.style.gridTemplateColumns = 'repeat(' + cols + ', ' + (PITCH - 4) + 'px)';
     grid.style.gridAutoRows = (PITCH - 4) + 'px';
@@ -301,7 +301,7 @@
       document.removeEventListener('focusin', finish);
     };
     document.addEventListener('focusin', finish);   // keyboard users are never held back by the animation
-    setTimeout(finish, COUNT_MS + WIPE_MS + TILE_MS + 1200);   // failsafe: the splash can never get stuck, even if the browser pauses animations
+    setTimeout(finish, COUNT_MS + DOTS_MS + WIPE_MS + TILE_MS + 1200);   // failsafe: the splash can never get stuck, even if the browser pauses animations
 
     const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
     function reveal(target, offset, blur, delay, duration) {
@@ -313,7 +313,15 @@
       });
     }
 
-    // Stage 2: the tiles dissolve along the diagonal, then the page content blurs in underneath.
+    // Stage 2: the dot grid fades out on its own, so dots and squares are never on screen together.
+    function clearDots() {
+      const fade = splash.querySelector('.launch-dots').animate([{ opacity: 1 }, { opacity: 0 }], { duration: DOTS_MS, easing: 'ease-out', fill: 'forwards' });
+      animations.push(fade);
+      animations.push(label.animate([{ opacity: 1 }, { opacity: 0 }], { duration: DOTS_MS, fill: 'forwards' }));
+      fade.onfinish = wipe;
+    }
+
+    // Stage 3: the tiles dissolve along the diagonal, then the page content blurs in underneath.
     function wipe() {
       const reach = cols + rows - 2 || 1;
       tiles.forEach((t, i) => {
@@ -321,7 +329,6 @@
         animations.push(t.animate([{ backgroundColor: '#000' }, { backgroundColor: paper }],
           { delay: d * WIPE_MS, duration: TILE_MS, easing: 'ease-in-out', fill: 'forwards' }));
       });
-      animations.push(label.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }));
       animations.push(grid.animate([{ backgroundColor: '#000' }, { backgroundColor: paper }],
         { delay: WIPE_MS * 0.6, duration: TILE_MS + WIPE_MS * 0.4, fill: 'forwards' }));
       const exit = splash.animate([{ opacity: 1 }, { opacity: 0 }],
@@ -339,7 +346,7 @@
       const progress = Math.min(1, (now - start) / COUNT_MS);
       counter.textContent = Math.floor(progress * 100) + '%';
       if (progress < 1) { frame = requestAnimationFrame(tick); return; }
-      wipe();
+      clearDots();
     }
     frame = requestAnimationFrame(tick);
   }

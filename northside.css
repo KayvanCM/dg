@@ -393,7 +393,9 @@ details.disc .in{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px
 /* First-launch intro */
 .launch-intro{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;background:#000;color:#fff;pointer-events:none}
 .launch-tiles{position:absolute;inset:0;display:grid;gap:4px;background:#000}
-.launch-tiles i{display:block;background:#000 radial-gradient(circle,#6B6B6B 1px,transparent 1.5px) center/100% 100% no-repeat}
+.launch-tiles i{display:block;background:#000}
+/* the dot grid is its own layer, centered on the tiles, so it can leave before the squares arrive */
+.launch-dots{position:absolute;inset:0;background:radial-gradient(circle at 20px 20px,#6B6B6B 1px,transparent 1.5px) 0 0/44px 44px}
 .launch-counter{position:relative;font:500 14px/16px var(--mono);letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .launch-counter>span{display:inline-block;width:4ch;text-align:right}
 @media (prefers-reduced-motion:reduce){.launch-intro{display:none}}
